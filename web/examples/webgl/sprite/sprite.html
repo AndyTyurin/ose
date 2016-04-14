@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <title>Custom HTML Test</title>
+    <script type="application/dart" src="sprite.dart"></script>
+    <script src="packages/browser/dart.js"></script>
+    <script id="vs" type="x-shader/x-vertex">
+      attribute vec2 aVertexPosition;
+      attribute vec2 aTexturePosition;
+
+      uniform mat4 uMVMatrix;
+      uniform mat4 uPMatrix;
+
+      varying highp vec2 vTexturePosition;
+
+      void main() {
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 0.0, 1.0);
+        vTexturePosition = aTexturePosition;
+      }
+    </script>
+    <script id="fs" type="x-shader/x-fragment">
+      precision highp float;
+
+      varying highp vec2 vTexturePosition;
+
+      uniform sampler2D uSampler;
+
+      void main(void) {
+        gl_FragColor = texture2D(uSampler, vec2(vTexturePosition.s, vTexturePosition.t));
+      }
+    </script>
+</head>
+<body>
+</body>
+</html>
