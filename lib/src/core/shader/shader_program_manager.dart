@@ -1,69 +1,53 @@
-part of ose.core.shader;
+part of ose;
 
-/// Used to create new WebGL programs and keep them for further usage
+/// Shader Program Manager.
+///
+/// Creates a new shader programs either to cache already exists.
 class ShaderProgramManager {
-  /// WebGL Rendering Context
+  /// WebGL rendering context.
   static webGL.RenderingContext gl;
 
-  /// Shader manager.
-  static ShaderManager _shaderManager;
+  static final ShaderProgramManager _singleton =
+      new ShaderProgramManager._internal();
 
-  /// List with available programs.
-  ///
-  /// Only one of them can be used as an active.
-  /// Each program has unique name.
-  Map<String, ShaderProgram> _programs;
-
-  /// Current an active program (has been used in render).
-  ///
-  /// Note that program must be present in programs list.
-  ShaderProgram _program;
-
-  /// Create new program manager.
-  ShaderProgramManager(ShaderManager shaderManager) {
-    _shaderManager = shaderManager;
+  factory ShaderProgramManager() {
+    return ShaderProgramManager._singleton;
   }
 
-  /// Create new program and keep it inside field.
+  ShaderProgramManager._internal();
+
+  /// Active shader program uuid.
   ///
-  /// Use [name] to define shader program name.
-  /// [vShaderPath] and [fShaderPath] are paths to shader files.
-  Future<ShaderProgram> create(
-      String name, String vShaderPath, String fShaderPath) async {
-    Shader vShader;
-    Shader fShader;
+  /// Only one shader program can be an active at the same time.
+  String activeShaderProgramUuid;
 
-    // Loads shader async.
-    await Future.wait([
-      _shaderManager.create(vShaderPath, webGL.VERTEX_SHADER),
-      _shaderManager.create(fShaderPath, webGL.FRAGMENT_SHADER)
+  /// List of programs.
+  Map<String, ShaderProgram> _programs = <String, ShaderProgram>{};
+
+  /// Create shader program.
+  ///
+  /// [vShaderPath] is path to vertex shader.
+  /// [fShaderPath] is path to fragment shader.
+  Future<ShaderProgram> create(String vShaderPath, String fShaderPath) async {
+    return await Future.wait([
+      ShaderManager.create(vShaderPath, ShaderType.Vertex),
+      ShaderManager.create(fShaderPath, ShaderType.Fragment)
     ]).then((List<Shader> shaders) {
-      vShader = shaders[0];
-      fShader = shaders[1];
+      return new ShaderProgram(shaders[0], shaders[1]);
     });
-
-    // Keep program in list.
-    return _programs[name] =
-        new ShaderProgram(_shaderManager, name, vShader, fShader);
   }
 
   /// Use program.
   ///
-  /// Throw [Exception] if program not found in list.
-  void use(String programName) {
-    ShaderProgram program = _programs[programName];
-
-    if (_program == program) return;
-
-    if (program == null) {
-      throw new Exception('Shader program \'${ programName }\''
-          'is not found. Create new one before.');
+  /// Only one program can be in use in same time.
+  void use(ShaderProgram shaderProgram) {
+    if (ShaderProgramManager.activeShaderProgramUuid != shaderProgram.uuid) {
+      ShaderProgramManager.activeShaderProgramUuid = shaderProgram.uuid;
+      gl.useProgram(shaderProgram.program);
     }
-
-    program.use();
   }
-
-  ShaderProgram get program => _program;
 
   Map<String, ShaderProgram> get programs => _programs;
 }
+
+enum ShaderPrograms { Basic }

@@ -1,32 +1,44 @@
-part of ose.core.shader;
+part of ose;
 
+/// Shader manager.
+///
+/// Creates a new shaders either to cache already exists.
 class ShaderManager {
-  /// WebGL rendering context.
-  static webGL.RenderingContext gl;
-
   /// Loader manager.
-  static LoaderManager _loaderManager;
+  LoaderManager _loaderManager;
 
-  /// List of shaders.
-  ///
-  /// Use [create] to define new shader in list.
-  /// Note: each shader has his own unique path name (url to file).
-  Map<String, Shader> _shaders;
+  /// List with cached shaders.
+  Map<String, Shader> _shaders = <String, Shader>{};
 
-  /// Create shader manager.
-  ///
-  /// [loaderManager] used to fetch shader by path.
-  ShaderManager(LoaderManager loaderManager) {
-    _loaderManager = loaderManager;
+  ShaderManager() {
+    _shaders = <String, Shader>{};
+    _loaderManager = new LoaderManager();
   }
 
   /// Create a new shader.
   ///
-  /// [path] is path to the shader file.
-  /// [type] is [webGL.VERTEX_SHADER] or [webGL.FRAGMENT_SHADER].
-  Future<Shader> create(String path, int type) async {
-    return _shaders[path] = new Shader(path, type, await _loaderManager.load(path));
+  /// [shaderPath] is path to the shader file.
+  /// [type] is [ShaderType.Vertex] or [ShaderType.Fragment].
+  Future<Shader> create(String shaderPath, ShaderType type) async {
+    if (_shaders[shaderPath] != null) {
+      return (new Completer<Shader>()..complete(_shaders[shaderPath])).future;
+    }
+
+    return _shaders[shaderPath] =
+        new Shader(type, await _loaderManager.load(shaderPath));
   }
 
   Map<String, Shader> get shaders => _shaders;
+
+  Function get onLoad => _loaderManager.onLoad;
+
+  Function get onProgress => _loaderManager.onProgress;
+
+  Function get onError => _loaderManager.onError;
+
+  set onLoad(Function onLoad) => _loaderManager.onLoad = onLoad;
+
+  set onProgress(Function onProgress) => _loaderManager.onProgress = onProgress;
+
+  set onError(Function onError) => _loaderManager.onError = onError;
 }

@@ -1,17 +1,4 @@
-library ose.core.shader;
-import 'dart:web_gl' as webGL;
-import 'dart:async';
-import 'dart:typed_data';
-
-import 'package:vector_math/vector_math.dart';
-
-import './../loader/loader_manager.dart';
-
-part './attribute.dart';
-part './uniform.dart';
-part 'shader_manager.dart';
-part 'shader_program.dart';
-part 'shader_program_manager.dart';
+part of ose;
 
 class Shader {
   /// WebGL rendering context.
@@ -23,62 +10,63 @@ class Shader {
   /// Shader source.
   String _source;
 
-  /// Path to shader file.
-  String _path;
-
   /// Shader type.
   ///
-  /// [webGL.VERTEX_SHADER] or [webGL.FRAGMENT_SHADER].
-  int _type;
+  /// [ShaderType.Vertex] or [ShaderType.Fragment].
+  ShaderType _type;
 
   /// Create new shader.
   ///
-  /// [_path] is path to the shader.
-  /// [_type] is [webGL.VERTEX_SHADER] or [webGL.FRAGMENT_SHADER].
+  /// [_type] is [ShaderType.Vertex] or [ShaderType.Fragment].
   /// [_source] is shader source.
-  Shader(this._path, this._type, this._source) {
+  Shader(this._type, this._source) {
     // Checks is shader source is not empty.
-    if (_isShaderLoaded(_source, _type, _path)) {
-      _shader = gl.createShader(_type);
-      gl.shaderSource(_shader, _source);
-      gl.compileShader(_shader);
+    if (Shader._isShaderLoaded(this._source, this._type)) {
+      _shader = gl.createShader(Shader._mapToWebGLShaderType(this._type));
+      gl.shaderSource(this._shader, this._source);
+      gl.compileShader(this._shader);
 
       // Checks shader compile status.
       if (!gl.getShaderParameter(_shader, webGL.COMPILE_STATUS)) {
         throw new Exception("Couldn't compile"
-            " ${ _getShaderNameByType(_type) } shader on path ${ _path }");
+            " ${ _getShaderNameByType(_type) } shader");
       }
     }
   }
 
   /// Get shader name.
   ///
-  /// [type] can be [webGL.VERTEX_SHADER] or [webGL.FRAGMENT_SHADER].
+  /// [type] can be [ShaderType.Vertex] or [ShaderType.Fragment].
   /// Commonly used to fetch name of the shader by type (Vertex or Fragment).
-  static String _getShaderNameByType(int type) {
-    return (type == webGL.VERTEX_SHADER) ? 'Vertex' : 'Fragment';
+  static String _getShaderNameByType(ShaderType type) {
+    return (type == ShaderType.Vertex) ? 'Vertex' : 'Fragment';
   }
 
-  /// Checks is shader loaded.
+  /// Check is shader loaded.
   ///
   /// [source] is shader source.
-  /// [type] is type of a shader, [VERTEX_SHADER] or [FRAGMENT_SHADER].
-  /// [path] is url to shader file. Note that it is followed by CORS.
+  /// [type] is type of a shader, [ShaderType.Vertex] or [ShaderType.Fragment].
   /// Throw [Exception] if shader source is an empty.
-  static bool _isShaderLoaded(String source, int type, String path) {
+  static bool _isShaderLoaded(String source, ShaderType type) {
     if (source.isEmpty) {
       throw new Exception("${ _getShaderNameByType(type) }"
-          " shader on path '${ path }' couldn't be loaded");
+          " shader couldn't be loaded");
     }
-
     return true;
+  }
+
+  /// Get webGL shader type.
+  static int _mapToWebGLShaderType(ShaderType type) {
+    if (type == ShaderType.Fragment) return webGL.FRAGMENT_SHADER;
+    return webGL.VERTEX_SHADER;
   }
 
   webGL.Shader get shader => _shader;
 
   String get source => _source;
 
-  String get path => _path;
-
-  int get type => _type;
+  ShaderType get type => _type;
 }
+
+/// Shader types.
+enum ShaderType { Vertex, Fragment }

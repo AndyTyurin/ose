@@ -1,41 +1,45 @@
 library ose;
 
 import 'dart:html';
+import 'dart:typed_data';
+import 'dart:async';
 import 'dart:web_gl' as webGL;
+import 'dart:math' as math;
 
-import './src/core/core.dart';
+import 'ose_math.dart';
+import 'ose_utils.dart' as utils;
 
-export './src/core/core.dart';
-export './src/math/math.dart';
+part 'src/core/camera/camera.dart';
+part 'src/core/filter/filter-manager.dart';
+part 'src/core/filter/filter.dart';
+part 'src/core/filter/basic_filter.dart';
+part 'src/core/loader/loader_manager.dart';
+part 'src/core/object/game_object.dart';
+part 'src/core/object/rectangle.dart';
+part 'src/core/object/triangle.dart';
+part 'src/core/object/circle.dart';
+part 'src/core/object/mixins/colors-mixin.dart';
+part 'src/core/object/mixins/filter-mixin.dart';
+part 'src/core/object/mixins/texture-mixin.dart';
+part 'src/core/object/mixins/vertices-mixin.dart';
+part 'src/core/renderer/webgl_renderer.dart';
+part 'src/core/scene/scene.dart';
+part 'src/core/shader/attribute.dart';
+part 'src/core/shader/uniform.dart';
+part 'src/core/shader/shader_program.dart';
+part 'src/core/shader/shader_manager.dart';
+part 'src/core/shader/shader_program_manager.dart';
+part 'src/core/shader/shader.dart';
+part 'src/core/texture/texture.dart';
+part 'src/core/texture/texture_manager.dart';
+part 'src/core/transform/transform.dart';
 
 class Ose {
+
+  static const String projectPackage = 'packages/ose';
+
   /// WebGL renderer.
   WebGLRenderer _renderer;
-
-  /// Material manager.
-  ///
-  /// Gives controls of different materials.
-  /// By default it already has basic material, that is used in every created
-  /// object. Further, new materials can be created and are kept there.
-  MaterialManager _materialManager;
-
-  /// Texture manager.
-  ///
-  /// Used to keep textures with unique path name for each of them.
-  /// Main role is avoiding to load textures that already loaded, but
-  /// they also can be re-written if it needed.
-  TextureManager _textureManager;
-
-  /// Shader manager.
-  ///
-  /// Keeps different vertex & fragment shaders with unique path.
-  ShaderManager _shaderManager;
-
-  /// Shader program manager.
-  ///
-  /// Manages different shader programs.
-  /// Only one of them can be an active.
-  ShaderProgramManager _shaderProgramManager;
 
   /// Loader manager.
   ///
@@ -44,13 +48,29 @@ class Ose {
   /// shader files to different textures & sprites.
   LoaderManager _loaderManager;
 
-  Ose({canvas: CanvasElement, width: int, height: int}) {
+  ShaderManager _shaderManager;
+
+  ShaderProgramManager _shaderProgramManager;
+
+  TextureManager _textureManager;
+
+  /// Is renderer created & prepared.
+  bool _isRendererPrepared = false;
+
+  /// Create WebGL Renderer.
+  ///
+  /// It also initialize rendering context & managers.
+  ///
+  /// Note: it's async process and you must wait until renderer will be created.
+  Future<WebGLRenderer> createWebGLRenderer(
+      {canvas: CanvasElement, width: int, height: int}) async {
     _renderer = new WebGLRenderer(canvas: canvas, width: width, height: height);
-    _renderer.onStart.listen((_) {
-      window.console.log('pre-setup renderer');
-    });
     _propagateRenderingContext();
     _createManagers();
+    await _initFilters();
+    _isRendererPrepared = true;
+
+    return _renderer;
   }
 
   /// Propagate WebGL rendering context.
@@ -59,31 +79,44 @@ class Ose {
   void _propagateRenderingContext() {
     webGL.RenderingContext gl = _renderer.gl;
     Shader.gl = gl;
-    ShaderManager.gl = gl;
+    ShaderProgram.gl = gl;
     ShaderProgramManager.gl = gl;
     Texture.gl = gl;
-    TextureManager.gl = gl;
-    MaterialManager.gl = gl;
+    Attribute.gl = gl;
   }
 
+  /// Create managers.
   void _createManagers() {
-    _shaderManager = new ShaderManager(_loaderManager);
-    _shaderProgramManager = new ShaderProgramManager(_shaderManager);
-    _loaderManager = new LoaderManager();
+    _shaderManager = new ShaderManager();
 
-    _materialManager = new MaterialManager(_shaderProgramManager);
-    _textureManager = new TextureManager(_loaderManager);
+    _shaderProgramManager = new ShaderProgramManager();
+
+    TextureManager.loaderManager = _loaderManager;
+    _textureManager = new TextureManager();
   }
 
-  WebGLRenderer get renderer => _renderer;
+  Future _initFilters() async {
+
+    // Basic shader program.
+    BasicFilter.basicShaderProgram = await shaderProgramManager.create(
+        "${projectPackage}/res/glsl/basic.v.glsl",
+        "${projectPackage}/res/glsl/basic.f.glsl");
+  }
+
+  WebGLRenderer get renderer {
+    if (!_isRendererPrepared) {
+      throw new Exception('Renderer is not prepared, waits until'
+          ' createWebGLRenderer to create and prepare renderer');
+    }
+
+    return _renderer;
+  }
 
   LoaderManager get loaderManager => _loaderManager;
 
-  ShaderManager get shaderManager => _shaderManager;
-
   ShaderProgramManager get shaderProgramManager => _shaderProgramManager;
 
-  TextureManager get textureManager => _textureManager;
+  ShaderManager get shaderManager => _shaderManager;
 
-  MaterialManager get materialManager => _materialManager;
+  TextureManager get textureManager => _textureManager;
 }

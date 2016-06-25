@@ -1,28 +1,19 @@
-import 'dart:html';
-
-import 'package:ose/src/utils/uuid.dart';
-
-import './../object/game_object.dart';
-import './../camera/camera_manager.dart';
+part of ose;
 
 class Scene {
   /// Unique id.
   String _uuid;
-
-  /// Camera manager.
-  ///
-  /// Manages scene cameras to give access to an active of list of
-  /// available cameras.
-  CameraManager _cameraManager;
 
   /// Game objects.
   ///
   /// There are mainly used by renderer to show off on a screen.
   List<GameObject> _objects;
 
+  /// Active camera.
+  Camera _camera;
+
   Scene() {
-    _uuid = generateUuid();
-    _cameraManager = new CameraManager();
+    _uuid = utils.generateUuid();
     _objects = <GameObject>[];
   }
 
@@ -40,5 +31,9 @@ class Scene {
 
   String get uuid => _uuid;
 
-  CameraManager get cameraManager => _cameraManager;
+  Camera get camera => _camera;
+
+  void set camera(Camera camera) {
+    _camera = camera;
+  }
 }

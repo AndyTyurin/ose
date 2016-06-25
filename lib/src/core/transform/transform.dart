@@ -1,149 +1,138 @@
-import 'package:ose/src/math/math.dart';
+part of ose;
 
 class Transform {
-  /// Local position relatives to parent.
-  Vector2 _localPosition;
+  /// Rotation matrix.
+  Matrix3 _rotationMatrix;
 
-  /// Local rotation relatives to parent.
-  Vector2 _localRotation;
+  /// Translation matrix.
+  Matrix3 _translationMatrix;
 
-  /// Local scale relatives to parent
-  Vector2 _localScale;
+  /// Scale matrix.
+  Matrix3 _scaleMatrix;
 
-  /// World position.
+  /// Model matrix.
+  Matrix3 _modelMatrix;
+
+  /// Position.
   ///
-  /// Calculates from parent transform.
+  /// Note: Do not set [position.x], [position.y] manually,
+  /// use [translateTo] or [translateBy] instead.
   Vector2 _position;
 
-  /// World rotation.
+  /// Scale.
   ///
-  /// Calculates from parent transform.
-  Vector2 _rotation;
-
-  /// World scale.
-  ///
-  /// Calculates from parent transform.
+  /// Note: Do not set [scale.x], [scale.y] manually,
+  /// use [scaleTo] or [scaleBy] instead.
   Vector2 _scale;
 
-  /// Look at vector (aka forward).
-  Vector2 lookAt;
-
-  /// Parent transform.
-  Transform _parent;
-
-  Transform() {
-    _localPosition = new Vector2();
-    _localRotation = new Vector2();
-    _localScale = new Vector2(1.0, 1.0);
-    lookAt = new Vector2()..x = 1.0;
-  }
-
-  /// Rotate by degrees.
-  void rotate(double degrees) {
-    _localRotation.rotate(degrees);
-  }
-
-  /// Rotate vector to angle relatives to axis.
-  void rotateTo(double angle, [Vector2 axis]) {
-    // todo: implement.
-  }
-
-  /// Translate by x,y.
-  void translate(double x, double y) {
-    _localPosition.translate(x, y);
-  }
-
-  /// Translate by x.
-  void translateX(double x) {
-    _localPosition.translateX(x);
-  }
-
-  /// Translate by y.
-  void translateY(double y) {
-    _localPosition.translateY(y);
-  }
-
-  /// Translates to x,y.
-  void translateTo(double x, double y) {
-    _localPosition.x = x;
-    _localPosition.y = y;
-  }
-
-  /// Scale by factor.
-  void scale(double factor) {
-    _localScale.scale(factor);
-  }
-
-  /// Scale by x.
-  void scaleX(double x) {
-    _localScale.scaleX(x);
-  }
-
-  /// Scale by y.
-  void scaleY(double y) {
-    _localScale.scaleY(y);
-  }
-
-  /// Scale to x,y.
-  void scaleTo(double x, double y) {
-    _localScale.x = x;
-    _localScale.y = y;
-  }
-
-  /// Transform local values by transform.
+  /// Rotation.
   ///
-  /// By using parent's transform re-calculate all local values
-  /// to be relative to parent.
-  void _transformLocalValues(Transform transform) {
-    // todo: implement
+  /// Note: Do not set [rotation.x], [rotation.y] manually,
+  /// use [rotateTo] or [rotateBy] instead.
+  Vector2 _rotation;
+
+  double _radians;
+
+  /// Should update model matrix.
+  ///
+  /// [true] if one of the calculation matrices was changed.
+  bool _shouldUpdateModelMatrix;
+
+  /// Create new transformation.
+  Transform(
+      {Vector2 position, Vector2 rotation, Vector2 scale, double degrees}) {
+    _position = (position == null) ? new Vector2(0.0, 0.0) : position;
+    _scale = (scale == null) ? new Vector2(1.0, 1.0) : scale;
+    _rotation = (rotation == null) ? new Vector2(0.0, 1.0) : rotation;
+    _radians = utils.getRadiansFromVector(_rotation, Vector2.Y_AXIS);
+    _rotationMatrix = utils.setRotationMatrixFromRadians(_radians);
+    _translationMatrix = utils.setTranslationMatrix(_position.x, _position.y);
+    _scaleMatrix = utils.setScaleMatrix(_scale.x, _scale.y);
+    _shouldUpdateModelMatrix = true;
+    updateModelMatrix();
   }
 
-  Vector2 get localPosition => _localPosition;
-
-  void set localPosition(Vector2 position) {
-    // todo: change global position
-    _localPosition = position;
+  /// Rotate by [radians].
+  void rotateBy(double radians) {
+    _radians += radians;
+    _rotationMatrix = utils.setRotationMatrixFromRadians(_radians);
+    _rotation.x = _rotationMatrix.m00;
+    _rotation.y = _rotationMatrix.m10;
+    _shouldUpdateModelMatrix = true;
   }
 
-  Vector2 get localRotation => _localRotation;
-
-  void set localRotation(Vector2 rotation) {
-    // todo: change global rotation.
-    _localRotation = rotation;
+  /// Rotate to [rx], [ry].
+  void rotateTo(double rx, double ry) {
+    _radians = utils.getRadiansFromVector(new Vector2(rx, ry), Vector2.Y_AXIS);
+    _rotationMatrix = utils.setRotationMatrixFromRadians(_radians);
+    _rotation.x = _rotationMatrix.m00;
+    _rotation.y = _rotationMatrix.m10;
+    _shouldUpdateModelMatrix = true;
   }
 
-  Vector2 get localScale => _localScale;
-
-  void set localScale(Vector2 scale) {
-    // todo: change global scale.
-    _localScale = scale;
+  /// Translate by [tx], [ty].
+  void translateBy(double tx, [double ty]) {
+    _position.x += tx;
+    if (ty != null) {
+      _position.y += ty;
+    }
+    _translationMatrix = utils.setTranslationMatrix(_position.x, _position.y);
+    _shouldUpdateModelMatrix = true;
   }
 
-  Vector2 get position => _position;
-
-  void set position(Vector2 position) {
-    // todo: change local position.
-    _position = position;
+  /// Translate to [tx], [ty].
+  void translateTo(double tx, double ty) {
+    _position.x = tx;
+    _position.y = ty;
+    _translationMatrix = utils.setTranslationMatrix(tx, ty);
+    _shouldUpdateModelMatrix = true;
   }
 
-  Vector2 get rotation => _rotation;
-
-  void set rotation(Vector2 rotation) {
-    // todo: change local rotation.
-    _rotation = rotation;
+  /// Scale by [sx], [sy].
+  void scaleBy(double sx, [double sy]) {
+    _scale.x += sx;
+    if (sy != null) {
+      _scale.y += sy;
+    }
+    _scaleMatrix = utils.setScaleMatrix(_scale.x, _scale.y);
+    _shouldUpdateModelMatrix = true;
   }
 
-  Vector2 get globalScale => _scale;
-
-  void set globalScale(Vector2 scale) {
-    // todo: change local scale.
-    _scale = scale;
+  /// Scale to [sx], [sy].
+  void scaleTo(double sx, double sy) {
+    _scale.x = sx;
+    _scale.y = sy;
+    _scaleMatrix = utils.setScaleMatrix(sx, sy);
+    _shouldUpdateModelMatrix = true;
   }
 
-  Transform get parent => _parent;
+  /// Update model matrix.
+  ///
+  /// Multiply scale, rotation and translation matrices.
+  updateModelMatrix() {
+    if (_shouldUpdateModelMatrix) {
+      _modelMatrix = (_scaleMatrix * _rotationMatrix * _translationMatrix)..transpose();
+      _shouldUpdateModelMatrix = false;
+    }
+  }
 
-  void set parent(Transform transform) {
-    _parent = parent;
-    _transformLocalValues(transform);
+  Matrix3 get modelMatrix => _modelMatrix;
+
+  Vector2 get scale => _scale..clone();
+
+  Vector2 get position => _position..clone();
+
+  Vector2 get rotation => _rotation..clone();
+
+  set scale(Vector2 scale) {
+    scaleTo(scale.x, scale.y);
+  }
+
+  set position(Vector2 position) {
+    translateTo(position.x, position.y);
+  }
+
+  set rotation(Vector2 rotation) {
+    rotateTo(rotation.x, rotation.y);
   }
 }

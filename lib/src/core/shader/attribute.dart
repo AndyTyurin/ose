@@ -1,73 +1,114 @@
-part of ose.core.shader;
+part of ose;
 
 class Attribute {
-  /// Attribute name.
-  String _name;
+  /// WebGL Rendering context.
+  static webGL.RenderingContext gl;
 
-  /// Uses common WebGL types.
-  int _type;
+  /// Type.
+  Type _type;
 
   /// Holds data.
-  List _storage;
+  Float32List _storage;
 
-  /// Buffer usage.
-  ///
-  /// [true] when [Attribute] has been created as one of constructors below:
-  /// [Attribute.IntArray4], [Attribute.FloatArray1],
-  /// [Attribute.FloatArray2], [Attribute.FloatArray3],
-  /// [Attribute.FloatArray4].
-  bool _useBuffer;
+  /// WebGL buffer.
+  webGL.Buffer _buffer;
 
-  Attribute._internal(this._name, this._type, this._storage);
+  /// Attribute location.
+  int location;
 
-  Attribute._internalBuffer(this._name, this._type, this._storage)
-      : _useBuffer = true;
+  /// Is attribute storage was changed?
+  bool _isChanged;
 
-  /// i1
-  factory Attribute.Int1(String name, int v) =>
-      new Attribute._internal(name, webGL.INT, new Int8List(1)..add(v));
+  Attribute._internal(this._type, List<double> storage, [webGL.Buffer buffer]) {
+    this._storage =
+        (storage != null) ? new Float32List.fromList(storage) : null;
+    this._buffer = buffer;
+    this._isChanged = true;
+  }
+
+  Attribute._internalBuffer(Type type, List<double> storage)
+      : this._internal(type, storage, gl.createBuffer());
 
   /// f1
-  factory Attribute.Float1(String name, double v) =>
-      new Attribute._internal(name, webGL.FLOAT_VEC2, new Float32List(1)..add(v));
+  factory Attribute.Float1([double f0]) =>
+      new Attribute._internal(Type.Float1, [f0]);
 
   /// f2
-  factory Attribute.Float2(String name, Vector2 v) =>
-      new Attribute._internal(name, webGL.FLOAT_VEC2, v.storage);
+  factory Attribute.Float2([double f0, double f1]) =>
+      new Attribute._internal(Type.Float2, [f0, f1]);
 
   /// f3
-  factory Attribute.Float3(String name, Vector3 v) =>
-      new Attribute._internal(name, webGL.FLOAT_VEC3, v.storage);
+  factory Attribute.Float3([double f0, double f1, double f2]) =>
+      new Attribute._internal(Type.Float3, [f0, f1, f2]);
 
   /// f4
-  factory Attribute.Float4(String name, Vector4 v) =>
-      new Attribute._internal(name, webGL.FLOAT_VEC4, v.storage);
+  factory Attribute.Float4([double f0, double f1, double f2, double f3]) =>
+      new Attribute._internal(Type.Float4, [f0, f1, f2, f3]);
 
   /// fv1
-  factory Attribute.FloatArray1(String name, List<double> data) =>
-      new Attribute._internalBuffer(
-          name, webGL.FLOAT, new Float32List.fromList(data));
+  factory Attribute.FloatArray1([List<double> data]) =>
+      new Attribute._internalBuffer(Type.Float1, data);
 
   /// fv2
-  factory Attribute.FloatArray2(String name, List<double> data) =>
-      new Attribute._internalBuffer(
-          name, webGL.FLOAT_VEC2, new Float32List.fromList(data));
+  factory Attribute.FloatArray2([List<double> data]) =>
+      new Attribute._internalBuffer(Type.Float2, data);
 
   /// fv3
-  factory Attribute.FloatArray3(String name, List<double> data) =>
-      new Attribute._internalBuffer(
-          name, webGL.FLOAT_VEC3, new Float32List.fromList(data));
+  factory Attribute.FloatArray3([List<double> data]) =>
+      new Attribute._internalBuffer(Type.Float3, data);
 
   /// fv4
-  factory Attribute.FloatArray4(String name, List<double> data) =>
-      new Attribute._internalBuffer(
-          name, webGL.FLOAT_VEC4, new Float32List.fromList(data));
+  factory Attribute.FloatArray4([List<double> data]) =>
+      new Attribute._internalBuffer(Type.Float4, data);
 
-  String get name => _name;
+  /// Update storage values.
+  ///
+  /// Use [update] if you want to change attribute's values.
+  void update(dynamic value) {
+    var storage = new Float32List(1);
 
-  int get type => _type;
+    if (value is double) {
+      storage[0] = value;
+    } else if (value is Vector || value is Matrix) {
+      storage = value.storage;
+    } else if (value is Float32List) {
+      storage = value;
+    } else {
+      throw ArgumentError;
+    }
 
-  List get storage => _storage;
+    if (storage != this._storage) {
+      this._isChanged = true;
+      this._storage = storage;
+    }
+  }
 
-  bool get useBuffer => _useBuffer;
+  /// Reset changed state.
+  ///
+  /// When storage values were changed by using of [update] method,
+  /// State will be changed to get knows, does changes should be
+  /// applied to GPU or not. After values will be sent to GPU,
+  /// [resetChangedState] should be invoked to reset state.
+  void resetChangedState() {
+    this._isChanged = false;
+  }
+
+  /// Remove WebGL buffer.
+  ///
+  /// In really rare cases we need to remove uniform at all.
+  /// Before we should use [removeBuffer] to clear buffer on GPU side.
+  void removeBuffer() {
+    gl.deleteBuffer(_buffer);
+    this._buffer = null;
+  }
+
+  Type get type => this._type;
+
+  Float32List get storage => this._storage;
+
+  bool get useBuffer => this._buffer != null;
+
+  webGL.Buffer get buffer => this._buffer;
+
+  bool get isChanged => this._isChanged;
 }

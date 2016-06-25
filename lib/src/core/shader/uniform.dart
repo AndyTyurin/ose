@@ -1,84 +1,130 @@
-part of ose.core.shader;
+part of ose;
 
 class Uniform {
-  /// Attribute name.
-  String _name;
+  /// Type.
+  Type _type;
 
-  /// Uses common WebGL types.
-  int _type;
-
-  /// Holds data.
+  /// Hold data.
+  /// Can be [Float32List] or [Int8List].
   List _storage;
 
-  /// Buffer usage.
-  ///
-  /// [true] when [Uniform] has been created as one of constructors below:
-  /// [Uniform.IntArray4], [Uniform.FloatArray1],
-  /// [Uniform.FloatArray2], [Uniform.FloatArray3],
-  /// [Uniform.FloatArray4].
-  bool _useBuffer;
+  /// Is uniform array?
+  bool _useArray;
 
-  Uniform._internal(this._name, this._type, this._storage);
+  /// Is uniform storage was changed?
+  bool _isChanged;
 
-  Uniform._internalBuffer(this._name, this._type, this._storage)
-      : _useBuffer = true;
+  /// Uniform location.
+  webGL.UniformLocation location;
+
+  Uniform._internal(this._type, List storage, [bool isArray = false]) {
+    if (storage != null) {
+      this._storage = (storage.length > 0 && storage[0] is int)
+          ? new Uint8List.fromList(storage)
+          : new Float32List.fromList(storage);
+    }
+    this._useArray = isArray;
+    this._isChanged = true;
+  }
+
+  Uniform._internalArray(Type type, List storage)
+      : this._internal(type, storage, true);
 
   /// i1
-  factory Uniform.Int1(String name, int v) =>
-      new Uniform._internal(name, webGL.INT, new Int8List(1)..add(v));
+  factory Uniform.Int1([int i0]) => new Uniform._internal(Type.Int1, [i0]);
 
   /// f1
-  factory Uniform.Float1(String name, double v) =>
-      new Uniform._internal(name, webGL.FLOAT_VEC2, new Float32List(1)..add(v));
+  factory Uniform.Float1([double f0]) =>
+      new Uniform._internal(Type.Float1, [f0]);
 
   /// f2
-  factory Uniform.Float2(String name, Vector2 v) =>
-      new Uniform._internal(name, webGL.FLOAT_VEC2, v.storage);
+  factory Uniform.Float2([double f0, double f1 = 0.0]) {
+    return new Uniform._internal(Type.Float2, [f0, f1]);
+  }
 
   /// f3
-  factory Uniform.Float3(String name, Vector3 v) =>
-      new Uniform._internal(name, webGL.FLOAT_VEC3, v.storage);
+  factory Uniform.Float3([double f0, double f1 = 0.0, double f2 = 0.0]) {
+    return new Uniform._internal(Type.Float3, [f0, f1, f2]);
+  }
 
   /// f4
-  factory Uniform.Float4(String name, Vector4 v) =>
-      new Uniform._internal(name, webGL.FLOAT_VEC4, v.storage);
+  factory Uniform.Float4(
+      [double f0, double f1 = 0.0, double f2 = 0.0, double f3 = 0.0]) {
+    return new Uniform._internal(Type.Float4, [f0, f1, f2, f3]);
+  }
 
   /// fv1
-  factory Uniform.FloatArray1(String name, List<double> data) =>
-      new Uniform._internalBuffer(name, webGL.FLOAT, new Float32List.fromList(data));
+  factory Uniform.FloatArray1([List<double> data]) {
+    return new Uniform._internalArray(Type.Float1, data);
+  }
 
   /// fv2
-  factory Uniform.FloatArray2(String name, List<double> data) =>
-      new Uniform._internalBuffer(
-          name, webGL.FLOAT_VEC2, new Float32List.fromList(data));
+  factory Uniform.FloatArray2([List<double> data]) {
+    return new Uniform._internalArray(Type.Float2, data);
+  }
 
   /// fv3
-  factory Uniform.FloatArray3(String name, List<double> data) =>
-      new Uniform._internalBuffer(
-          name, webGL.FLOAT_VEC3, new Float32List.fromList(data));
+  factory Uniform.FloatArray3([List<double> data]) {
+    return new Uniform._internalArray(Type.Float3, data);
+  }
 
   /// fv4
-  factory Uniform.FloatArray4(String name, List<double> data) =>
-      new Uniform._internalBuffer(
-          name, webGL.FLOAT_VEC4, new Float32List.fromList(data));
+  factory Uniform.FloatArray4([List<double> data]) {
+    return new Uniform._internalArray(Type.Float4, data);
+  }
 
   /// mf2v
-  factory Uniform.Mat2(String name, Matrix2 v) =>
-      new Uniform._internal(name, webGL.FLOAT_MAT2, v.storage);
+  factory Uniform.Mat2([List<double> data]) {
+    return new Uniform._internal(Type.Mat2, data);
+  }
 
   /// mf3v
-  factory Uniform.Mat3(String name, Matrix3 v) =>
-      new Uniform._internal(name, webGL.FLOAT_MAT3, v.storage);
+  factory Uniform.Mat3([List<double> data]) {
+    return new Uniform._internal(Type.Mat3, data);
+  }
 
   /// mf4v
-  factory Uniform.Mat4(String name, Matrix4 v) =>
-      new Uniform._internal(name, webGL.FLOAT_MAT4, v.storage);
+  factory Uniform.Mat4([List<double> data]) {
+    return new Uniform._internal(Type.Mat4, data);
+  }
 
-  String get name => _name;
+  /// Update storage values.
+  ///
+  /// Use [update] if you want to change uniform's values.
+  void update(dynamic value) {
+    var storage = new Float32List(1);
 
-  int get type => _type;
+    if (value is double) {
+      storage[0] = value;
+    } else if (value is Vector || value is Matrix) {
+      storage = value.storage;
+    } else if (value is Float32List || value is Int8List) {
+      storage = value;
+    } else {
+      throw ArgumentError;
+    }
 
-  List get storage => _storage;
+    if (storage != this._storage) {
+      this._isChanged = true;
+      this._storage = storage;
+    }
+  }
 
-  bool get useBuffer => _useBuffer;
+  /// Reset changed state.
+  ///
+  /// When storage values were changed by using of [update] method,
+  /// State will be changed to get knows, does changes should be
+  /// applied to GPU or not. After values will be sent to GPU,
+  /// [resetChangedState] should be invoked to reset state.
+  void resetChangedState() {
+    this._isChanged = false;
+  }
+
+  Type get type => this._type;
+
+  List get storage => this._storage;
+
+  bool get useArray => this._useArray;
+
+  bool get isChanged => this._isChanged;
 }

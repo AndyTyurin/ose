@@ -1,92 +1,31 @@
-import 'package:vector_math/vector_math.dart';
-
-import 'package:ose/src/utils/uuid.dart';
+part of ose;
 
 class Camera {
   /// Unique id.
   String _uuid;
 
-  /// View transformation matrix.
-  Matrix4 _transform;
+  /// Projection matrix.
+  Matrix3 _projectionMatrix;
 
-  /// Left clipping plane.
-  double _left;
+  /// Camera width.
+  double _width;
 
-  /// Right clipping plane.
-  double _right;
+  /// Camera height.
+  double _height;
 
-  /// Bottom clipping plane.
-  double _bottom;
-
-  /// Top clipping plane.
-  double _top;
-
-  /// Near clipping plane.
-  double _near;
-
-  /// Far clipping plane.
-  double _far;
+  /// Camera scale (zoom).
+  double _scale;
 
   /// Create a new camera.
-  ///
-  /// Use [CameraManager] to create a new [Camera].
-  Camera(this._left, this._right, this._bottom, this._top,
-      this._near, this._far) {
-    _uuid = generateUuid();
-    _rebuildCamera();
+  Camera(this._width, this._height, [this._scale = 1.0]) {
+    _uuid = utils.generateUuid();
+    updateProjectionMatrix();
   }
 
-  /// Re-build camera.
-  ///
-  /// Mainly used when one of the params was changed.
-  Matrix4 _rebuildCamera() {
-    return _transform =
-        makeOrthographicMatrix(_left, _right, _bottom, _top, _near, _far);
+  /// Update projection matrix.
+  updateProjectionMatrix() {
+    _projectionMatrix = utils.setProjectionMatrix(_width, _height, _scale);
   }
 
-  String get uuid => _uuid;
-
-  double get left => _left;
-
-  void set left(double left) {
-    _left = left;
-    _rebuildCamera();
-  }
-
-  double get right => _right;
-
-  void set right(double right) {
-    _right = right;
-    _rebuildCamera();
-  }
-
-  double get bottom => _bottom;
-
-  void set bottom(double bottom) {
-    _bottom = bottom;
-    _rebuildCamera();
-  }
-
-  double get top => _top;
-
-  void set top(double top) {
-    _top = top;
-    _rebuildCamera();
-  }
-
-  double get near => _near;
-
-  void set near(double near) {
-    _near = near;
-    _rebuildCamera();
-  }
-
-  double get far => _far;
-
-  void set far(double far) {
-    _far = far;
-    _rebuildCamera();
-  }
-
-  Matrix4 get transform => _transform;
+  Matrix3 get projectionMatrix => _projectionMatrix;
 }

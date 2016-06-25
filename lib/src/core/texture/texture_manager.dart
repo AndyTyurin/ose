@@ -1,25 +1,37 @@
-import 'dart:html';
-import 'dart:web_gl' as webGL;
-import 'dart:async';
-
-import 'texture.dart';
-import './../loader/loader_manager.dart';
+part of ose;
 
 class TextureManager {
-  /// WebGL Rendering context.
-  static webGL.RenderingContext gl;
+  /// Loader manager.
+  LoaderManager _loaderManager;
 
-  static LoaderManager _loaderManager;
-
-  /// List of WebGL textures.
+  /// List of textures.
   Map<String, Texture> _textures;
 
-  TextureManager(LoaderManager loaderManager) {
-    _loaderManager = loaderManager;
+  TextureManager() {
+    _textures = <String, Texture>{};
+    _loaderManager = new LoaderManager();
   }
 
-  /// Create texture.
-  Future<Texture> createTexture(String path) async {
-    return new Texture(path, await _loaderManager.load(path));
+  /// Load texture.
+  ///
+  /// Create new texture or return it from cache.
+  Future<Texture> create(String imgPath) async {
+    if (_textures[imgPath] != null) {
+      return (new Completer<Texture>()..complete(_textures[imgPath])).future;
+    }
+
+    return _textures[imgPath] = new Texture(await _loaderManager.load(imgPath));
   }
+
+  Function get onLoad => _loaderManager.onLoad;
+
+  Function get onProgress => _loaderManager.onProgress;
+
+  Function get onError => _loaderManager.onError;
+
+  set onLoad(Function onLoad) => _loaderManager.onLoad = onLoad;
+
+  set onProgress(Function onProgress) => _loaderManager.onProgress = onProgress;
+
+  set onError(Function onError) => _loaderManager.onError = onError;
 }

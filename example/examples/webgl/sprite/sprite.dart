@@ -171,7 +171,7 @@ init() {
 render([num dt]) {
 	gl.clear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
 	pMatrix.setTranslation(new Vector3(0.5, 0.0, 0.0));
-	window.console.log(pMatrix);
+	mvMatrix.rotateZ(0.01);
 	gl.bindBuffer(ARRAY_BUFFER, vBuffer);
 	gl.vertexAttribPointer(vertexAttribPos, 2, FLOAT, false, 0, 0);
 	gl.bindBuffer(ARRAY_BUFFER, tBuffer);

@@ -1,7 +1,9 @@
-import 'dart:html';
-import 'dart:async';
+part of ose;
 
 class LoaderManager {
+  /// Cached files.
+  Map<String, dynamic> _files;
+
   /// Used to keep tracking of loading files.
   Function onProgress = (_) {};
 
@@ -11,15 +13,28 @@ class LoaderManager {
   /// On file load.
   Function onLoad = (_) {};
 
-  /// Loads file.
+  /// Create new loader manager.
+  LoaderManager() {
+    _files = <String, dynamic>{};
+  }
+
+  /// Load file.
   ///
-  /// Returns [Future<ImageElement>] if loaded file is an image or
-  /// [Future<String>] in all other cases.
-  Future<dynamic> load(String path) async {
-    String extension = _getPathFileExtension(path);
-    bool isImageExtension = _isFileExtensionImage(extension);
-    String responseType = (isImageExtension) ? 'blob' : 'text';
+  /// [path] is path to file.
+  /// [force] if [true] re-writes cache.
+  Future<dynamic> load(String path, [bool force]) async {
     Completer completer = new Completer();
+
+    // Take from cache.
+    if (force && _files[path] != null) {
+      return completer
+        ..complete(_files[path])
+        ..future;
+    }
+
+    String extension = _getPathFileExtension(path);
+    bool isImageExtension = _isImageExtension(extension);
+    String responseType = (isImageExtension) ? 'blob' : 'text';
 
     HttpRequest
         .request(path, responseType: responseType, onProgress: onProgress)
@@ -27,7 +42,7 @@ class LoaderManager {
       // [Blob] or [String] type.
       dynamic response = req.response;
       if (isImageExtension) {
-        /// Handle image extension.
+        // Handle image extension.
         FileReader reader = new FileReader();
         reader.onLoad.listen((_) {
           ImageElement img = new ImageElement();
@@ -36,24 +51,26 @@ class LoaderManager {
         });
         reader.readAsDataUrl(response);
       } else {
-        /// Handle other extensions as text format.
+        // Handle other extensions as text format.
         completer.complete(response);
       }
     }).catchError(onError);
 
     return completer.future.then((content) {
-      onLoad(content);
+      onLoad(_files[path] = content);
       return content;
     });
   }
 
   /// Get file extension by given path.
-  String _getPathFileExtension(String path) {
+  static String _getPathFileExtension(String path) {
     return path.split('.')[1];
   }
 
-  /// Returns [true] if there is an image extension.
-  bool _isFileExtensionImage(String extension) {
+  /// Return [true] if there is an image extension.
+  static bool _isImageExtension(String extension) {
     return extension == 'jpg' || extension == 'jpeg' || extension == 'png';
   }
+
+  Map<String, dynamic> get files => _files;
 }
