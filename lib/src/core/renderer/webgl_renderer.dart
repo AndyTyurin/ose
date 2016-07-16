@@ -1,66 +1,8 @@
 part of ose;
 
 class WebGLRenderer {
-  static const String webglContextIsNotSupported = 'WebGL is not supported';
-
-  static const num secondInMs = 1000;
-
-  /// Canvas element.
-  CanvasElement _canvas;
-
   /// WebGL rendering context.
   webGL.RenderingContext _gl;
-
-  /// Render stop requested flag.
-  ///
-  /// Stops rendering ASAP when flag is [true].
-  bool _isRenderStopRequested = false;
-
-  /// Top threshold for fps (1-60 frames per second);
-  num _fpsThreshold;
-
-  /// Active scene.
-  Scene _scene;
-
-  /// Scene to load.
-  Scene _sceneToLoad;
-
-  /// Timer.
-  ///
-  /// Used to calculate delta time.
-  utils.Timer _timer;
-
-  /// Stream controller to manage [onStart] stream.
-  StreamController<WebGLRenderer> _onStartController;
-
-  /// Stream controller to manage [onStop] stream.
-  StreamController<WebGLRenderer> _onStopController;
-
-  /// Stream controller to manage [onTick] stream.
-  StreamController<WebGLRenderer> _onTickController;
-
-  /// Stream controller to manage [onSceneChange] stream.
-  StreamController<Scene> _onSceneController;
-
-  /// Emits when renderer starts work.
-  Stream<WebGLRenderer> _onStart;
-
-  /// Emits when renderer stops work.
-  Stream<WebGLRenderer> _onStop;
-
-  /// Emits on render tick.
-  Stream<WebGLRenderer> _onTick;
-
-  /// Emits on scene change.
-  Stream<Scene> _onSceneChange;
-
-  /// Frames per second.
-  int _fps;
-
-  /// Delta time.
-  ///
-  /// Time between two frames during render.
-  double _dt;
 
   /// Create WebGL renderer.
   ///

@@ -2,7 +2,7 @@
 
 import 'package:test/test.dart';
 
-import 'package:ose/src/utils/uuid.dart';
+import 'package:ose/ose_utils.dart';
 
 void main() {
 	test('Generates UUID', () {

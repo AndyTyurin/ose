@@ -42,7 +42,7 @@ Matrix3 setScaleMatrix(double sx, double sy) {
 }
 
 /// Create 2D projection matrix.
-Matrix3 setProjectionMatrix(double width, double height, [double scale]) {
+Matrix3 setProjectionMatrix(num width, num height, [num scale]) {
   if (scale != null) {
     width = scale * 100 / width;
     height = scale * 100 / height;

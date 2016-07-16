@@ -15,7 +15,7 @@ class LoaderManager {
 
   /// Create new loader manager.
   LoaderManager() {
-    this._files = <String, dynamic>{};
+    _files = <String, dynamic>{};
   }
 
   /// Load file.
@@ -26,14 +26,14 @@ class LoaderManager {
     Completer completer = new Completer();
 
     // Take from cache.
-    if (force && this._files[path] != null) {
+    if (force && _files[path] != null) {
       return completer
-        ..complete(this._files[path])
+        ..complete(_files[path])
         ..future;
     }
 
-    String extension = this._getPathFileExtension(path);
-    bool isImageExtension = this._isImageExtension(extension);
+    String extension = _getPathFileExtension(path);
+    bool isImageExtension = _isImageExtension(extension);
     String responseType = (isImageExtension) ? 'blob' : 'text';
 
     HttpRequest
