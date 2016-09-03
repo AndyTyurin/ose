@@ -1,8 +1,10 @@
 import 'dart:html' hide Rectangle;
+import 'dart:math' as math;
 
-import 'package:ose/ose.dart';
-import 'package:ose/ose_math.dart';
 import 'package:logging/logging.dart';
+import 'package:ose/ose.dart';
+import 'package:ose/ose_webgl.dart' as osegl;
+import 'package:ose/ose_math.dart';
 
 main() async {
   // Set logger settings.
@@ -25,93 +27,129 @@ main() async {
   Logger logger = new Logger('Example');
 
   // Create canvas.
-  CanvasElement canvas = new CanvasElement(
-      width: 800,
-      height: 445);
+  CanvasElement canvas = new CanvasElement();
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
   // Append canvas to DOM.
-  document.documentElement.append(canvas);
+  document.body.append(canvas);
 
-  // Initialize engine.
-  Ose ose = new Ose();
-  WebGLRenderer renderer = await ose.createWebGLRenderer(
-      canvas: canvas, width: canvas.width, height: canvas.height);
+  // Initialize renderer.
+  osegl.WebGLRenderer renderer = new osegl.WebGLRenderer(
+      canvas: canvas, rendererSettings: new RendererSettings());
 
+  window.addEventListener('resize', (_) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      renderer.updateViewport();
+  });
+
+  // Initialize scene & camera.
+  Scene scene = new Scene();
+  Camera camera = new Camera(canvas.width, canvas.height);
+  camera.transform.position = new Vector2(0.0, 0.0);
+  //camera.transform.scale = 5;
+  // Initialize scene objects.
+  // oseGL.Rectangle rectangle = new oseGL.Rectangle();
+  // rectangle.transform.scale = new Vector2(.25, .25);
+  // scene.children.add(rectangle);
+  //
+  // oseGL.Triangle triangle = new oseGL.Triangle();
+  // triangle.transform.scale = new Vector2(.25, .25);
+  // scene.children.add(triangle);
+  //
+  // const int numOfCircles = 15;
+  //
+  // oseGL.Circle patternCircle = new oseGL.Circle(6);
+  //
+  math.Random random = new math.Random();
+  // double prevScaleFactor = 1.0;
+  // double prevPositionFactor = 1.0;
+  // for (int i = 0; i < numOfCircles; i++) {
+  //   oseGL.Circle circle = patternCircle.clone();
+  //   double scaleFactor = math.max(.1, random.nextDouble());
+  //   int sign = (random.nextDouble() > .5) ? 1 : -1;
+  //   double positionFactor =
+  //       (prevPositionFactor.abs() + scaleFactor + prevScaleFactor) +
+  //           random.nextDouble() / 1.5;
+  //   circle.transform.scale = new Vector2(scaleFactor, scaleFactor);
+  //   circle.transform.position =
+  //       new Vector2(sign * (positionFactor), sign * (positionFactor));
+  //   prevScaleFactor = scaleFactor;
+  //   prevPositionFactor = positionFactor;
+  //   scene.children.add(circle);
+  // }
+
+  osegl.Triangle triangle = new osegl.Triangle();
+  triangle.transform.scale = new Vector2(.5, .5);
+  triangle.color = new GradientColor([
+    new Color([255, 0, 0, 255]),
+    new Color([0, 255, 0, 255]),
+    new Color([0, 0, 255, 255])
+  ]);
+  //triangle.color = new SolidColor(new Color([255, 255, 255, 255]));
+  scene.children.add(triangle);
 
   // Link life-cycle handlers to renderer.
-  renderer.onStart.listen((_) {
+  renderer.onStart.listen((StartEvent e) {
+    renderer.scene = scene;
+    renderer.camera = camera;
     logger.fine('Renderer started');
   });
 
-  renderer.onStop.listen((_) {
+  renderer.onStop.listen((StopEvent e) {
     logger.fine('Renderer stopped');
   });
 
-  double rad = 0.05;
+  // List<double> velocities = <double>[];
+  // for (int i = 0; i < numOfCircles; i += 1) {
+  //   velocities.add(math.max(.005, random.nextDouble() / 100));
+  // }
 
-  //math.Random random = new math.Random();
-
-  renderer.onTick.listen((WebGLRenderer renderer) {
-    //logger.fine("${renderer.fps} FPS");
-    // very ugly rotation.
-/*    for (var i=0; i<10000; i+=1) {
-      var obj = renderer.scene.objects[0].children[i];
-
-      if (obj != null) {
-        var clockwise = (i % 2) ? 1 : -1;
-        obj.transform.rotateBy(clockwise * rad / obj.transform.scale.length());
+  var j = 1;
+  renderer.onRender.listen((RenderEvent e) {
+    for (int i = 0; i < e.scene.children.length; i++) {
+      GameObject obj = e.scene.children[i];
+      if (obj is osegl.Circle) {
+        // Vector2 position = obj.transform.position;
+        // double translationFactor = velocities[i];
+        // obj.transform.position = new Vector2(
+        //     position.x * math.cos(translationFactor) -
+        //         position.y * math.sin(translationFactor),
+        //     position.x * math.sin(translationFactor) +
+        //         position.y * math.cos(translationFactor));
+      } else if (obj is osegl.Triangle) {
+        obj.transform.rotation += 0.01;
+        if (j % 2 == 0) {
+          obj.color.colors[0] = new Color.fromIdentity([
+            random.nextDouble(),
+            random.nextDouble(),
+            random.nextDouble(),
+            1.0
+          ]);
+        }
+        if (j % 4 == 0) {
+          obj.color.colors[1] = new Color.fromIdentity([
+            random.nextDouble(),
+            random.nextDouble(),
+            random.nextDouble(),
+            1.0
+          ]);
+        }
+        if (j % 8 == 0) {
+          obj.color.colors[2] = new Color.fromIdentity([
+            random.nextDouble(),
+            random.nextDouble(),
+            random.nextDouble(),
+            1.0
+          ]);
+        }
       }
-    }*/
+    }
+    j++;
   });
 
-  // Create scene.
-  Scene scene = new Scene();
+  renderer.onObjectRender.listen((ObjectRenderEvent e) {});
 
-  // Create camera.
-  Camera camera = new Camera(canvas.width.toDouble(), canvas.height.toDouble(), 1.0);
-
-  // Apply an active camera to scene.
-  scene.camera = camera;
-
-  // Create a new texture.
-  //Texture texture = await ose.textureManager.load('i/bunny02.png');
-
-  BasicFilter filter = new BasicFilter();
-
-  Rectangle rectangle = new Rectangle();
-  rectangle.filter = filter;
-  rectangle.transform.translateBy(-3.0, 0.0);
-
-  Triangle triangle = new Triangle();
-  triangle.filter = filter;
-  triangle.transform.translateBy(3.0, 0.0);
-
-  scene.add(rectangle);
-  scene.add(triangle);
-
-/*  GameObject gameContainer = new GameObject(filter: filter, texture: texture);
-
-  // Add 10000 spaceships to scene.
-  for (var i=0; i<10000; i+=1) {
-    double posX = random.nextDouble() * random.nextInt(12) - 6;
-    double posY = random.nextDouble() * random.nextInt(6) - 2.5;
-    double scale = random.nextDouble() * random.nextInt(2);
-
-    // Create spaceship, apply texture & set position.
-    GameObject spaceship = new GameObject(texture: texture, filter: filter);
-    spaceship.transform.position = new Vector2(posX, posY);
-    spaceship.transform.scale = new Vector2(0.15, 0.15);
-
-    // Add object to scene.
-    gameContainer.add(spaceship);
-  }
-
-  scene.add(gameContainer);*/
-
-
-
-
-  // Start rendering the scene. Manage your fps from 0 - 60 for debug.
-  await renderer.start(scene, fps: 1);
-
+  renderer.start();
 }

@@ -1,7 +1,7 @@
 library ose_utils;
 
 import 'dart:html';
-import 'dart:math' as math;
+import 'dart:math';
 
 import 'package:ose/ose_math.dart';
 

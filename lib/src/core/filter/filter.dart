@@ -1,54 +1,23 @@
-part of ose;
+part of ose_webgl;
 
 abstract class Filter {
   /// Shader program.
-  ShaderProgram _shaderProgram;
+  final ShaderProgram shaderProgram;
 
-  /// Position attribute.
-  Attribute _aPosition;
+  Filter(this.shaderProgram);
 
-  /// Projection uniform.
-  Uniform _uProjection;
+  /// See [ose.Filter.apply].
+  void apply(ose.GameObject obj, ose.Scene scene, ose.Camera camera) {
+    if ((obj as dynamic).glVertices != null) {
+      shaderProgram.attributes['a_position'].update((obj as dynamic).glVertices);
+    }
 
-  /// Model uniform.
-  Uniform _uModel;
+    shaderProgram.uniforms['u_model'].update(obj.transform.modelMatrix);
+    shaderProgram.uniforms['u_projection']
+        .update(camera.transform.projectionMatrix);
 
-  Filter(this._shaderProgram) {
-    this._uProjection = new Uniform.Mat3();
-    this._uModel = new Uniform.Mat3();
-    this._aPosition = new Attribute.FloatArray2();
-    this.addUniforms({'u_projection': _uProjection, 'u_model': _uModel});
-    this.addAttributes({'a_position': _aPosition});
+    ShaderProgramManager.getInstance().bindProgram(shaderProgram);
+    shaderProgram.applyAttributes();
+    shaderProgram.applyUniforms();
   }
-
-  /// Add uniforms to shader program.
-  void addUniforms(Map<String, Uniform> uniforms) {
-    this._shaderProgram.uniforms.addAll(uniforms);
-  }
-
-  /// Add attributes to shader program.
-  void addAttributes(Map<String, Attribute> attributes) {
-    this._shaderProgram.attributes.addAll(attributes);
-  }
-
-  /// Apply filter.
-  ///
-  /// Call shader program in use.
-  void apply(Scene scene, GameObject obj) {
-    _aPosition.update((obj as VerticesMixin).vertices);
-    _uProjection.update(scene.camera.projectionMatrix);
-    _uModel.update(obj.transform.modelMatrix);
-
-    this._shaderProgram.use();
-    this._shaderProgram.applyAttributes();
-    this._shaderProgram.applyUniforms();
-  }
-
-  ShaderProgram get shaderProgram => _shaderProgram;
-
-  Attribute get aPosition => _aPosition;
-
-  Uniform get uProjection => _uProjection;
-
-  Uniform get uModel => _uModel;
 }

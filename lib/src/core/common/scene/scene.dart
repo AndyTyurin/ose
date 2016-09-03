@@ -1,6 +1,6 @@
 part of ose;
 
-abstract class Scene<T extends GameObject> {
+class Scene<T extends GameObject> {
   /// Unique id.
   String _uuid;
 
@@ -10,10 +10,10 @@ abstract class Scene<T extends GameObject> {
   List<T> _children;
 
   Scene()
-      : this._uuid = utils.generateUuid(),
-        this._children = <T>[];
+      : _uuid = utils.generateUuid(),
+        _children = <T>[];
 
-  String get uuid => this._uuid;
+  String get uuid => _uuid;
 
-  List<T> get children => this._children;
+  List<T> get children => _children;
 }

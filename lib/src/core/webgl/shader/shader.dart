@@ -21,13 +21,13 @@ class Shader {
   /// [_source] is shader source.
   Shader(this._type, this._source) {
     // Checks is shader source is not empty.
-    if (Shader._isShaderLoaded(this._source, this._type)) {
-      this._shader = gl.createShader(Shader._mapToWebGLShaderType(this._type));
-      gl.shaderSource(this._shader, this._source);
-      gl.compileShader(this._shader);
+    if (Shader._isShaderLoaded(_source, _type)) {
+      _shader = gl.createShader(Shader._mapToWebGLShaderType(_type));
+      gl.shaderSource(_shader, _source);
+      gl.compileShader(_shader);
 
       // Checks shader compile status.
-      if (!gl.getShaderParameter(this._shader, webGL.COMPILE_STATUS)) {
+      if (!gl.getShaderParameter(_shader, webGL.COMPILE_STATUS)) {
         throw new Exception("Couldn't compile"
             " ${ _getShaderNameByType(_type) } shader");
       }

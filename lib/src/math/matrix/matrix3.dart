@@ -1,7 +1,6 @@
 part of ose_math;
 
 /// Matrix 3x3.
-///
 /// Values are in column major order.
 class Matrix3 extends Matrix {
   /// New matrix.
@@ -23,7 +22,56 @@ class Matrix3 extends Matrix {
           double m11, double m12, double m20, double m21, double m22) =>
       new Matrix3()..setValues(m00, m01, m02, m10, m11, m12, m20, m21, m22);
 
-  /// Makes [this] as identity matrix.
+  /// New translation matrix from vector.
+  factory Matrix3.translationFromVector(Vector2 v) =>
+      new Matrix3()..setTranslationFromVector(v);
+
+  /// New scale matrix from vector.
+  factory Matrix3.scaleFromVector(Vector2 v) =>
+      new Matrix3()..setScaleFromVector(v);
+
+  /// New rotation matrix from angle.
+  factory Matrix3.rotationFromAngle(double angle) =>
+      new Matrix3()..setRotationFromAngle(angle);
+
+  /// New 2D projection matrix.
+  factory Matrix3.projection(int width, int height, double scale) =>
+      new Matrix3()..setProjection(width, height, scale);
+
+  // Set up translation matrix.
+  void setTranslationFromVector(Vector2 v) {
+    setIdentity();
+    m20 = v.x;
+    m21 = v.y;
+  }
+
+  // Set up scalling matrix.
+  void setScaleFromVector(Vector2 v) {
+    setIdentity();
+    m00 = v.x;
+    m11 = v.y;
+  }
+
+  // Set up rotation matrix from angle.
+  void setRotationFromAngle(double angle) {
+    double c = math.cos(angle);
+    double s = math.sin(angle);
+    setIdentity();
+    m00 = c;
+    m10 = -s;
+    m01 = s;
+    m11 = c;
+  }
+
+  // Set up 2D projection matrix.
+  void setProjection(int width, int height, double scale) {
+    setIdentity();
+    double min = math.min(width, height);
+    m00 = min / width * scale;
+    m11 = min / height * scale;
+  }
+
+  /// Makes as identity matrix.
   void setIdentity() {
     m00 = 1.0;
     m01 = 0.0;
@@ -52,18 +100,18 @@ class Matrix3 extends Matrix {
   /// Set specific values.
   void setValues(double m00, double m01, double m02, double m10, double m11,
       double m12, double m20, double m21, double m22) {
-    this.m00 = m00;
-    this.m01 = m01;
-    this.m02 = m02;
-    this.m10 = m10;
-    this.m11 = m11;
-    this.m12 = m12;
-    this.m20 = m20;
-    this.m21 = m21;
-    this.m22 = m22;
+    m00 = m00;
+    m01 = m01;
+    m02 = m02;
+    m10 = m10;
+    m11 = m11;
+    m12 = m12;
+    m20 = m20;
+    m21 = m21;
+    m22 = m22;
   }
 
-  /// Negate [this] matrix.
+  /// Negate matrix.
   void negate() {
     m00 = -m00;
     m01 = -m01;
@@ -76,7 +124,7 @@ class Matrix3 extends Matrix {
     m22 = -m22;
   }
 
-  /// Transpose [this] matrix.
+  /// Transpose matrix.
   void transpose() {
     double temp = m10;
     m10 = m01;
@@ -89,10 +137,10 @@ class Matrix3 extends Matrix {
     m21 = temp;
   }
 
-  /// Clone [this] to new one.
+  /// Clone to new one.
   Matrix3 clone() => new Matrix3.copy(this);
 
-  /// Multiply [this] by [m].
+  /// Multiply by [m].
   void multiply(Matrix3 m) {
     final n00 = m00;
     final n01 = m01;
@@ -113,17 +161,17 @@ class Matrix3 extends Matrix {
     final j21 = m.m21;
     final j22 = m.m22;
     m00 = (n00 * j00) + (n01 * j10) + (n02 * j20);
-    m01 = (n10 * j00) + (n11 * j10) + (n12 * j20);
-    m02 = (n20 * j00) + (n21 * j10) + (n22 * j20);
-    m10 = (n00 * j01) + (n01 * j11) + (n02 * j21);
+    m01 = (n00 * j01) + (n01 * j11) + (n02 * j21);
+    m02 = (n00 * j02) + (n01 * j12) + (n02 * j22);
+    m10 = (n10 * j00) + (n11 * j10) + (n12 * j20);
     m11 = (n10 * j01) + (n11 * j11) + (n12 * j21);
-    m12 = (n20 * j01) + (n21 * j11) + (n22 * j21);
-    m20 = (n00 + j02) + (n01 * j12) + (n02 * j22);
-    m21 = (n10 * j02) + (n11 * j12) + (n12 * j22);
-    m22 = (n20 * j02) + (n21 * j12) + (n22 * j22);
+    m12 = (n10 * j02) + (n11 * j12) + (n12 * j21);
+    m20 = (n20 * j00) + (n21 * j10) + (n22 * j20);
+    m21 = (n20 * j01) + (n21 * j11) + (n22 * j21);
+    m22 = (n20 * j01) + (n21 * j12) + (n22 * j22);
   }
 
-  /// Scale [this] by [factor]
+  /// Scale by [factor]
   void scale(double factor) {
     m00 *= factor;
     m01 *= factor;
@@ -136,7 +184,7 @@ class Matrix3 extends Matrix {
     m22 *= factor;
   }
 
-  /// Add [this] values by [m] values.
+  /// Add values by [m] values.
   void add(Matrix3 m) {
     m00 += m.m00;
     m01 += m.m01;
@@ -149,7 +197,7 @@ class Matrix3 extends Matrix {
     m22 += m.m22;
   }
 
-  /// Subtract [this] values by [m] values.
+  /// Subtract values by [m] values.
   void sub(Matrix3 m) {
     m00 -= m.m00;
     m01 -= m.m01;
@@ -162,7 +210,7 @@ class Matrix3 extends Matrix {
     m22 -= m.m22;
   }
 
-  /// Transform [this] to [Vector3] by multiply to [v].
+  /// Transform to [Vector3] by multiply to [v].
   Vector3 transform(Vector3 v) {
     final x = v.x;
     final y = v.y;
@@ -178,7 +226,7 @@ class Matrix3 extends Matrix {
         "${m20}|${m21}|${m22}";
   }
 
-  /// Check is [this] equal to [other]
+  /// Check is equal to [other]
   bool operator ==(other) {
     return (other is Matrix3) &&
         (m00 == other.m00) &&
@@ -207,19 +255,19 @@ class Matrix3 extends Matrix {
     return clone()..negate();
   }
 
-  /// Multiply [this] to [value].
+  /// Multiply by [value].
   ///
   /// [value] can be [Vector3], [Matrix3] or [double].
   /// Return [Matrix3] or [Vector3] relatives to argument.
   operator *(value) {
     if (value is Matrix3) {
-      return this.clone()..multiply(value);
+      return clone()..multiply(value);
     }
     if (value is double) {
-      return this.clone()..scale(value);
+      return clone()..scale(value);
     }
     if (value is Vector3) {
-      return this.clone()..transform(value);
+      return clone()..transform(value);
     }
     throw new ArgumentError(value);
   }

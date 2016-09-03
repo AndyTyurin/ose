@@ -1,8 +1,5 @@
 part of ose_webgl;
 
-// TODO: Write webgl is not supported callback.
-// TODO: Write overriding of rendering.
-
 class WebGLRenderer extends ose.Renderer {
   /// WebGL rendering context.
   webGL.RenderingContext _gl;
@@ -15,31 +12,9 @@ class WebGLRenderer extends ose.Renderer {
   /// [transparent] - use alpha, [true] by default.
   /// [antialias] - use antialias, [true] by default.
   /// [preserveDrawingBuffer] - Do not clear drawing buffer, [false] by default.
-  WebGLRenderer(
-      {CanvasElement canvas,
-      int width,
-      int height,
-      num pixelRatio: 1.0,
-      int fps: 60,
-      bool autoResize: false,
-      bool transparent: false,
-      bool mask: true,
-      bool color: 0x000000,
-      bool clear: true,
-      bool antialias: false})
-      : super(
-            canvas: canvas,
-            width: width,
-            height: height,
-            pixelRatio: pixelRatio,
-            fps: fps,
-            autoResize: autoResize,
-            transparent: transparent,
-            mask: mask,
-            color: color,
-            clear: clear,
-            antialias: antialias) {
-    this._gl = this._initWebGL();
+  WebGLRenderer({CanvasElement canvas, WebGLRendererSettings rendererSettings})
+      : super(canvas: canvas, rendererSettings: rendererSettings) {
+    _gl = this._initWebGL();
   }
 
   /// See [ose.Renderer.renderScene].
@@ -49,12 +24,12 @@ class WebGLRenderer extends ose.Renderer {
     int clearMask = 0x00;
 
     // Mask to clear color buffer.
-    if (this.useClear) {
+    if (settings.useClear) {
       clearMask |= webGL.COLOR_BUFFER_BIT;
     }
 
     // Mask to clear stencil buffer.
-    if (this.useMask) {
+    if (settings.useMask) {
       clearMask |= webGL.STENCIL_BUFFER_BIT;
     }
 
@@ -68,11 +43,11 @@ class WebGLRenderer extends ose.Renderer {
 
   /// See [ose.Renderer.renderObject].
   @override
-  Future renderObject(
-      ose.GameObject gameObject, ose.Scene scene, ose.Camera camera) async {
+  void renderObject(
+      ose.GameObject gameObject, ose.Scene scene, ose.Camera camera) {
     super.renderObject(gameObject, scene, camera);
 
-    if (this.useMask) {
+    if (settings.useMask) {
       /// TODO: Check how could be use mask manager.
       /// this.maskManager(gameObject, maskObject, MaskManager.intersect);
       /// this.maskManager(gameObject, maskObject, MaskManager.subtract);
@@ -80,27 +55,29 @@ class WebGLRenderer extends ose.Renderer {
       /// this.maskManager.intersect(gameObject, maskObject);
     }
 
-    // TODO: Write basic filter interface for gameobjects.
-    // TODO: Shoud I use mixins to set common class attributes?
-
-    // Draw object.
-    //this.gl.drawArrays(webGL.TRIANGLE_STRIP, 0,
-    //((obj as VerticesMixin).vertices.length ~/ 2));
+    // Temporary render only shapes.
+    if (gameObject is Shape) {
+      gameObject.filter.apply(gameObject, scene, camera);
+      _gl.drawArrays(
+          webGL.TRIANGLE_STRIP, 0, gameObject.glVertices.length ~/ 2);
+    }
   }
 
   /// Create WebGL rendering context.
   webGL.RenderingContext _createRenderingContext() {
     return this.canvas.getContext3d(
-        alpha: this.useTransparent,
-        premultipliedAlpha: this.useTransparent,
-        antialias: this.useAntialias,
-        stencil: this.useMask,
-        preserveDrawingBuffer: this.useClear);
+        alpha: settings.useTransparent,
+        premultipliedAlpha: settings.useTransparent,
+        antialias: settings.useAntialias,
+        stencil: settings.useMask,
+        preserveDrawingBuffer: settings.useClear);
   }
 
   /// Initialize WebGL.
   webGL.RenderingContext _initWebGL() {
     webGL.RenderingContext gl = this._createRenderingContext();
+
+    _preserveRenderingContextToGlobals(gl);
 
     if (gl == null) throw 'WebGL is not supported';
 
@@ -108,23 +85,38 @@ class WebGLRenderer extends ose.Renderer {
     gl.disable(webGL.DEPTH_TEST);
 
     // Enable stencil buffer usage.
-    if (this.useMask) {
+    if (settings.useMask) {
       gl.enable(webGL.STENCIL_TEST);
     }
 
     // Enable blending.
-    if (this.useTransparent) {
+    if (settings.useTransparent) {
       gl.enable(webGL.BLEND);
       gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
     }
 
     // Clear with color.
-    if (this.useClear) {
+    if (settings.useClear) {
       gl.clearColor(0.0, 0.0, 0.0, 1.0);
       gl.clear(webGL.COLOR_BUFFER_BIT);
     }
 
     return gl;
+  }
+
+  updateViewport() {
+    camera.transform
+      ..width = canvas.width
+      ..height = canvas.height;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+
+  /// Keep rendering context link inside common classes.
+  void _preserveRenderingContextToGlobals(webGL.RenderingContext gl) {
+    Attribute.gl = gl;
+    ShaderProgramManager.gl = gl;
+    ShaderProgram.gl = gl;
+    Shader.gl = gl;
   }
 
   webGL.RenderingContext get gl => _gl;

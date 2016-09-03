@@ -1,67 +1,62 @@
 part of ose_webgl;
 
-// TODO: Re-factor shader program.
-// TODO: Re-work [ShaderProgram.use].
-
+/// Shader program is affect to how is render works.
+/// By specify shader sources, attributes and uniforms, render could be worked
+/// by another way, as well as several shader programs could be used per tick.
 class ShaderProgram {
   /// WebGL rendering context.
   static webGL.RenderingContext gl;
 
   /// Unique id.
-  String _uuid;
+  final String uuid;
 
   /// WebGL program.
-  webGL.Program _program;
+  final webGL.Program program;
 
   /// Vertex shader.
-  Shader _vShader;
+  final Shader _vShader;
 
   /// Fragment shader.
-  Shader _fShader;
+  final Shader _fShader;
 
   /// Uniforms.
-  Map<String, Uniform> uniforms;
+  final Map<String, Uniform> uniforms;
 
   /// Attributes.
-  Map<String, Attribute> attributes;
+  final Map<String, Attribute> attributes;
 
   /// Create a shader program.
-  ShaderProgram(this._vShader, this._fShader) {
-    this._uuid = utils.generateUuid();
-    this._program = gl.createProgram();
-    this.uniforms = <String, Uniform>{};
-    this.attributes = <String, Attribute>{};
+  ShaderProgram(this._vShader, this._fShader,
+      [Map<String, Attribute> attributes, Map<String, Uniform> uniforms])
+      : uuid = utils.generateUuid(),
+        program = gl.createProgram(),
+        attributes = attributes ?? new Map<String, Attribute>(),
+        uniforms = uniforms ?? new Map<String, Uniform>() {
+    gl.attachShader(program, _vShader.shader);
+    gl.attachShader(program, _fShader.shader);
+    gl.linkProgram(program);
 
-    gl.attachShader(this._program, this._vShader.shader);
-    gl.attachShader(this._program, this._fShader.shader);
-    gl.linkProgram(this._program);
-
-    // Checks is program successfully compiled.
-    if (!gl.getProgramParameter(this._program, webGL.LINK_STATUS)) {
+    if (!gl.getProgramParameter(program, webGL.LINK_STATUS)) {
       throw new Exception("Coundn't compile program");
     }
   }
 
   /// Apply attributes.
-  ///
-  /// Iterate through attributes and initialize them.
+  /// Iterate through attributes and initialize each one.
   void applyAttributes() {
-    this.attributes.forEach((name, attribute) {
-      this._applyAttribute(name, attribute);
+    attributes.forEach((name, attribute) {
+      _applyAttribute(name, attribute);
     });
   }
 
   /// Apply attribute.
-  void _applyAttribute(String name, Attribute attribute, [int location]) {
+  void _applyAttribute(String name, Attribute attribute) {
     if (!attribute.isChanged) return;
 
-    if (attribute.location == null) {
-      if (location != null) {
-        gl.bindAttribLocation(this._program, location, name);
-        attribute.location = location;
-      } else {
-        attribute.location = gl.getAttribLocation(this._program, name);
-      }
+    if (attribute.location != null) {
+      gl.bindAttribLocation(program, attribute.location, name);
+    } else {
+      attribute.location = gl.getAttribLocation(program, name);
     }
 
     int attributeLocation = attribute.location;
@@ -98,38 +93,34 @@ class ShaderProgram {
         gl.vertexAttrib4f(attributeLocation, attributeStorage[0],
             attributeStorage[1], attributeStorage[2], attributeStorage[3]);
         break;
-      default:;
+      default:
+        ;
     }
 
     if (attribute.useBuffer) {
-      _initBuffer(attribute.buffer, attribute.storage, attribute.isChanged);
+      gl.bindBuffer(webGL.ARRAY_BUFFER, attribute.buffer);
+
+      if (attribute.isChanged) {
+        gl.bufferData(webGL.ARRAY_BUFFER, attribute.storage, webGL.STATIC_DRAW);
+      }
+
       gl.enableVertexAttribArray(attributeLocation);
       gl.vertexAttribPointer(
           attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
     }
 
-    // Attributes remembers that it was changed in past.
-    // Changed state takes main role in checking do we need to send values
-    // to GPU or not. After send we should reset changed state flag.
+    /// Attribute that was changed in past, should kept a state about it.
+    /// GPU is checking the state each tick to make decision,
+    /// should we propagate data or not. If data has been sent to GPU,
+    /// we need to reset the state.
     attribute.resetChangedState();
   }
 
-  /// Initialize buffer.
-  ///
-  /// Method is invoked by [_applyAttribute] if attribute need a buffer.
-  void _initBuffer(webGL.Buffer buffer, Float32List storage, bool isChanged) {
-    gl.bindBuffer(webGL.ARRAY_BUFFER, buffer);
-    if (isChanged) {
-      gl.bufferData(webGL.ARRAY_BUFFER, storage, webGL.STATIC_DRAW);
-    }
-  }
-
   /// Apply uniforms.
-  ///
-  /// Iterate for each uniform and initialize them.
+  /// Iterate through unniforms and initialize each one
   void applyUniforms() {
     uniforms.forEach((name, uniform) {
-      this._applyUniform(name, uniform);
+      _applyUniform(name, uniform);
     });
   }
 
@@ -138,7 +129,7 @@ class ShaderProgram {
     if (!uniform.isChanged) return;
 
     if (uniform.location == null) {
-      uniform.location = gl.getUniformLocation(this._program, name);
+      uniform.location = gl.getUniformLocation(program, name);
     }
 
     webGL.UniformLocation uniformLocation = uniform.location;
@@ -189,42 +180,17 @@ class ShaderProgram {
       case Type.Mat3:
         gl.uniformMatrix3fv(uniformLocation, false, uniformStorage);
         break;
-      default:;
+      default:
+        ;
     }
 
-    // Uniform remembers that it was changed in past.
-    // Changed state takes main role in checking do we need to send values
-    // to GPU or not. After send we should reset changed state flag.
+    /// Uniform that was changed in past, should kept a state about it.
+    /// GPU is checking the state each tick to make decision,
+    /// should we propagate data or not. If data has been sent to GPU,
+    /// we need to reset the state.
     uniform.resetChangedState();
   }
-
-  /// Apply texture.
-  void applyTexture(Texture texture) {
-    texture.bind();
-  }
-
-  /// Remove texture.
-  void removeTexture(Texture texture) {
-    gl.deleteTexture(texture.texture);
-  }
-
-  /// Use program.
-  ///
-  /// Only one program can be in use in same time.
-  ///
-  void use() {
-    ShaderProgramManager.use(this);
-  }
-
-  String get uuid => _uuid;
-
-  webGL.Program get program => _program;
 }
-
 
 /// Attribute, uniforms types.
-enum Type {
-  Float1, Float2, Float3, Float4,
-  Int1,
-  Mat2, Mat3
-}
+enum Type { Float1, Float2, Float3, Float4, Int1, Mat2, Mat3 }

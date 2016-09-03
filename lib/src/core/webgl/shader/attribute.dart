@@ -7,7 +7,7 @@ class Attribute {
   /// Type.
   Type _type;
 
-  /// Holds data.
+  /// Hold data.
   Float32List _storage;
 
   /// WebGL buffer.
@@ -20,10 +20,13 @@ class Attribute {
   bool _isChanged;
 
   Attribute._internal(this._type, List<double> storage, [webGL.Buffer buffer]) {
-    this._storage =
-        (storage != null) ? new Float32List.fromList(storage) : null;
-    this._buffer = buffer;
-    this._isChanged = true;
+    if (storage != null) {
+      storage.removeWhere((v) => v == null);
+      _storage =
+          (storage.length > 0) ? new Float32List.fromList(storage) : null;
+    }
+    _buffer = buffer;
+    _isChanged = true;
   }
 
   Attribute._internalBuffer(Type type, List<double> storage)
@@ -69,7 +72,7 @@ class Attribute {
 
     if (value is double) {
       storage[0] = value;
-    } else if (value is math.Vector || value is math.Matrix) {
+    } else if (value is Vector || value is Matrix) {
       storage = value.storage;
     } else if (value is Float32List) {
       storage = value;
@@ -77,9 +80,9 @@ class Attribute {
       throw ArgumentError;
     }
 
-    if (storage != this._storage) {
-      this._isChanged = true;
-      this._storage = storage;
+    if (storage != _storage) {
+      _isChanged = true;
+      _storage = storage;
     }
   }
 
@@ -90,7 +93,7 @@ class Attribute {
   /// applied to GPU or not. After values will be sent to GPU,
   /// [resetChangedState] should be invoked to reset state.
   void resetChangedState() {
-    this._isChanged = false;
+    _isChanged = false;
   }
 
   /// Remove WebGL buffer.
@@ -99,16 +102,16 @@ class Attribute {
   /// Before we should use [removeBuffer] to clear buffer on GPU side.
   void removeBuffer() {
     gl.deleteBuffer(_buffer);
-    this._buffer = null;
+    _buffer = null;
   }
 
-  Type get type => this._type;
+  Type get type => _type;
 
-  Float32List get storage => this._storage;
+  Float32List get storage => _storage;
 
-  bool get useBuffer => this._buffer != null;
+  bool get useBuffer => _buffer != null;
 
-  webGL.Buffer get buffer => this._buffer;
+  webGL.Buffer get buffer => _buffer;
 
-  bool get isChanged => this._isChanged;
+  bool get isChanged => _isChanged;
 }

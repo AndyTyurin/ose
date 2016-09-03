@@ -1,22 +1,25 @@
 part of ose;
 
+/// [GameObject] is entity used by renderer to display it.
+/// Each game object is unique, has his own transformation and should be
+/// implemented by other, specific entity.
 abstract class GameObject {
   /// Unique id.
-  String _uuid;
-
-  /// Is renderable.
-  bool _isRenderable;
+  final String uuid;
 
   /// Transformation.
-  GameObjectTransform _transform;
+  GameObjectTransform transform;
 
-  GameObject({Vector2 position, Vector2 rotation, Vector2 scale})
-      : this._transform = new GameObjectTransform(
-            position: position, rotation: rotation, scale: scale),
-        this._isRenderable = true,
-        this._uuid = utils.generateUuid();
+  /// Create a new game object.
+  /// [transform] - game object's transformation.
+  GameObject({GameObjectTransform transform}) : uuid = utils.generateUuid() {
+    this.transform = transform ?? new GameObjectTransform();
+  }
 
-  bool get isRenderable => this._isRenderable;
-
-  GameObjectTransform get transform => this._transform;
+  void copyFrom(GameObject from) {
+    transform = new GameObjectTransform(
+        position: from.transform.position,
+        rotation: from.transform.rotation,
+        scale: from.transform.scale);
+  }
 }

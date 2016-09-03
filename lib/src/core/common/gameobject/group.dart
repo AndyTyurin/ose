@@ -1,5 +1,3 @@
 part of ose;
 
-class Group extends GameObject {
-
-}
+abstract class Group extends GameObject {}

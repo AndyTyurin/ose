@@ -19,12 +19,12 @@ class Uniform {
 
   Uniform._internal(this._type, List storage, [bool isArray = false]) {
     if (storage != null) {
-      this._storage = (storage.length > 0 && storage[0] is int)
+      _storage = (storage.length > 0 && storage[0] is int)
           ? new Uint8List.fromList(storage)
           : new Float32List.fromList(storage);
     }
-    this._useArray = isArray;
-    this._isChanged = true;
+    _useArray = isArray;
+    _isChanged = true;
   }
 
   Uniform._internalArray(Type type, List storage)
@@ -96,7 +96,7 @@ class Uniform {
 
     if (value is double) {
       storage[0] = value;
-    } else if (value is math.Vector || value is math.Matrix) {
+    } else if (value is Vector || value is Matrix) {
       storage = value.storage;
     } else if (value is Float32List || value is Int8List) {
       storage = value;
@@ -104,9 +104,9 @@ class Uniform {
       throw ArgumentError;
     }
 
-    if (storage != this._storage) {
-      this._isChanged = true;
-      this._storage = storage;
+    if (storage != _storage) {
+      _isChanged = true;
+      _storage = storage;
     }
   }
 
@@ -117,14 +117,14 @@ class Uniform {
   /// applied to GPU or not. After values will be sent to GPU,
   /// [resetChangedState] should be invoked to reset state.
   void resetChangedState() {
-    this._isChanged = false;
+    _isChanged = false;
   }
 
-  Type get type => this._type;
+  Type get type => _type;
 
-  List get storage => this._storage;
+  List get storage => _storage;
 
-  bool get useArray => this._useArray;
+  bool get useArray => _useArray;
 
-  bool get isChanged => this._isChanged;
+  bool get isChanged => _isChanged;
 }
