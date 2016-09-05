@@ -1,56 +1,65 @@
-part of ose_webgl;
+part of ose;
 
-abstract class Shape extends ose.Shape {
-  /// Vertices coordinates.
+abstract class Shape extends SceneObject {
+  static SolidColor defaultColor = new SolidColor(new Color.white());
+
   Float32List _glVertices;
 
-  /// Colors values.
   Float32List _glColors;
 
-  Shape({Float32List vertices, ose.ComplexColor color})
-      : _glVertices = vertices,
-        _glColors = color.toIdentity() {
+  ComplexColor color;
+
+  ComplexColor _prevColor;
+
+  Filter filter;
+
+  Shape({@required Float32List vertices, ComplexColor color}) {
+    _glVertices = vertices;
+    this.color = color ?? defaultColor;
+    _prevColor = defaultColor;
     filter = new ShapeFilter();
+    rebuildColors(true);
   }
 
-  @override
   void rebuildColors([bool force]) {
-    if (force || isColorsChanged) {
-      ose.ComplexColor complexColor =
-          color ?? new ose.SolidColor(new ose.Color.white());
+    if (force || isColorChanged) {
+      ComplexColor complexColor = color ?? defaultColor;
       List<double> identityColors = complexColor.toIdentity();
       int numOfMissedColors =
           _glVertices.length ~/ 2 - identityColors.length ~/ 4;
 
-      if (complexColor is ose.GradientColor) {
+      if (complexColor is GradientColor) {
         if (numOfMissedColors > 0) {
           for (int i = 0; i < numOfMissedColors; i++) {
             identityColors.addAll([1.0, 1.0, 1.0, 1.0]);
           }
         } else if (numOfMissedColors < 0) {
-          identityColors = identityColors.getRange(0, identityColors.length + numOfMissedColors * 4);
+          identityColors = identityColors.getRange(
+              0, identityColors.length + numOfMissedColors * 4);
         }
-      } else if (complexColor is ose.SolidColor) {
+      } else if (complexColor is SolidColor) {
         if (numOfMissedColors > 0) {
           for (int i = 0; i < numOfMissedColors; i++) {
             identityColors.addAll(identityColors.getRange(0, 4));
           }
         }
       }
-      
+
       _glColors = new Float32List.fromList(identityColors);
-      super.rebuildColors();
+      _prevColor = color.clone();
     }
   }
 
   @override
   void copyFrom(Shape from) {
     super.copyFrom(from);
-    _glVertices = new Float32List.fromList(from._glVertices);
+    _glVertices = new Float32List.fromList(from.glVertices);
     color = from.color.clone();
   }
 
   Float32List get glVertices => _glVertices;
 
   Float32List get glColors => _glColors;
+
+  bool get isColorChanged => _prevColor != color;
 }

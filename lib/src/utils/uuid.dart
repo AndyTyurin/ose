@@ -12,3 +12,7 @@ String generateUuid() {
       }
   );
 }
+
+abstract class UuidMixin {
+  final String uuid = generateUuid();
+}

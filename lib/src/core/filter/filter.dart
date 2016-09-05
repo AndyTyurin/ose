@@ -1,15 +1,14 @@
-part of ose_webgl;
+part of ose;
 
 abstract class Filter {
-  /// Shader program.
   final ShaderProgram shaderProgram;
 
   Filter(this.shaderProgram);
 
-  /// See [ose.Filter.apply].
-  void apply(ose.GameObject obj, ose.Scene scene, ose.Camera camera) {
+  void apply(SceneObject obj, Scene scene, Camera camera) {
     if ((obj as dynamic).glVertices != null) {
-      shaderProgram.attributes['a_position'].update((obj as dynamic).glVertices);
+      shaderProgram.attributes['a_position']
+          .update((obj as dynamic).glVertices);
     }
 
     shaderProgram.uniforms['u_model'].update(obj.transform.modelMatrix);

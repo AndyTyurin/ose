@@ -3,7 +3,6 @@ import 'dart:math' as math;
 
 import 'package:logging/logging.dart';
 import 'package:ose/ose.dart';
-import 'package:ose/ose_webgl.dart' as osegl;
 import 'package:ose/ose_math.dart';
 
 main() async {
@@ -35,7 +34,7 @@ main() async {
   document.body.append(canvas);
 
   // Initialize renderer.
-  osegl.WebGLRenderer renderer = new osegl.WebGLRenderer(
+  Renderer renderer = new Renderer(
       canvas: canvas, rendererSettings: new RendererSettings());
 
   window.addEventListener('resize', (_) {
@@ -62,7 +61,7 @@ main() async {
   //
   // oseGL.Circle patternCircle = new oseGL.Circle(6);
   //
-  math.Random random = new math.Random();
+  //math.Random random = new math.Random();
   // double prevScaleFactor = 1.0;
   // double prevPositionFactor = 1.0;
   // for (int i = 0; i < numOfCircles; i++) {
@@ -79,16 +78,34 @@ main() async {
   //   prevPositionFactor = positionFactor;
   //   scene.children.add(circle);
   // }
-
-  osegl.Triangle triangle = new osegl.Triangle();
+  // Rectangle rectangle = new Rectangle();
+  // rectangle.transform.scale = new Vector2(.75, .75);
+  // scene.children.add(rectangle);
+  Triangle triangle = new Triangle();
   triangle.transform.scale = new Vector2(.5, .5);
-  triangle.color = new GradientColor([
-    new Color([255, 0, 0, 255]),
-    new Color([0, 255, 0, 255]),
-    new Color([0, 0, 255, 255])
-  ]);
-  //triangle.color = new SolidColor(new Color([255, 255, 255, 255]));
+  //Triangle triangle2 = new Triangle();
+  //triangle2.transform.scale = new Vector2(.5, .5);
+  //triangle2.transform.rotation = math.PI;
+
+  //Rectangle rect = new Rectangle();
+
+  //Circle circle = new Circle(10);
+  // scene.children.add(rect);
   scene.children.add(triangle);
+  // scene.children.add(triangle);
+
+  // Triangle triangle3 = new Triangle();
+  // triangle3.transform.scale = new Vector2(.5, .5);
+  // triangle3.transform.rotation = -math.PI / 4;
+  // triangle.color = new GradientColor([
+  //   new Color([255, 0, 0, 255]),
+  //   new Color([0, 255, 0, 255]),
+  //   new Color([0, 0, 255, 255])
+  // ]);
+  //triangle.color = new SolidColor(new Color([255, 255, 255, 255]));
+
+  //scene.children.add(triangle2);
+  // scene.children.add(triangle3);
 
   // Link life-cycle handlers to renderer.
   renderer.onStart.listen((StartEvent e) {
@@ -106,47 +123,18 @@ main() async {
   //   velocities.add(math.max(.005, random.nextDouble() / 100));
   // }
 
-  var j = 1;
+  //var j = 1;
   renderer.onRender.listen((RenderEvent e) {
-    for (int i = 0; i < e.scene.children.length; i++) {
-      GameObject obj = e.scene.children[i];
-      if (obj is osegl.Circle) {
-        // Vector2 position = obj.transform.position;
-        // double translationFactor = velocities[i];
-        // obj.transform.position = new Vector2(
-        //     position.x * math.cos(translationFactor) -
-        //         position.y * math.sin(translationFactor),
-        //     position.x * math.sin(translationFactor) +
-        //         position.y * math.cos(translationFactor));
-      } else if (obj is osegl.Triangle) {
-        obj.transform.rotation += 0.01;
-        if (j % 2 == 0) {
-          obj.color.colors[0] = new Color.fromIdentity([
-            random.nextDouble(),
-            random.nextDouble(),
-            random.nextDouble(),
-            1.0
-          ]);
-        }
-        if (j % 4 == 0) {
-          obj.color.colors[1] = new Color.fromIdentity([
-            random.nextDouble(),
-            random.nextDouble(),
-            random.nextDouble(),
-            1.0
-          ]);
-        }
-        if (j % 8 == 0) {
-          obj.color.colors[2] = new Color.fromIdentity([
-            random.nextDouble(),
-            random.nextDouble(),
-            random.nextDouble(),
-            1.0
-          ]);
-        }
-      }
-    }
-    j++;
+    // for (int i = 0; i < e.scene.children.length; i++) {
+    //   SceneObject obj = e.scene.children[i];
+    //   if (obj is Rectangle) {
+    //     //obj.transform.rotation -= 0.01;
+    //   } else if (obj is Triangle) {
+    //     //obj.transform.rotation += 0.01;
+    //
+    //   }
+    // }
+    // j++;
   });
 
   renderer.onObjectRender.listen((ObjectRenderEvent e) {});

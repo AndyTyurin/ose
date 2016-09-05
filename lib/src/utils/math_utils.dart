@@ -30,30 +30,3 @@ Vector2 getVectorFromAxisAngle(double angle, Vector2 axis) {
   double c = cos(angle);
   return new Vector2(axis.x * c - axis.y * s, axis.x * s + axis.y * c);
 }
-
-List<double> getCircleVerticesByPoints(int points) {
-  points = max(4, points);
-  List<double> vertices = <double>[];
-  for (int i = 1; i < (points+1); i+=2) {
-    vertices.add(cos((2*PI - (2*PI - 2*PI/points) * (i-1))) / 2 + 0.5);
-    vertices.add(sin((2*PI - (2*PI - 2*PI/points) * (i-1))) / 2 + 0.5);
-    vertices.add(cos((2*PI - (2*PI - 2*PI/points) * i)) / 2 + 0.5);
-    vertices.add(sin((2*PI - (2*PI - 2*PI/points) * i)) / 2 + 0.5);
-    vertices.add(0.5);
-    vertices.add(0.5);
-    if (i == points || (points % 2 == 0)) {
-      vertices.add(cos((2*PI - (2*PI - 2*PI/points) * (i+1))) / 2 + 0.5);
-      vertices.add(sin((2*PI - (2*PI - 2*PI/points) * (i+1))) / 2 + 0.5);
-    }
-  }
-  return vertices;
-}
-
-List<double> getCircleColorsByPoints(int points) {
-  points = max(4, points);
-  List<double> colors = <double>[];
-  for (int i = 0; i < points * 2; i++) {
-    colors.addAll([1.0, 1.0, 1.0, 1.0]);
-  }
-  return colors;
-}

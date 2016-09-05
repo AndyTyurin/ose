@@ -1,1 +1,0 @@
-library ose_canvas;

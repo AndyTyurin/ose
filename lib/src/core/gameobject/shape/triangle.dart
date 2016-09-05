@@ -1,12 +1,23 @@
-part of ose_webgl;
+part of ose;
 
 class Triangle extends Shape {
-  Triangle()
-      : super(
-            vertices: new Float32List.fromList([0.0, 0.0, 0.5, 1.0, 1.0, 0.0]),
-            color: new ose.SolidColor(new ose.Color([255, 255, 255, 255])));
+  Triangle() : super(vertices: getTriangleVerticesAroundCenter());
 
   clone() {
     return new Triangle()..copyFrom(this);
+  }
+
+  static Float32List getTriangleVerticesAroundCenter() {
+    double topVertexCoord = sin(PI / 3);
+    double delta = (1 - topVertexCoord) / 2;
+    List<double> vertices = [
+      0.0,
+      delta,
+      0.5,
+      topVertexCoord + delta,
+      1.0,
+      delta
+    ];
+    return new Float32List.fromList(vertices);
   }
 }

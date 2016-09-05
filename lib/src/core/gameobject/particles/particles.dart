@@ -1,6 +1,6 @@
 part of ose_webgl;
 
-class Particles extends ose.GameObject {
+class Particles extends GameObject {
   Filter filter;
 
   /// Vertices coordinates.
@@ -11,9 +11,9 @@ class Particles extends ose.GameObject {
 
   int _count;
 
-  ose.Color _color;
+  Color _color;
 
-  Particles({int count, ose.Color color}) {
+  Particles({int count, Color color}) {
     _count = count;
     _color = color;
     // TODO: Set gl vertices and gl colors.

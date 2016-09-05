@@ -1,10 +1,10 @@
-part of ose_webgl;
+part of ose;
 
 abstract class ParticlesFilter extends Filter {
   ParticlesFilter() : super(particlesShaderProgram);
 
   /// See [Filter.apply].
-  void apply(ose.GameObject obj, ose.Scene scene, ose.Camera camera) {
+  void apply(SceneObject obj, Scene scene, Camera camera) {
     super.apply(obj, scene, camera);
   }
 }
