@@ -80,7 +80,7 @@ class Renderer {
     }
   }
 
-  Future renderScene(ose.Scene scene, ose.Camera camera) async {
+  Future renderScene(Scene scene, Camera camera) async {
     // Create clear mask.
     int clearMask = 0x00;
 
@@ -107,7 +107,7 @@ class Renderer {
       throw 'Camera is not defined.';
     }
 
-    for (GameObject obj in scene.children) {
+    for (SceneObject obj in scene.children) {
       if (_isObjectRenderable(obj)) {
         /// Per object pre-render.
         await _lifecycleControllers.onObjectRenderCtrl
@@ -125,8 +125,7 @@ class Renderer {
     }
   }
 
-  void renderObject(
-      SceneObject sceneObject, Scene scene, Camera camera) {
+  void renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
     if (sceneObject is Shape) {
       sceneObject.rebuildColors();
     }
@@ -142,11 +141,13 @@ class Renderer {
       /// this.maskManager.intersect(gameObject, maskObject);
     }
 
-    // Temporary render only shapes.
-    if (sceneObject is Shape) {
-      sceneObject.filter.apply(sceneObject, scene, camera);
-      gl.drawArrays(webGL.TRIANGLE_STRIP, 0, sceneObject.glVertices.length ~/ 2);
+    if ((sceneObject as dynamic).filter != null) {
+      (sceneObject as dynamic).filter.apply(sceneObject, scene, camera);
     }
+
+    // TODO: Further we shall render groups.
+    gl.drawArrays(
+        webGL.TRIANGLE_STRIP, 0, (sceneObject as dynamic).glVertices.length ~/ 2);
   }
 
   /// Set canvas width & height.
@@ -199,11 +200,208 @@ class Renderer {
     return gl;
   }
 
-  updateViewport() {
+  void updateViewport() {
     camera.transform
       ..width = canvas.width
       ..height = canvas.height;
     gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+
+  void _prepareTexture(Texture texture) {
+    webGL.Texture glTexture = gl.createTexture();
+    texture.glTexture = glTexture;
+    gl.bindTexture(webGL.TEXTURE_2D, glTexture);
+    gl.texImage2D(webGL.TEXTURE_2D, 0, webGL.RGBA, webGL.RGBA,
+        webGL.UNSIGNED_BYTE, texture.image);
+    gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MAG_FILTER, webGL.LINEAR);
+    gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MIN_FILTER, webGL.LINEAR);
+    gl.generateMipmap(webGL.TEXTURE_2D);
+    gl.bindTexture(webGL.TEXTURE_2D, null);
+  }
+
+  void _prepareAttribute(Attribute attribute) {
+    if (attribute.useBuffer) {
+      attribute.buffer = gl.createBuffer();
+    }
+  }
+
+  void _prepareShader(Shader shader) {
+    int glShaderType = (shader.type == webGL.VERTEX_SHADER)
+        ? webGL.VERTEX_SHADER
+        : webGL.FRAGMENT_SHADER;
+    webGL.Shader glShader = shader.glShader;
+    shader.glShader = gl.createShader(glShaderType);
+    gl.shaderSource(glShader, shader.source);
+    gl.compileShader(glShader);
+
+    // Checks shader compile status.
+    if (!gl.getShaderParameter(glShader, webGL.COMPILE_STATUS)) {
+      throw new Exception("Can't compile"
+          " ${ glShaderType } shader");
+    }
+  }
+
+  void _prepareShaderProgram(ShaderProgram shaderProgram) {
+    shaderProgram.attributes.values.forEach(_prepareAttribute);
+    webGL.Program glProgram = gl.createProgram();
+    shaderProgram.glProgram = glProgram;
+
+    Shader vertexShader = shaderProgram.vertexShader;
+    Shader fragmentShader = shaderProgram.fragmentShader;
+    _prepareShader(vertexShader);
+    _prepareShader(fragmentShader);
+
+    gl.attachShader(glProgram, vertexShader.glShader);
+    gl.attachShader(glProgram, fragmentShader.glShader);
+    gl.linkProgram(glProgram);
+
+    if (!gl.getProgramParameter(glProgram, webGL.LINK_STATUS)) {
+      throw new Exception("Can't compile program");
+    }
+  }
+
+  void _prepareFilter(Filter filter) {
+    _prepareShaderProgram(filter.shaderProgram);
+  }
+
+  void _bindAttributes(ShaderProgram shaderProgram) {
+    shaderProgram.attributes.forEach((name, attribute) {
+      _bindAttribute(shaderProgram, name, attribute);
+    });
+  }
+
+  void _bindAttribute(
+      ShaderProgram shaderProgram, String name, Attribute attribute) {
+    if (!attribute.isChanged) return;
+
+    webGL.Program glProgram = shaderProgram.glProgram;
+
+    if (attribute.location != null) {
+      gl.bindAttribLocation(glProgram, attribute.location, name);
+    } else {
+      attribute.location = gl.getAttribLocation(glProgram, name);
+    }
+
+    int attributeLocation = attribute.location;
+    bool useBuffer = attribute.useBuffer;
+    List attributeStorage = attribute.storage;
+    int attributeSize = 1;
+
+    switch (attribute.type) {
+      case QualifierType.Float1:
+        if (useBuffer) break;
+        gl.vertexAttrib1f(attributeLocation, attributeStorage[0]);
+        break;
+      case QualifierType.Float2:
+        if (useBuffer) {
+          attributeSize = 2;
+          break;
+        }
+        gl.vertexAttrib2f(
+            attributeLocation, attributeStorage[0], attributeStorage[1]);
+        break;
+      case QualifierType.Float3:
+        if (useBuffer) {
+          attributeSize = 3;
+          break;
+        }
+        gl.vertexAttrib3f(attributeLocation, attributeStorage[0],
+            attributeStorage[1], attributeStorage[2]);
+        break;
+      case QualifierType.Float4:
+        if (useBuffer) {
+          attributeSize = 4;
+          break;
+        }
+        gl.vertexAttrib4f(attributeLocation, attributeStorage[0],
+            attributeStorage[1], attributeStorage[2], attributeStorage[3]);
+        break;
+      default:
+        ;
+    }
+
+    if (attribute.useBuffer) {
+      gl.bindBuffer(webGL.ARRAY_BUFFER, attribute.buffer);
+
+      if (attribute.isChanged) {
+        gl.bufferData(webGL.ARRAY_BUFFER, attribute.storage, webGL.STATIC_DRAW);
+      }
+
+      gl.enableVertexAttribArray(attributeLocation);
+      gl.vertexAttribPointer(
+          attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
+    }
+
+    attribute.resetChangedState();
+  }
+
+  void _bindUniforms(ShaderProgram shaderProgram) {
+    shaderProgram.uniforms.forEach((name, uniform) {
+      _bindUniform(shaderProgram, name, uniform);
+    });
+  }
+
+  /// Apply uniform.
+  void _bindUniform(ShaderProgram shaderProgram, String name, Uniform uniform) {
+    if (!uniform.isChanged) return;
+
+    webGL.Program glProgram = shaderProgram.glProgram;
+
+    if (uniform.location == null) {
+      uniform.location = gl.getUniformLocation(glProgram, name);
+    }
+
+    webGL.UniformLocation uniformLocation = uniform.location;
+
+    List uniformStorage = uniform.storage;
+
+    switch (uniform.type) {
+      case QualifierType.Int1:
+        if (uniform.useArray) {
+          gl.uniform1iv(uniformLocation, uniformStorage);
+          break;
+        }
+        gl.uniform1i(uniformLocation, uniformStorage[0]);
+        break;
+      case QualifierType.Float1:
+        if (uniform.useArray) {
+          gl.uniform1fv(uniformLocation, uniformStorage);
+          break;
+        }
+        gl.uniform1f(uniformLocation, uniformStorage[0]);
+        break;
+      case QualifierType.Float2:
+        if (uniform.useArray) {
+          gl.uniform2fv(uniformLocation, uniformStorage);
+          break;
+        }
+        gl.uniform2f(uniformLocation, uniformStorage[0], uniformStorage[1]);
+        break;
+      case QualifierType.Float3:
+        if (uniform.useArray) {
+          gl.uniform3fv(uniformLocation, uniformStorage);
+          break;
+        }
+        gl.uniform3f(uniformLocation, uniformStorage[0], uniformStorage[1],
+            uniformStorage[2]);
+        break;
+      case QualifierType.Float4:
+        if (uniform.useArray) {
+          gl.uniform4fv(uniformLocation, uniformStorage);
+          break;
+        }
+        gl.uniform4f(uniformLocation, uniformStorage[0], uniformStorage[1],
+            uniformStorage[2], uniformStorage[3]);
+        break;
+      case QualifierType.Mat2:
+        gl.uniformMatrix2fv(uniformLocation, false, uniformStorage);
+        break;
+      case QualifierType.Mat3:
+        gl.uniformMatrix3fv(uniformLocation, false, uniformStorage);
+        break;
+      default:
+        ;
+    }
   }
 
   RendererSettings get settings => _rendererSettings;

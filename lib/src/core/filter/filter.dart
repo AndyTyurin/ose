@@ -16,7 +16,5 @@ abstract class Filter {
         .update(camera.transform.projectionMatrix);
 
     ShaderProgramManager.getInstance().bindProgram(shaderProgram);
-    shaderProgram.applyAttributes();
-    shaderProgram.applyUniforms();
   }
 }

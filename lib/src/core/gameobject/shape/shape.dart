@@ -11,7 +11,7 @@ abstract class Shape extends SceneObject {
 
   ComplexColor _prevColor;
 
-  Filter filter;
+  ShapeFilter filter;
 
   Shape({@required Float32List vertices, ComplexColor color}) {
     _glVertices = vertices;

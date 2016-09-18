@@ -5,6 +5,10 @@ import 'package:logging/logging.dart';
 import 'package:ose/ose.dart';
 import 'package:ose/ose_math.dart';
 
+class Spaceship extends Sprite {
+  Spaceship({Texture texture}) : super(texture: texture);
+}
+
 main() async {
   // Set logger settings.
   Logger.root.level = Level.ALL;
@@ -34,13 +38,13 @@ main() async {
   document.body.append(canvas);
 
   // Initialize renderer.
-  Renderer renderer = new Renderer(
-      canvas: canvas, rendererSettings: new RendererSettings());
+  Renderer renderer =
+      new Renderer(canvas: canvas, rendererSettings: new RendererSettings());
 
   window.addEventListener('resize', (_) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      renderer.updateViewport();
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    renderer.updateViewport();
   });
 
   // Initialize scene & camera.
@@ -81,8 +85,8 @@ main() async {
   // Rectangle rectangle = new Rectangle();
   // rectangle.transform.scale = new Vector2(.75, .75);
   // scene.children.add(rectangle);
-  Triangle triangle = new Triangle();
-  triangle.transform.scale = new Vector2(.5, .5);
+  // Triangle triangle = new Triangle();
+  // triangle.transform.scale = new Vector2(.5, .5);
   //Triangle triangle2 = new Triangle();
   //triangle2.transform.scale = new Vector2(.5, .5);
   //triangle2.transform.rotation = math.PI;
@@ -91,7 +95,7 @@ main() async {
 
   //Circle circle = new Circle(10);
   // scene.children.add(rect);
-  scene.children.add(triangle);
+  // scene.children.add(triangle);
   // scene.children.add(triangle);
 
   // Triangle triangle3 = new Triangle();
@@ -107,37 +111,45 @@ main() async {
   //scene.children.add(triangle2);
   // scene.children.add(triangle3);
 
-  // Link life-cycle handlers to renderer.
-  renderer.onStart.listen((StartEvent e) {
-    renderer.scene = scene;
-    renderer.camera = camera;
-    logger.fine('Renderer started');
-  });
+  // TODO: Load image by another way.
+  ImageElement image = new ImageElement(src: '/i/spaceship.png');
+  image.onLoad.listen((e) {
+    Texture ssTexture = new Texture(image);
+    Spaceship ss = new Spaceship(texture: ssTexture);
+    scene.children.add(ss);
 
-  renderer.onStop.listen((StopEvent e) {
-    logger.fine('Renderer stopped');
-  });
+    // Link life-cycle handlers to renderer.
+    renderer.onStart.listen((StartEvent e) {
+      renderer.scene = scene;
+      renderer.camera = camera;
+      logger.fine('Renderer started');
+    });
 
-  // List<double> velocities = <double>[];
-  // for (int i = 0; i < numOfCircles; i += 1) {
-  //   velocities.add(math.max(.005, random.nextDouble() / 100));
-  // }
+    renderer.onStop.listen((StopEvent e) {
+      logger.fine('Renderer stopped');
+    });
 
-  //var j = 1;
-  renderer.onRender.listen((RenderEvent e) {
-    // for (int i = 0; i < e.scene.children.length; i++) {
-    //   SceneObject obj = e.scene.children[i];
-    //   if (obj is Rectangle) {
-    //     //obj.transform.rotation -= 0.01;
-    //   } else if (obj is Triangle) {
-    //     //obj.transform.rotation += 0.01;
-    //
-    //   }
+    // List<double> velocities = <double>[];
+    // for (int i = 0; i < numOfCircles; i += 1) {
+    //   velocities.add(math.max(.005, random.nextDouble() / 100));
     // }
-    // j++;
+
+    //var j = 1;
+    renderer.onRender.listen((RenderEvent e) {
+      // for (int i = 0; i < e.scene.children.length; i++) {
+      //   SceneObject obj = e.scene.children[i];
+      //   if (obj is Rectangle) {
+      //     //obj.transform.rotation -= 0.01;
+      //   } else if (obj is Triangle) {
+      //     //obj.transform.rotation += 0.01;
+      //
+      //   }
+      // }
+      // j++;
+    });
+
+    renderer.onObjectRender.listen((ObjectRenderEvent e) {});
+
+    renderer.start();
   });
-
-  renderer.onObjectRender.listen((ObjectRenderEvent e) {});
-
-  renderer.start();
 }

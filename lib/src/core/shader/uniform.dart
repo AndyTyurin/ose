@@ -8,7 +8,7 @@ class Uniform {
   /// Can be [Float32List] or [Int8List].
   List _storage;
 
-  /// Is uniform array?
+  /// Uniform use array.
   bool _useArray;
 
   /// Is uniform storage was changed?
@@ -26,9 +26,6 @@ class Uniform {
     _useArray = isArray;
     _isChanged = true;
   }
-
-  Uniform._internalArray(Type type, List storage)
-      : this._internal(type, storage, true);
 
   /// i1
   factory Uniform.Int1([int i0]) => new Uniform._internal(Type.Int1, [i0]);
@@ -55,22 +52,22 @@ class Uniform {
 
   /// fv1
   factory Uniform.FloatArray1([List<double> data]) {
-    return new Uniform._internalArray(Type.Float1, data);
+    return new Uniform._internal(Type.Float1, data, true);
   }
 
   /// fv2
   factory Uniform.FloatArray2([List<double> data]) {
-    return new Uniform._internalArray(Type.Float2, data);
+    return new Uniform._internal(Type.Float2, data, true);
   }
 
   /// fv3
   factory Uniform.FloatArray3([List<double> data]) {
-    return new Uniform._internalArray(Type.Float3, data);
+    return new Uniform._internal(Type.Float3, data, true);
   }
 
   /// fv4
   factory Uniform.FloatArray4([List<double> data]) {
-    return new Uniform._internalArray(Type.Float4, data);
+    return new Uniform._internal(Type.Float4, data, true);
   }
 
   /// mf2v
@@ -92,10 +89,10 @@ class Uniform {
   ///
   /// Use [update] if you want to change uniform's values.
   void update(dynamic value) {
-    var storage = new Float32List(1);
+    Float32List storage;
 
     if (value is double) {
-      storage[0] = value;
+      storage = new Float32List.fromList([value]);
     } else if (value is Vector || value is Matrix) {
       storage = value.storage;
     } else if (value is Float32List || value is Int8List) {
@@ -110,12 +107,6 @@ class Uniform {
     }
   }
 
-  /// Reset changed state.
-  ///
-  /// When storage values were changed by using of [update] method,
-  /// State will be changed to get knows, does changes should be
-  /// applied to GPU or not. After values will be sent to GPU,
-  /// [resetChangedState] should be invoked to reset state.
   void resetChangedState() {
     _isChanged = false;
   }

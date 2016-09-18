@@ -1,67 +1,29 @@
 part of ose;
 
 class Shader {
-  /// WebGL rendering context.
-  static webGL.RenderingContext gl;
-
   /// WebGL shader.
-  webGL.Shader _shader;
+  webGL.Shader _glShader;
 
   /// Shader source.
   String _source;
 
   /// Shader type.
-  ///
   /// [ShaderType.Vertex] or [ShaderType.Fragment].
   ShaderType _type;
 
   /// Create new shader.
-  ///
   /// [_type] is [ShaderType.Vertex] or [ShaderType.Fragment].
   /// [_source] is shader source.
-  Shader(this._type, this._source) {
-    // Checks is shader source is not empty.
-    if (Shader._isShaderLoaded(_source, _type)) {
-      _shader = Renderer.gl.createShader(Shader._mapToWebGLShaderType(_type));
-      Renderer.gl.shaderSource(_shader, _source);
-      Renderer.gl.compileShader(_shader);
+  Shader(this._type, this._source);
 
-      // Checks shader compile status.
-      if (!Renderer.gl.getShaderParameter(_shader, webGL.COMPILE_STATUS)) {
-        throw new Exception("Couldn't compile"
-            " ${ _getShaderNameByType(_type) } shader");
-      }
+  webGL.Shader get glShader => _glShader;
+
+  void set glShader(webGL.Shader glShader) {
+    if (_glShader != null) {
+      throw new Exception('WebGL shader already set');
     }
+    _glShader = glShader;
   }
-
-  /// Get shader name.
-  ///
-  /// [type] can be [ShaderType.Vertex] or [ShaderType.Fragment].
-  /// Commonly used to fetch name of the shader by type (Vertex or Fragment).
-  static String _getShaderNameByType(ShaderType type) {
-    return (type == ShaderType.Vertex) ? 'Vertex' : 'Fragment';
-  }
-
-  /// Check is shader loaded.
-  ///
-  /// [source] is shader source.
-  /// [type] is type of a shader, [ShaderType.Vertex] or [ShaderType.Fragment].
-  /// Throw [Exception] if shader source is an empty.
-  static bool _isShaderLoaded(String source, ShaderType type) {
-    if (source.isEmpty) {
-      throw new Exception("${ _getShaderNameByType(type) }"
-          " shader couldn't be loaded");
-    }
-    return true;
-  }
-
-  /// Get webGL shader type.
-  static int _mapToWebGLShaderType(ShaderType type) {
-    if (type == ShaderType.Fragment) return webGL.FRAGMENT_SHADER;
-    return webGL.VERTEX_SHADER;
-  }
-
-  webGL.Shader get shader => _shader;
 
   String get source => _source;
 
