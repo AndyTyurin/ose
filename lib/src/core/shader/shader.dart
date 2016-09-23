@@ -1,7 +1,6 @@
 part of ose;
 
 class Shader {
-  /// WebGL shader.
   webGL.Shader _glShader;
 
   /// Shader source.

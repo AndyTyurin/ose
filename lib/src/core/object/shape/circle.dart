@@ -8,10 +8,6 @@ class Circle extends Shape {
     _points = points;
   }
 
-  Circle clone() {
-    return new Circle(_points)..copyFrom(this);
-  }
-
   static Float32List _getCircleVerticesByPoints(int points) {
     points = max(4, points);
     List<double> vertices = <double>[];
@@ -32,5 +28,9 @@ class Circle extends Shape {
       }
     }
     return new Float32List.fromList(vertices);
+  }
+
+  Circle clone() {
+    return new Circle(_points)..copyFrom(this);
   }
 }

@@ -3,10 +3,6 @@ part of ose;
 class Triangle extends Shape {
   Triangle() : super(vertices: getTriangleVerticesAroundCenter());
 
-  clone() {
-    return new Triangle()..copyFrom(this);
-  }
-
   static Float32List getTriangleVerticesAroundCenter() {
     double topVertexCoord = sin(PI / 3);
     double delta = (1 - topVertexCoord) / 2;
@@ -19,5 +15,9 @@ class Triangle extends Shape {
       delta
     ];
     return new Float32List.fromList(vertices);
+  }
+
+  clone() {
+    return new Triangle()..copyFrom(this);
   }
 }

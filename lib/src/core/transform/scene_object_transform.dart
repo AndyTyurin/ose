@@ -39,6 +39,19 @@ class SceneObjectTransform extends Transform {
     _oldScale = scale.clone();
   }
 
+  @override
+  void copyFrom(SceneObjectTransform transform) {
+    super.copyFrom(transform);
+    scale = transform.scale.clone();
+    _scaleMatrix = transform.scaleMatrix.clone();
+    _modelMatrix = transform.modelMatrix.clone();
+    _updatePrevValues();
+  }
+
+  SceneObjectTransform clone() {
+    return new SceneObjectTransform()..copyFrom(this);
+  }
+
   Matrix3 get scaleMatrix => _scaleMatrix;
 
   Matrix3 get modelMatrix => _modelMatrix;

@@ -3,6 +3,8 @@ part of ose;
 abstract class SceneObject extends Object with utils.UuidMixin {
   final SceneObjectTransform transform;
 
+  Filter filter;
+
   SceneObject({SceneObjectTransform transform})
       : transform = transform ?? new SceneObjectTransform();
 

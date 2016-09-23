@@ -116,7 +116,17 @@ main() async {
   image.onLoad.listen((e) {
     Texture ssTexture = new Texture(image);
     Spaceship ss = new Spaceship(texture: ssTexture);
+    ss.transform.scale = new Vector2(0.25, 0.25);
+    ss.transform.rotation = math.PI / 2;
+
+    // Triangle triangle = new Triangle();
+    // triangle.transform.scale = new Vector2(0.25, 0.25);
+    // scene.children.add(triangle);
+
     scene.children.add(ss);
+
+    // Circle circle = new Circle(10);
+    // scene.children.add(circle);
 
     // Link life-cycle handlers to renderer.
     renderer.onStart.listen((StartEvent e) {
@@ -146,9 +156,12 @@ main() async {
       //   }
       // }
       // j++;
+      //
     });
 
-    renderer.onObjectRender.listen((ObjectRenderEvent e) {});
+    renderer.onObjectRender.listen((ObjectRenderEvent e) {
+        e.gameObject.transform.rotation += 0.01;
+    });
 
     renderer.start();
   });

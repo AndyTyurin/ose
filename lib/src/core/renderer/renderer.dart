@@ -17,6 +17,8 @@ class Renderer {
 
   RendererState _rendererState;
 
+  Filter _activeFilter;
+
   Renderer({CanvasElement canvas, RendererSettings rendererSettings})
       : _timer = new utils.Timer(),
         _lifecycleControllers = new RendererLifecycleControllers(),
@@ -24,7 +26,7 @@ class Renderer {
     this.canvas = canvas ?? new CanvasElement();
     gl = this._initWebGL(this.canvas);
     _rendererState = RendererState.Stopped;
-    setCanvasDimensions(_rendererSettings.width, _rendererSettings.height,
+    setCanvasSize(_rendererSettings.width, _rendererSettings.height,
         _rendererSettings.pixelRatio);
   }
 
@@ -40,7 +42,7 @@ class Renderer {
 
     _rendererState = RendererState.Started;
 
-    window.animationFrame.then(render);
+    window.animationFrame.then(_render);
   }
 
   Future stop() async {
@@ -53,9 +55,9 @@ class Renderer {
     _rendererState = RendererState.Stopped;
   }
 
-  Future render(num dt) async {
+  Future _render(num dt) async {
     if (_rendererState != RendererState.StopRequested) {
-      window.animationFrame.then(render);
+      window.animationFrame.then(_render);
 
       _timer.checkpoint(dt);
 
@@ -71,7 +73,7 @@ class Renderer {
         ..done;
 
       /// Render scene.
-      await renderScene(scene, camera);
+      await _renderScene(scene, camera);
 
       // Post-render scene.
       await _lifecycleControllers.onPostRenderCtrl
@@ -80,7 +82,7 @@ class Renderer {
     }
   }
 
-  Future renderScene(Scene scene, Camera camera) async {
+  Future _renderScene(Scene scene, Camera camera) async {
     // Create clear mask.
     int clearMask = 0x00;
 
@@ -108,24 +110,22 @@ class Renderer {
     }
 
     for (SceneObject obj in scene.children) {
-      if (_isObjectRenderable(obj)) {
-        /// Per object pre-render.
-        await _lifecycleControllers.onObjectRenderCtrl
-          ..add(new ObjectRenderEvent(obj, scene, camera, this))
-          ..done;
+      /// Per object pre-render.
+      await _lifecycleControllers.onObjectRenderCtrl
+        ..add(new ObjectRenderEvent(obj, scene, camera, this))
+        ..done;
 
-        /// Render object.
-        renderObject(obj, scene, camera);
+      /// Render object.
+      _renderObject(obj, scene, camera);
 
-        /// Per object post-render.
-        await _lifecycleControllers.onObjectPostRenderCtrl
-          ..add(new ObjectPostRenderEvent(obj, scene, camera, this))
-          ..done;
-      }
+      /// Per object post-render.
+      await _lifecycleControllers.onObjectPostRenderCtrl
+        ..add(new ObjectPostRenderEvent(obj, scene, camera, this))
+        ..done;
     }
   }
 
-  void renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
+  void _renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
     if (sceneObject is Shape) {
       sceneObject.rebuildColors();
     }
@@ -141,24 +141,33 @@ class Renderer {
       /// this.maskManager.intersect(gameObject, maskObject);
     }
 
-    if ((sceneObject as dynamic).filter != null) {
-      (sceneObject as dynamic).filter.apply(sceneObject, scene, camera);
+    if (sceneObject is Sprite) {
+      Texture texture = sceneObject.texture;
+      if (texture.glTexture == null) {
+        _prepareTexture(texture);
+      }
+    }
+
+    // Prepare to use, apply filter values & bind filter.
+    _prepareFilter(sceneObject.filter);
+    sceneObject.filter.apply(sceneObject, scene, camera);
+    _bindFilter(sceneObject.filter);
+
+    if (sceneObject is Sprite) {
+      if (sceneObject.hasTexture) {
+        _bindTexture(sceneObject.texture);
+      }
     }
 
     // TODO: Further we shall render groups.
-    gl.drawArrays(
-        webGL.TRIANGLE_STRIP, 0, (sceneObject as dynamic).glVertices.length ~/ 2);
+    gl.drawArrays(webGL.TRIANGLE_STRIP, 0,
+        (sceneObject as dynamic).glVertices.length ~/ 2);
   }
 
   /// Set canvas width & height.
-  setCanvasDimensions(int width, int height, [int pixelRatio = 1]) {
+  setCanvasSize(int width, int height, [int pixelRatio = 1]) {
     canvas.width ??= (width * pixelRatio);
     canvas.height ??= (height * pixelRatio);
-  }
-
-  /// Check is object renderable.
-  bool _isObjectRenderable(SceneObject sceneObject) {
-    return true;
   }
 
   /// Create WebGL rendering context.
@@ -211,6 +220,7 @@ class Renderer {
     webGL.Texture glTexture = gl.createTexture();
     texture.glTexture = glTexture;
     gl.bindTexture(webGL.TEXTURE_2D, glTexture);
+    gl.pixelStorei(webGL.UNPACK_FLIP_Y_WEBGL, 1);
     gl.texImage2D(webGL.TEXTURE_2D, 0, webGL.RGBA, webGL.RGBA,
         webGL.UNSIGNED_BYTE, texture.image);
     gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MAG_FILTER, webGL.LINEAR);
@@ -226,37 +236,39 @@ class Renderer {
   }
 
   void _prepareShader(Shader shader) {
-    int glShaderType = (shader.type == webGL.VERTEX_SHADER)
+    int glShaderType = (shader.type == ShaderType.Vertex)
         ? webGL.VERTEX_SHADER
         : webGL.FRAGMENT_SHADER;
-    webGL.Shader glShader = shader.glShader;
     shader.glShader = gl.createShader(glShaderType);
+    webGL.Shader glShader = shader.glShader;
     gl.shaderSource(glShader, shader.source);
     gl.compileShader(glShader);
 
     // Checks shader compile status.
     if (!gl.getShaderParameter(glShader, webGL.COMPILE_STATUS)) {
-      throw new Exception("Can't compile"
-          " ${ glShaderType } shader");
+      throw new Exception("Can't compile shader ${shader.type}");
     }
   }
 
   void _prepareShaderProgram(ShaderProgram shaderProgram) {
-    shaderProgram.attributes.values.forEach(_prepareAttribute);
-    webGL.Program glProgram = gl.createProgram();
-    shaderProgram.glProgram = glProgram;
+    if (shaderProgram.glProgram == null) {
+      shaderProgram.attributes.values.forEach(_prepareAttribute);
+      webGL.Program glProgram = gl.createProgram();
+      shaderProgram.glProgram = glProgram;
 
-    Shader vertexShader = shaderProgram.vertexShader;
-    Shader fragmentShader = shaderProgram.fragmentShader;
-    _prepareShader(vertexShader);
-    _prepareShader(fragmentShader);
+      Shader vertexShader = shaderProgram.vertexShader;
+      Shader fragmentShader = shaderProgram.fragmentShader;
 
-    gl.attachShader(glProgram, vertexShader.glShader);
-    gl.attachShader(glProgram, fragmentShader.glShader);
-    gl.linkProgram(glProgram);
+      _prepareShader(vertexShader);
+      _prepareShader(fragmentShader);
 
-    if (!gl.getProgramParameter(glProgram, webGL.LINK_STATUS)) {
-      throw new Exception("Can't compile program");
+      gl.attachShader(glProgram, vertexShader.glShader);
+      gl.attachShader(glProgram, fragmentShader.glShader);
+      gl.linkProgram(glProgram);
+
+      if (!gl.getProgramParameter(glProgram, webGL.LINK_STATUS)) {
+        throw new Exception("Can't compile program");
+      }
     }
   }
 
@@ -402,6 +414,20 @@ class Renderer {
       default:
         ;
     }
+  }
+
+  _bindFilter(Filter filter) {
+    if (_activeFilter != filter) {
+      _activeFilter = filter;
+      gl.useProgram(filter.shaderProgram.glProgram);
+    }
+    _bindAttributes(filter.shaderProgram);
+    _bindUniforms(filter.shaderProgram);
+  }
+
+  _bindTexture(Texture texture) {
+    gl.activeTexture(webGL.TEXTURE0);
+    gl.bindTexture(webGL.TEXTURE_2D, texture.glTexture);
   }
 
   RendererSettings get settings => _rendererSettings;

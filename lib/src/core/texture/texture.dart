@@ -3,8 +3,6 @@ part of ose;
 class Texture {
   final ImageElement image;
 
-  bool _isPrepared;
-
   webGL.Texture _glTexture;
 
   Texture(ImageElement image) : image = image;

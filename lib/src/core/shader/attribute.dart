@@ -1,8 +1,8 @@
 part of ose;
 
 class Attribute {
-  /// Attribute type.
-  Type _type;
+  /// Qualifier type.
+  QualifierType _type;
 
   /// Hold data.
   Float32List _storage;
@@ -31,35 +31,35 @@ class Attribute {
 
   /// f1
   factory Attribute.Float1([double f0]) =>
-      new Attribute._internal(Type.Float1, [f0]);
+      new Attribute._internal(QualifierType.Float1, [f0]);
 
   /// f2
   factory Attribute.Float2([double f0, double f1]) =>
-      new Attribute._internal(Type.Float2, [f0, f1]);
+      new Attribute._internal(QualifierType.Float2, [f0, f1]);
 
   /// f3
   factory Attribute.Float3([double f0, double f1, double f2]) =>
-      new Attribute._internal(Type.Float3, [f0, f1, f2]);
+      new Attribute._internal(QualifierType.Float3, [f0, f1, f2]);
 
   /// f4
   factory Attribute.Float4([double f0, double f1, double f2, double f3]) =>
-      new Attribute._internal(Type.Float4, [f0, f1, f2, f3]);
+      new Attribute._internal(QualifierType.Float4, [f0, f1, f2, f3]);
 
   /// fv1
   factory Attribute.FloatArray1([List<double> data]) =>
-      new Attribute._internal(Type.Float1, data, true);
+      new Attribute._internal(QualifierType.Float1, data, true);
 
   /// fv2
   factory Attribute.FloatArray2([List<double> data]) =>
-      new Attribute._internal(Type.Float2, data, true);
+      new Attribute._internal(QualifierType.Float2, data, true);
 
   /// fv3
   factory Attribute.FloatArray3([List<double> data]) =>
-      new Attribute._internal(Type.Float3, data, true);
+      new Attribute._internal(QualifierType.Float3, data, true);
 
   /// fv4
   factory Attribute.FloatArray4([List<double> data]) =>
-      new Attribute._internal(Type.Float4, data, true);
+      new Attribute._internal(QualifierType.Float4, data, true);
 
   void update(dynamic value) {
     Float32List storage;
@@ -68,6 +68,8 @@ class Attribute {
       storage = new Float32List.fromList([value]);
     } else if (value is Vector || value is Matrix) {
       storage = value.storage;
+    } else if (value is Float32List) {
+      storage = new Float32List.fromList(value);
     } else {
       throw ArgumentError;
     }
@@ -82,7 +84,7 @@ class Attribute {
     _isChanged = false;
   }
 
-  Type get type => _type;
+  QualifierType get type => _type;
 
   Float32List get storage => _storage;
 

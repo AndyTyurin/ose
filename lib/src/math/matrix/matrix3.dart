@@ -55,7 +55,7 @@ class Matrix3 extends Matrix {
   // Set up rotation matrix from angle.
   void setRotationFromAngle(double angle) {
     double c = math.cos(angle);
-    double s = math.sin(angle);
+    double s = -math.sin(angle);
     setIdentity();
     m00 = c;
     m10 = -s;

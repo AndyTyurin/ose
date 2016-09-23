@@ -14,7 +14,5 @@ abstract class Filter {
     shaderProgram.uniforms['u_model'].update(obj.transform.modelMatrix);
     shaderProgram.uniforms['u_projection']
         .update(camera.transform.projectionMatrix);
-
-    ShaderProgramManager.getInstance().bindProgram(shaderProgram);
   }
 }

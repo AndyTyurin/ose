@@ -49,6 +49,19 @@ class CameraTransform extends Transform {
     }
   }
 
+  @override
+  void copyFrom(CameraTransform transform) {
+    super.copyFrom(transform);
+    _width = transform.width;
+    _height = transform.height;
+    _scale = transform.scale;
+    _projectionMatrix = transform.projectionMatrix.clone();
+  }
+
+  CameraTransform clone() {
+    return new CameraTransform(width, height)..copyFrom(this);
+  }
+
   Matrix3 get projectionMatrix => _projectionMatrix;
 
   bool get shouldUpdateProjectionMatrix =>

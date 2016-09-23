@@ -17,6 +17,14 @@ class Sprite extends SceneObject {
     filter = new SpriteFilter();
   }
 
+  @override
+  void copyFrom(Sprite from) {
+    super.copyFrom(from);
+    _texture = from.texture;
+  }
+
+  Texture get texture => _texture;
+
   Float32List get glVertices => _glVertices;
 
   Float32List get glTextureCoords => _glTextureCoords;

@@ -32,7 +32,7 @@ class RendererSettings {
       bool useAutoResize: false,
       bool useMask: true,
       bool useClear: true,
-      bool useAntialias: false}) {
+      bool useAntialias: true}) {
     this.width = width;
     this.height = height;
     this.pixelRatio = pixelRatio;

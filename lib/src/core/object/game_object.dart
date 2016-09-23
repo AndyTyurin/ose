@@ -5,9 +5,9 @@ part of ose;
 class GameObject extends SceneObject {
   Float32List _glVertices;
 
-  Float32List get glVertices => _glVertices;
-
   GameObject({Float32List vertices}) {
     _glVertices = vertices;
   }
+
+  Float32List get glVertices => _glVertices;
 }

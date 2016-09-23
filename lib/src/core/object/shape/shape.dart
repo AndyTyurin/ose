@@ -1,9 +1,7 @@
 part of ose;
 
-abstract class Shape extends SceneObject {
+abstract class Shape extends GameObject {
   static SolidColor defaultColor = new SolidColor(new Color.white());
-
-  Float32List _glVertices;
 
   Float32List _glColors;
 
@@ -13,8 +11,8 @@ abstract class Shape extends SceneObject {
 
   ShapeFilter filter;
 
-  Shape({@required Float32List vertices, ComplexColor color}) {
-    _glVertices = vertices;
+  Shape({@required Float32List vertices, ComplexColor color})
+      : super(vertices: vertices) {
     this.color = color ?? defaultColor;
     _prevColor = defaultColor;
     filter = new ShapeFilter();
@@ -26,7 +24,7 @@ abstract class Shape extends SceneObject {
       ComplexColor complexColor = color ?? defaultColor;
       List<double> identityColors = complexColor.toIdentity();
       int numOfMissedColors =
-          _glVertices.length ~/ 2 - identityColors.length ~/ 4;
+          glVertices.length ~/ 2 - identityColors.length ~/ 4;
 
       if (complexColor is GradientColor) {
         if (numOfMissedColors > 0) {
@@ -53,11 +51,8 @@ abstract class Shape extends SceneObject {
   @override
   void copyFrom(Shape from) {
     super.copyFrom(from);
-    _glVertices = new Float32List.fromList(from.glVertices);
     color = from.color.clone();
   }
-
-  Float32List get glVertices => _glVertices;
 
   Float32List get glColors => _glColors;
 

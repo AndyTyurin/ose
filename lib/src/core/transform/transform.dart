@@ -44,6 +44,14 @@ abstract class Transform {
     _prevRotation = rotation;
   }
 
+  void copyFrom(Transform transform) {
+    position = transform.position.clone();
+    rotation = transform.rotation;
+    _translationMatrix = transform.translationMatrix;
+    _rotationMatrix = transform.rotationMatrix;
+    _updatePrevValues();
+  }
+
   Matrix3 get translationMatrix => _translationMatrix;
 
   Matrix3 get rotationMatrix => _rotationMatrix;
