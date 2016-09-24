@@ -19,10 +19,10 @@ class Renderer {
 
   Filter _activeFilter;
 
-  Renderer({CanvasElement canvas, RendererSettings rendererSettings})
+  Renderer({@required CanvasElement canvas, RendererSettings settings})
       : _timer = new utils.Timer(),
         _lifecycleControllers = new RendererLifecycleControllers(),
-        _rendererSettings = rendererSettings {
+        _rendererSettings = settings ?? new RendererSettings() {
     this.canvas = canvas ?? new CanvasElement();
     gl = this._initWebGL(this.canvas);
     _rendererState = RendererState.Stopped;
@@ -213,7 +213,7 @@ class Renderer {
     camera.transform
       ..width = canvas.width
       ..height = canvas.height;
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.viewport(0, 0, camera.transform.width, camera.transform.height);
   }
 
   void _prepareTexture(Texture texture) {
