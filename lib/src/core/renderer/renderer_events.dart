@@ -3,15 +3,9 @@ part of ose;
 /// Abstract renderer event.
 /// Is derived by other events of the renderer.
 abstract class RendererEvent {
-  /// [Renderer] in use.
   Renderer renderer;
 
-  /// Unique identifier.
-  String _uuid;
-
-  RendererEvent(this.renderer) : this._uuid = utils.generateUuid();
-
-  String get uuid => _uuid;
+  RendererEvent(this.renderer);
 }
 
 /// Start event.
@@ -49,10 +43,10 @@ class PostRenderEvent extends RenderEvent {
 /// Note: see [onRenderEvent] method.
 class ObjectRenderEvent extends RenderEvent {
   /// [SceneObject] in use.
-  SceneObject gameObject;
+  SceneObject sceneObject;
 
   ObjectRenderEvent(
-      this.gameObject, Scene scene, Camera camera, Renderer renderer)
+      this.sceneObject, Scene scene, Camera camera, Renderer renderer)
       : super(scene, camera, renderer);
 }
 

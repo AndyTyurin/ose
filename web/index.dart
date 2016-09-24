@@ -39,12 +39,10 @@ main() async {
 
   // Initialize renderer.
   Renderer renderer =
-      new Renderer(canvas: canvas, rendererSettings: new RendererSettings());
+      new Renderer(canvas: canvas, settings: new RendererSettings());
 
   window.addEventListener('resize', (_) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    renderer.updateViewport();
+    renderer.updateViewport(window.innerWidth, window.innerHeight);
   });
 
   // Initialize scene & camera.
@@ -160,7 +158,7 @@ main() async {
     });
 
     renderer.onObjectRender.listen((ObjectRenderEvent e) {
-        e.gameObject.transform.rotation += 0.01;
+        e.sceneObject.transform.rotation += 0.01;
     });
 
     renderer.start();

@@ -19,14 +19,14 @@ class Renderer {
 
   Filter _activeFilter;
 
-  Renderer({@required CanvasElement canvas, RendererSettings settings})
+  Renderer({CanvasElement canvas, RendererSettings settings})
       : _timer = new utils.Timer(),
         _lifecycleControllers = new RendererLifecycleControllers(),
         _rendererSettings = settings ?? new RendererSettings() {
     this.canvas = canvas ?? new CanvasElement();
     gl = this._initWebGL(this.canvas);
     _rendererState = RendererState.Stopped;
-    setCanvasSize(_rendererSettings.width, _rendererSettings.height,
+    updateViewport(_rendererSettings.width, _rendererSettings.height,
         _rendererSettings.pixelRatio);
   }
 
@@ -61,7 +61,7 @@ class Renderer {
 
       _timer.checkpoint(dt);
 
-      // Skip frame if fps threshold was reached.
+      // Skip frame if fps threshold has been reached.
       if (_timer.accumulator >= (1 / _rendererSettings.fpsThreshold)) {
         _timer.subtractAccumulator(_rendererSettings.fpsThreshold);
         return;
@@ -209,11 +209,10 @@ class Renderer {
     return gl;
   }
 
-  void updateViewport() {
-    camera.transform
-      ..width = canvas.width
-      ..height = canvas.height;
-    gl.viewport(0, 0, camera.transform.width, camera.transform.height);
+  void updateViewport(int width, int height, [int pixelRatio=1]) {
+    canvas.width = width;
+    canvas.height = height;
+    gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
   void _prepareTexture(Texture texture) {
