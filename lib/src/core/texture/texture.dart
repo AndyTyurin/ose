@@ -15,4 +15,8 @@ class Texture {
     }
     _glTexture = glTexture;
   }
+
+  SubTexture createSubTexture(Rect boundingRect) {
+    return new SubTexture(this, boundingRect);
+  }
 }

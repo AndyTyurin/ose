@@ -17,9 +17,9 @@ class Uniform {
   Uniform._internal(this._type, List storage, [bool isArray = false]) {
     if (storage != null) {
       storage = storage.map((v) {
-        return v ?? 0;
+        return v ?? .0;
       }).toList();
-      _storage = (storage.length > 0 && storage[0] is int)
+      _storage = (storage.length > 0 && _type == QualifierType.Int1)
           ? new Uint8List.fromList(storage)
           : new Float32List.fromList(storage);
     }

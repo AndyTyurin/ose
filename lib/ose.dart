@@ -48,6 +48,7 @@ part 'src/core/shader/sprite/frag_sprite_shader.dart';
 part 'src/core/shader/sprite/vert_sprite_shader.dart';
 part 'src/core/shader/qualifier_type.dart';
 part 'src/core/texture/texture.dart';
+part 'src/core/texture/sub_texture.dart';
 part 'src/core/color/color.dart';
 part 'src/core/color/complex_color.dart';
 part 'src/core/color/solid_color.dart';

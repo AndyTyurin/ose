@@ -2,7 +2,7 @@ part of ose;
 
 const String _vertexSpriteShaderSource = "attribute vec2 a_position;"
     "attribute vec2 a_texCoord;"
-    "uniform mat3 u_model;" 
+    "uniform mat3 u_model;"
     "uniform mat3 u_projection;"
     "varying vec2 v_texCoord;"
     "void main() {"

@@ -10,17 +10,19 @@ class Vector4 extends Vector {
   static Vector4 Y_AXIS = new Vector4(0.0, 1.0, 0.0);
 
   /// New vector with [x], [y], [z] elements.
-  Vector4([double x = 0.0, double y = 0.0, double z = 0.0])
-      : super(new Float32List.fromList([x, y, z]));
+  Vector4([double x = 0.0, double y = 0.0, double z = 0.0, double w = 0.0])
+      : super(new Float32List.fromList([x, y, z, w]));
 
   /// Copy vector from [other].
-  factory Vector4.copy(Vector4 other) => new Vector4(other.x, other.y, other.z);
+  factory Vector4.copy(Vector4 other) =>
+      new Vector4(other.x, other.y, other.z, other.w);
 
   /// Scale vector by [factor].
   void scale(double factor) {
     x *= factor;
     y *= factor;
     z *= factor;
+    w *= factor;
   }
 
   /// Add values of [v] to [this].
@@ -28,6 +30,7 @@ class Vector4 extends Vector {
     x += v.x;
     y += v.y;
     z += v.z;
+    w += v.w;
   }
 
   /// Subtract values of [v] from [this].
@@ -35,6 +38,7 @@ class Vector4 extends Vector {
     x -= v.x;
     y -= v.y;
     z -= v.z;
+    w -= v.w;
   }
 
   /// Negate [this] vector.
@@ -42,10 +46,11 @@ class Vector4 extends Vector {
     x = -x;
     y = -y;
     z = -z;
+    w = -w;
   }
 
   /// Clone [this] vector.
-  Vector4 clone() => new Vector4(x, y, z);
+  Vector4 clone() => new Vector4(x, y, z, w);
 
   /// Subtract [this] vector by [other].
   Vector4 operator -(Vector4 other) => clone()..sub(other);
@@ -63,7 +68,7 @@ class Vector4 extends Vector {
   Vector4 operator /(double scale) => clone()..scale(1 / scale);
 
   String toString() {
-    return "Vector4: (${x}, ${y}, ${z})";
+    return "Vector4: (${x}, ${y}, ${z}, ${w})";
   }
 
   double get x => storage[0];
@@ -72,6 +77,8 @@ class Vector4 extends Vector {
 
   double get z => storage[2];
 
+  double get w => storage[3];
+
   Vector2 get xy => new Vector2(x, y);
 
   set x(double x) => storage[0] = x;
@@ -79,4 +86,6 @@ class Vector4 extends Vector {
   set y(double y) => storage[1] = y;
 
   set z(double z) => storage[2] = z;
+
+  set w(double w) => storage[3] = w;
 }
