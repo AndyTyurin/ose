@@ -4,7 +4,3 @@ part of ose_utils;
 bool isPowerOfTwo(ImageElement img) {
   return img.width % 2 == 0 && img.height % 2 == 0;
 }
-
-Float32List convertPixelToIdentity(List<int> pixelCoords, int xMax, int yMax) {
-  
-}

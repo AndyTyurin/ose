@@ -5,8 +5,8 @@ import 'package:logging/logging.dart';
 import 'package:ose/ose.dart';
 import 'package:ose/ose_math.dart';
 
-class Spaceship extends Sprite {
-  Spaceship({Texture texture}) : super(texture: texture);
+class Character extends Sprite {
+
 }
 
 main() async {
@@ -31,8 +31,8 @@ main() async {
 
   // Create canvas.
   CanvasElement canvas = new CanvasElement();
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = window.document.documentElement.clientWidth;
+  canvas.height = window.document.documentElement.clientHeight;
 
   // Append canvas to DOM.
   document.body.append(canvas);
@@ -42,7 +42,7 @@ main() async {
       new Renderer(canvas: canvas, settings: new RendererSettings());
 
   window.addEventListener('resize', (_) {
-    renderer.updateViewport(window.innerWidth, window.innerHeight);
+    renderer.updateViewport(canvas.width, canvas.height);
   });
 
   // Initialize scene & camera.
@@ -110,18 +110,23 @@ main() async {
   // scene.children.add(triangle3);
 
   // TODO: Load image by another way.
-  ImageElement image = new ImageElement(src: '/i/spaceship.png');
+  ImageElement image = new ImageElement(src: '/i/character.png');
   image.onLoad.listen((e) {
-    Texture ssTexture = new Texture(image);
-    Spaceship ss = new Spaceship(texture: ssTexture);
-    ss.transform.scale = new Vector2(0.25, 0.25);
-    ss.transform.rotation = math.PI / 2;
+    Texture texture = new Texture(image);
+    SubTexture characterBottom = texture.createSubTexture(new Rect(10, 5, 100, 120));
+    Character character = new Character();
+    Rectangle rectangle = new Rectangle();
+    scene.children.add(rectangle);
+    character.setActiveSubTexture(characterBottom);
+    // character.setActiveTexture(texture);
+    character.transform.scale = new Vector2(4.0, 4.0);
+    // ss.transform.rotation = math.PI / 2;
 
     // Triangle triangle = new Triangle();
     // triangle.transform.scale = new Vector2(0.25, 0.25);
     // scene.children.add(triangle);
 
-    scene.children.add(ss);
+    scene.children.add(character);
 
     // Circle circle = new Circle(10);
     // scene.children.add(circle);
@@ -158,7 +163,7 @@ main() async {
     });
 
     renderer.onObjectRender.listen((ObjectRenderEvent e) {
-        e.sceneObject.transform.rotation += 0.01;
+        // e.sceneObject.transform.rotation += 0.01;
     });
 
     renderer.start();

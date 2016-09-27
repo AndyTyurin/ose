@@ -8,7 +8,6 @@ class SpriteFilter extends Filter {
       shaderProgram.attributes['a_texCoord'].update(obj.glTextureCoords);
       shaderProgram.uniforms['u_texture'].update(0);
       if (obj.glTextureBounds != null) {
-        print(obj.glTextureBounds);
         shaderProgram.uniforms['u_texBounds'].update(obj.glTextureBounds);
       }
     }

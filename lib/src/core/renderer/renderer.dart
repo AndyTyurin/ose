@@ -26,7 +26,7 @@ class Renderer {
     this.canvas = canvas ?? new CanvasElement();
     gl = this._initWebGL(this.canvas);
     _rendererState = RendererState.Stopped;
-    updateViewport(_rendererSettings.width, _rendererSettings.height,
+    updateViewport(_rendererSettings.width , _rendererSettings.height,
         _rendererSettings.pixelRatio);
   }
 
@@ -143,6 +143,7 @@ class Renderer {
 
     if (sceneObject is Sprite) {
       Texture texture = sceneObject.texture;
+
       if (texture.glTexture == null) {
         _prepareTexture(texture);
       }
@@ -210,8 +211,8 @@ class Renderer {
   }
 
   void updateViewport(int width, int height, [int pixelRatio=1]) {
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width ??= width * pixelRatio;
+    canvas.height ??= height * pixelRatio;
     gl.viewport(0, 0, canvas.width, canvas.height);
   }
 

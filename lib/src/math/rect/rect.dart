@@ -1,19 +1,19 @@
 part of ose_math;
 
 class Rect {
-  int x0;
+  num x0;
 
-  int x1;
+  num x1;
 
-  int y0;
+  num y0;
 
-  int y1;
+  num y1;
 
-  Rect(int x0, int y0, int x1, int y1) {
+  Rect(num x0, num y0, num x1, num y1) {
     setValues(x0, y0, x1, y1);
   }
 
-  setValues(int x0, int y0, int x1, int y1) {
+  setValues(num x0, num y0, num x1, num y1) {
     this.x0 = x0;
     this.y0 = y0;
     this.x1 = x1;
@@ -24,9 +24,8 @@ class Rect {
     return new Rect(x0, y0, x1, y1);
   }
 
-  Vector4 toIdentityVector4(int maxWidth, int maxHeight) => new Vector4(
-      x0 / maxWidth,
-      y0 / maxHeight,
-      x1 / maxWidth,
-      y1 / maxHeight);
+  Vector4 toVector4() {
+    return new Vector4(
+        x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble());
+  }
 }

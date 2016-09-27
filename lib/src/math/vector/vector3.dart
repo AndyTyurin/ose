@@ -14,6 +14,13 @@ class Vector3 extends Vector {
   /// Copy vector from [other].
   factory Vector3.copy(Vector3 other) => new Vector3(other.x, other.y, other.z);
 
+  /// Set vector values.
+  void setValues(double x, double y, double z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
   /// Scale vector by [factor].
   void scale(double factor) {
     x *= factor;

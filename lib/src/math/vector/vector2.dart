@@ -18,6 +18,12 @@ class Vector2 extends Vector {
   /// Copy vector from [other].
   factory Vector2.copy(Vector2 other) => new Vector2(other.x, other.y);
 
+  /// Set vector values.
+  void setValues(double x, double y) {
+    this.x = x;
+    this.y = y;
+  }
+
   /// Scale vector by [factor].
   void scale(double factor) {
     x *= factor;

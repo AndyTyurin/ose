@@ -67,8 +67,8 @@ class Matrix3 extends Matrix {
   void setProjection(int width, int height, double scale) {
     setIdentity();
     double min = math.min(width, height);
-    m00 = min / width * scale;
-    m11 = min / height * scale;
+    m00 = min / width * scale / 2;
+    m11 = min / height * scale / 2;
   }
 
   /// Makes as identity matrix.
