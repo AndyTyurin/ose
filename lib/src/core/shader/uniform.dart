@@ -1,15 +1,17 @@
 part of ose;
 
 class Uniform {
+  static final Function eq = const ListEquality().equals;
+
   QualifierType _type;
 
-  List _storage;
+  Float32List _storage;
+
+  // Attribute state.
+  QualifierState state;
 
   /// Uniform use array.
   bool _useArray;
-
-  /// Is uniform storage was changed?
-  bool _isChanged;
 
   /// Uniform location.
   webGL.UniformLocation location;
@@ -17,19 +19,18 @@ class Uniform {
   Uniform._internal(this._type, List storage, [bool isArray = false]) {
     if (storage != null) {
       storage = storage.map((v) {
-        return v ?? .0;
+        return double.parse((v ?? .0).toString());
       }).toList();
-      _storage = (storage.length > 0 && _type == QualifierType.Int1)
-          ? new Uint8List.fromList(storage)
-          : new Float32List.fromList(storage);
+      _storage =
+          (storage.length > 0) ? new Float32List.fromList(storage) : null;
     }
     _useArray = isArray;
-    _isChanged = true;
+    state = QualifierState.INITIALIZED;
   }
 
-
   /// i1
-  factory Uniform.Int1([int i0]) => new Uniform._internal(QualifierType.Int1, [i0]);
+  factory Uniform.Int1([int i0]) =>
+      new Uniform._internal(QualifierType.Int1, [i0]);
 
   /// f1
   factory Uniform.Float1([double f0]) =>
@@ -92,26 +93,30 @@ class Uniform {
   void update(dynamic value) {
     List storage;
 
-    if (value is double) {
-      storage = new Float32List.fromList([value]);
-    } else if (value is int) {
-      storage = new Int8List.fromList([value]);
+    if (utils.isNumeric(value)) {
+      storage = new Float32List.fromList([double.parse(value.toString())]);
     } else if (value is Vector || value is Matrix) {
-      storage = value.storage;
-    } else if (value is Float32List || value is Int8List) {
-      storage = value;
+      storage = new Float32List.fromList(value.storage);
+    } else if (value is Float32List) {
+      storage = new Float32List.fromList(value);
+    } else if (value is Int8List) {
+      storage = new Int8List.fromList(value);
     } else {
       throw ArgumentError;
     }
 
-    if (storage != _storage) {
-      _isChanged = true;
+    if (!eq(_storage, storage)) {
+      state = QualifierState.CHANGED;
       _storage = storage;
+    } else {
+      state = QualifierState.CACHED;
     }
   }
 
-  void resetChangedState() {
-    _isChanged = false;
+  bool operator ==(Uniform another) {
+    return eq(storage, another.storage) &&
+        type == another.type &&
+        state == another.state;
   }
 
   QualifierType get type => _type;
@@ -119,6 +124,4 @@ class Uniform {
   List get storage => _storage;
 
   bool get useArray => _useArray;
-
-  bool get isChanged => _isChanged;
 }

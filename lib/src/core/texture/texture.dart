@@ -7,6 +7,10 @@ class Texture {
 
   Texture(ImageElement image) : image = image;
 
+  operator ==(Texture other) {
+    return image == other.image && _glTexture == other.glTexture;
+  }
+
   webGL.Texture get glTexture => _glTexture;
 
   void set glTexture(webGL.Texture glTexture) {

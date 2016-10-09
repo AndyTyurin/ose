@@ -1,6 +1,8 @@
 part of ose;
 
 class Attribute {
+  static final Function eq = const ListEquality().equals;
+
   /// Qualifier type.
   QualifierType _type;
 
@@ -10,23 +12,28 @@ class Attribute {
   /// WebGL buffer.
   webGL.Buffer _buffer;
 
-  /// Attribute location.
-  int location;
+  // Attribute state.
+  QualifierState state;
 
-  /// Attribute storage was changed.
-  bool _isChanged;
+  /// Attribute location.
+  int _location;
+
+  /// Is attribute location was bound.
+  bool _isLocationBound;
 
   /// Attribute use buffer.
   bool _useBuffer;
 
-  Attribute._internal(this._type, List<double> storage, [bool useBuffer = true]) {
+  Attribute._internal(this._type, List<double> storage,
+      [bool useBuffer = true]) {
     if (storage != null) {
       storage.removeWhere((v) => v == null);
       _storage =
           (storage.length > 0) ? new Float32List.fromList(storage) : null;
     }
-    _isChanged = true;
     _useBuffer = useBuffer;
+    _isLocationBound = false;
+    state = QualifierState.INITIALIZED;
   }
 
   /// f1
@@ -74,14 +81,23 @@ class Attribute {
       throw ArgumentError;
     }
 
-    if (storage != _storage) {
-      _isChanged = true;
-      _storage = storage;
+    if (!eq(_storage, storage)) {
+      state = QualifierState.CHANGED;
+    } else {
+      state = QualifierState.CACHED;
     }
+
+    _storage = storage;
   }
 
-  void resetChangedState() {
-    _isChanged = false;
+  void bindLocation() {
+    _isLocationBound = true;
+  }
+
+  bool operator ==(Attribute another) {
+    return eq(storage, another.storage) &&
+        type == another.type &&
+        state == another.state;
   }
 
   QualifierType get type => _type;
@@ -96,5 +112,12 @@ class Attribute {
     _buffer = buffer;
   }
 
-  bool get isChanged => _isChanged;
+  int get location => _location;
+
+  void set location(int location) {
+    _location = location;
+    _isLocationBound = false;
+  }
+
+  bool get isLocationBound => _isLocationBound;
 }

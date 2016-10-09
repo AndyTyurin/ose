@@ -9,3 +9,4 @@ part 'src/utils/texture_utils.dart';
 part 'src/utils/timer.dart';
 part 'src/utils/uuid.dart';
 part 'src/utils/math_utils.dart';
+part 'src/utils/num.dart';

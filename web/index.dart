@@ -5,9 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:ose/ose.dart';
 import 'package:ose/ose_math.dart';
 
-class Character extends Sprite {
-
-}
+class Character extends Sprite {}
 
 main() async {
   // Set logger settings.
@@ -49,7 +47,7 @@ main() async {
   Scene scene = new Scene();
   Camera camera = new Camera(canvas.width, canvas.height);
   camera.transform.position = new Vector2(0.0, 0.0);
-  //camera.transform.scale = 5;
+  camera.transform.scale = 0.5;
   // Initialize scene objects.
   // oseGL.Rectangle rectangle = new oseGL.Rectangle();
   // rectangle.transform.scale = new Vector2(.25, .25);
@@ -113,20 +111,37 @@ main() async {
   ImageElement image = new ImageElement(src: '/i/character.png');
   image.onLoad.listen((e) {
     Texture texture = new Texture(image);
-    SubTexture characterBottom = texture.createSubTexture(new Rect(10, 5, 100, 120));
+    SubTexture characterFirst =
+        texture.createSubTexture(new Rect(7, 0, 103, 120));
+    SubTexture characterSecond =
+        texture.createSubTexture(new Rect(127, 0, 223, 120));
+    SubTexture characterThird =
+        texture.createSubTexture(new Rect(247, 0, 343, 120));
+
     Character character = new Character();
     Rectangle rectangle = new Rectangle();
-    scene.children.add(rectangle);
-    character.setActiveSubTexture(characterBottom);
+    // scene.children.add(rectangle);
+    character.setActiveSubTexture(characterFirst);
     // character.setActiveTexture(texture);
-    character.transform.scale = new Vector2(4.0, 4.0);
+    character.transform.scale = new Vector2(1.0, 1.0);
     // ss.transform.rotation = math.PI / 2;
 
     // Triangle triangle = new Triangle();
     // triangle.transform.scale = new Vector2(0.25, 0.25);
     // scene.children.add(triangle);
 
-    scene.children.add(character);
+    //scene.children.add(character);
+    math.Random r = new math.Random();
+
+    for (int i=0; i<8; i++) {
+      Character character = new Character();
+      character.transform.scale = new Vector2(8.0, 8.0);
+      character.setActiveSubTexture(characterFirst);
+      int minus = r.nextDouble() > 0.5 ? -1 : 1;
+      int minus2 = r.nextDouble() > 0.5 ? -1 : 1;
+      character.transform.position = new Vector2(minus2 * r.nextDouble() * 2, minus * r.nextDouble() * 2);
+      scene.children.add(character);
+    }
 
     // Circle circle = new Circle(10);
     // scene.children.add(circle);
@@ -148,22 +163,39 @@ main() async {
     // }
 
     //var j = 1;
+    //int i = 0;
+    int j = 0;
     renderer.onRender.listen((RenderEvent e) {
-      // for (int i = 0; i < e.scene.children.length; i++) {
-      //   SceneObject obj = e.scene.children[i];
-      //   if (obj is Rectangle) {
-      //     //obj.transform.rotation -= 0.01;
-      //   } else if (obj is Triangle) {
-      //     //obj.transform.rotation += 0.01;
-      //
-      //   }
-      // }
-      // j++;
-      //
+      j++;
+      for (int i = 0; i < e.scene.children.length; i++) {
+        SceneObject obj = e.scene.children[i];
+        if (obj is Sprite) {
+          if (j < 15) {
+            obj.setActiveSubTexture(characterFirst);
+          } else if (j < 30) {
+            obj.setActiveSubTexture(characterSecond);
+          } else if (j < 45) {
+            obj.setActiveSubTexture(characterThird);
+          } else {
+            obj.setActiveSubTexture(characterSecond);
+          }
+        }
+      }
+      if (j == 60) j = 0;
     });
 
+
     renderer.onObjectRender.listen((ObjectRenderEvent e) {
-        // e.sceneObject.transform.rotation += 0.01;
+      // i++;
+      // if (i < 20) {
+      //   character.setActiveSubTexture(characterFirst);
+      // } else if (i < 40) {
+      //   character.setActiveSubTexture(characterSecond);
+      // } else {
+      //   character.setActiveSubTexture(characterThird);
+      // }
+      //
+      // if (i == 60) i = 0;
     });
 
     renderer.start();

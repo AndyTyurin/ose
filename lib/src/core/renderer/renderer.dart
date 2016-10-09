@@ -1,42 +1,40 @@
 part of ose;
 
 class Renderer {
-  static webGL.RenderingContext gl;
+  final RendererLifecycleControllers lifecycleControllers;
 
-  final RendererLifecycleControllers _lifecycleControllers;
+  final RendererSettings settings;
 
-  final RendererSettings _rendererSettings;
+  final utils.Timer timer;
 
-  final utils.Timer _timer;
+  final RendererManagers managers;
+
+  webGL.RenderingContext gl;
 
   CanvasElement canvas;
 
-  Camera camera;
-
-  Scene scene;
-
   RendererState _rendererState;
 
-  Filter _activeFilter;
+  double _dt;
 
   Renderer({CanvasElement canvas, RendererSettings settings})
-      : _timer = new utils.Timer(),
-        _lifecycleControllers = new RendererLifecycleControllers(),
-        _rendererSettings = settings ?? new RendererSettings() {
+      : timer = new utils.Timer(),
+        lifecycleControllers = new RendererLifecycleControllers(),
+        settings = settings ?? new RendererSettings(),
+        managers = new RendererManagers() {
     this.canvas = canvas ?? new CanvasElement();
     gl = this._initWebGL(this.canvas);
     _rendererState = RendererState.Stopped;
-    updateViewport(_rendererSettings.width , _rendererSettings.height,
-        _rendererSettings.pixelRatio);
+    updateViewport(settings.width, settings.height, settings.pixelRatio);
   }
 
   Future start() async {
     _rendererState = RendererState.StartRequested;
 
     // Initialize timer.
-    _timer.init();
+    timer.init();
 
-    await _lifecycleControllers.onStartCtrl
+    await lifecycleControllers.onStartCtrl
       ..add(new StartEvent(this))
       ..done;
 
@@ -48,37 +46,42 @@ class Renderer {
   Future stop() async {
     _rendererState = RendererState.StopRequested;
 
-    await _lifecycleControllers.onStopCtrl
+    await lifecycleControllers.onStopCtrl
       ..add(new StopEvent(this))
       ..done;
 
     _rendererState = RendererState.Stopped;
   }
 
-  Future _render(num dt) async {
+  Future _render(num msSinceRendererStart) async {
     if (_rendererState != RendererState.StopRequested) {
       window.animationFrame.then(_render);
 
-      _timer.checkpoint(dt);
+      double fpsThresholdPerFrame = 1000 / settings.fpsThreshold;
+
+      timer.checkpoint(msSinceRendererStart);
 
       // Skip frame if fps threshold has been reached.
-      if (_timer.accumulator >= (1 / _rendererSettings.fpsThreshold)) {
-        _timer.subtractAccumulator(_rendererSettings.fpsThreshold);
-        return;
+      if (timer.accumulator >= fpsThresholdPerFrame) {
+        timer.subtractAccumulator(fpsThresholdPerFrame);
+
+        _dt = (timer.delta > fpsThresholdPerFrame)
+            ? timer.delta
+            : fpsThresholdPerFrame;
+        // Pre-render scene.
+        await lifecycleControllers.onRenderCtrl
+          ..add(new RenderEvent(managers.sceneManager.activeScene,
+              managers.cameraManager.activeCamera, this))
+          ..done;
+
+        /// Render scene.
+        await _renderScene(scene, camera);
+
+        // Post-render scene.
+        await lifecycleControllers.onPostRenderCtrl
+          ..add(new PostRenderEvent(scene, camera, this))
+          ..done;
       }
-
-      // Pre-render scene.
-      await _lifecycleControllers.onRenderCtrl
-        ..add(new RenderEvent(scene, camera, this))
-        ..done;
-
-      /// Render scene.
-      await _renderScene(scene, camera);
-
-      // Post-render scene.
-      await _lifecycleControllers.onPostRenderCtrl
-        ..add(new PostRenderEvent(scene, camera, this))
-        ..done;
     }
   }
 
@@ -111,7 +114,7 @@ class Renderer {
 
     for (SceneObject obj in scene.children) {
       /// Per object pre-render.
-      await _lifecycleControllers.onObjectRenderCtrl
+      await lifecycleControllers.onObjectRenderCtrl
         ..add(new ObjectRenderEvent(obj, scene, camera, this))
         ..done;
 
@@ -119,7 +122,7 @@ class Renderer {
       _renderObject(obj, scene, camera);
 
       /// Per object post-render.
-      await _lifecycleControllers.onObjectPostRenderCtrl
+      await lifecycleControllers.onObjectPostRenderCtrl
         ..add(new ObjectPostRenderEvent(obj, scene, camera, this))
         ..done;
     }
@@ -132,7 +135,6 @@ class Renderer {
 
     sceneObject.transform.updateModelMatrix();
     camera.transform.updateProjectionMatrix();
-
     if (settings.useMask) {
       /// TODO: Check how could be use mask manager.
       /// this.maskManager(gameObject, maskObject, MaskManager.intersect);
@@ -210,7 +212,7 @@ class Renderer {
     return gl;
   }
 
-  void updateViewport(int width, int height, [int pixelRatio=1]) {
+  void updateViewport(int width, int height, [int pixelRatio = 1]) {
     canvas.width ??= width * pixelRatio;
     canvas.height ??= height * pixelRatio;
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -230,7 +232,7 @@ class Renderer {
   }
 
   void _prepareAttribute(Attribute attribute) {
-    if (attribute.useBuffer) {
+    if (attribute.useBuffer && attribute.buffer == null) {
       attribute.buffer = gl.createBuffer();
     }
   }
@@ -252,7 +254,6 @@ class Renderer {
 
   void _prepareShaderProgram(ShaderProgram shaderProgram) {
     if (shaderProgram.glProgram == null) {
-      shaderProgram.attributes.values.forEach(_prepareAttribute);
       webGL.Program glProgram = gl.createProgram();
       shaderProgram.glProgram = glProgram;
 
@@ -274,22 +275,29 @@ class Renderer {
 
   void _prepareFilter(Filter filter) {
     _prepareShaderProgram(filter.shaderProgram);
+    filter.attributes.forEach((_, attribute) => _prepareAttribute(attribute));
   }
 
-  void _bindAttributes(ShaderProgram shaderProgram) {
-    shaderProgram.attributes.forEach((name, attribute) {
+  void _bindAttributes(
+      ShaderProgram shaderProgram, Map<String, Attribute> attributes) {
+    attributes.forEach((name, attribute) {
+      _attributeManager.setActiveAttribute(name, attribute);
       _bindAttribute(shaderProgram, name, attribute);
     });
   }
 
   void _bindAttribute(
       ShaderProgram shaderProgram, String name, Attribute attribute) {
-    if (!attribute.isChanged) return;
-
     webGL.Program glProgram = shaderProgram.glProgram;
+    bool shouldBindBuffer = _attributeManager.shouldBindAttribute(name);
+
+    if (!shouldBindBuffer && attribute.state == QualifierState.CACHED) return;
 
     if (attribute.location != null) {
-      gl.bindAttribLocation(glProgram, attribute.location, name);
+      if (!attribute.isLocationBound) {
+        gl.bindAttribLocation(glProgram, attribute.location, name);
+        attribute.bindLocation();
+      }
     } else {
       attribute.location = gl.getAttribLocation(glProgram, name);
     }
@@ -335,29 +343,31 @@ class Renderer {
     if (attribute.useBuffer) {
       gl.bindBuffer(webGL.ARRAY_BUFFER, attribute.buffer);
 
-      if (attribute.isChanged) {
+      if (attribute.state == QualifierState.CHANGED) {
+        gl.enableVertexAttribArray(attributeLocation);
+        gl.vertexAttribPointer(
+            attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
         gl.bufferData(webGL.ARRAY_BUFFER, attribute.storage, webGL.STATIC_DRAW);
       }
-
-      gl.enableVertexAttribArray(attributeLocation);
-      gl.vertexAttribPointer(
-          attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
     }
-
-    attribute.resetChangedState();
   }
 
-  void _bindUniforms(ShaderProgram shaderProgram) {
-    shaderProgram.uniforms.forEach((name, uniform) {
+  void _bindUniforms(
+      ShaderProgram shaderProgram, Map<String, Uniform> uniforms) {
+    uniforms.forEach((name, uniform) {
+      _uniformManager.setActiveUniform(name, uniform);
       _bindUniform(shaderProgram, name, uniform);
     });
   }
 
   /// Apply uniform.
   void _bindUniform(ShaderProgram shaderProgram, String name, Uniform uniform) {
-    if (!uniform.isChanged) return;
-
     webGL.Program glProgram = shaderProgram.glProgram;
+    bool shouldBindUniform = _uniformManager.shouldBindUniform(name);
+
+    if (!shouldBindUniform && uniform.state == QualifierState.CACHED) {
+      return;
+    }
 
     if (uniform.location == null) {
       uniform.location = gl.getUniformLocation(glProgram, name);
@@ -417,12 +427,16 @@ class Renderer {
   }
 
   _bindFilter(Filter filter) {
-    if (_activeFilter != filter) {
-      _activeFilter = filter;
-      gl.useProgram(filter.shaderProgram.glProgram);
+    _bindShaderProgram(filter.shaderProgram);
+    _bindAttributes(filter.shaderProgram, filter.attributes);
+    _bindUniforms(filter.shaderProgram, filter.uniforms);
+  }
+
+  _bindShaderProgram(ShaderProgram shaderProgram) {
+    if (_shaderProgram != shaderProgram) {
+      _shaderProgram = shaderProgram;
+      gl.useProgram(_shaderProgram.glProgram);
     }
-    _bindAttributes(filter.shaderProgram);
-    _bindUniforms(filter.shaderProgram);
   }
 
   _bindTexture(Texture texture) {
@@ -430,26 +444,47 @@ class Renderer {
     gl.bindTexture(webGL.TEXTURE_2D, texture.glTexture);
   }
 
-  RendererSettings get settings => _rendererSettings;
+  Scene get scene => managers.sceneManager.activeScene;
+
+  void set scene(Scene scene) {
+    managers.sceneManager.activeScene = scene;
+  }
+
+  Camera get camera => managers.cameraManager.activeCamera;
+
+  void set camera(Camera camera) {
+    managers.cameraManager.activeCamera = camera;
+  }
+
+  ShaderProgram get _shaderProgram =>
+      managers.shaderProgramManager.activeShaderProgram;
+
+  AttributeManager get _attributeManager => managers.attributeManager;
+
+  UniformManager get _uniformManager => managers.uniformManager;
+
+  void set _shaderProgram(ShaderProgram shaderProgram) {
+    managers.shaderProgramManager.activeShaderProgram = shaderProgram;
+  }
 
   RendererState get state => _rendererState;
 
-  Stream<StartEvent> get onStart => _lifecycleControllers.onStartCtrl.stream;
+  Stream<StartEvent> get onStart => lifecycleControllers.onStartCtrl.stream;
 
-  Stream<StopEvent> get onStop => _lifecycleControllers.onStopCtrl.stream;
+  Stream<StopEvent> get onStop => lifecycleControllers.onStopCtrl.stream;
 
-  Stream<RenderEvent> get onRender => _lifecycleControllers.onRenderCtrl.stream;
+  Stream<RenderEvent> get onRender => lifecycleControllers.onRenderCtrl.stream;
 
   Stream<PostRenderEvent> get onPostRender =>
-      _lifecycleControllers.onPostRenderCtrl.stream;
+      lifecycleControllers.onPostRenderCtrl.stream;
 
   Stream<ObjectRenderEvent> get onObjectRender =>
-      _lifecycleControllers.onObjectRenderCtrl.stream;
+      lifecycleControllers.onObjectRenderCtrl.stream;
 
   Stream<ObjectPostRenderEvent> get onObjectPostRender =>
-      _lifecycleControllers.onObjectPostRenderCtrl.stream;
+      lifecycleControllers.onObjectPostRenderCtrl.stream;
 
-  num get dt => _timer.delta;
+  double get dt => _dt;
 
-  num get fps => 1000 ~/ dt;
+  int get fps => 1000 ~/ dt;
 }

@@ -11,8 +11,8 @@ class Sprite extends SceneObject {
   SpriteFilter filter;
 
   Sprite() {
-    // _glVertices =
-    //     new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
+    _glVertices =
+        new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
     _glTextureCoords =
         new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
     filter = new SpriteFilter();
@@ -20,44 +20,39 @@ class Sprite extends SceneObject {
 
   void rebuildCoordinates() {
     ImageElement textureImg = _texture.image;
-    int width = textureImg.width;
-    int height = textureImg.height;
-    double ratio = min(1.0 / width, 1.0 / height);
-    double identityWidth = width * ratio;
-    double identityHeight = height * ratio;
-    double indentWidth = (1.0 - identityWidth) / 2;
-    double indentHeight = (1.0 - identityHeight) / 2;
-    double boundsIndentWidth, boundsIndentHeight;
-
-    if (_glTextureBounds.z >= 0.5) {
-      boundsIndentWidth = (0.5 - _glTextureBounds.x).abs() +
-          (_glTextureBounds.z - _glTextureBounds.x) / 2;
-    } else {
-      boundsIndentWidth = (0.5 - _glTextureBounds.z).abs() +
-          (_glTextureBounds.z - _glTextureBounds.x) / 2;
-    }
-    // TODO: Height computed wrong.
-    if (_glTextureBounds.y >= 0.5) {
-      boundsIndentHeight = (1.0 - _glTextureBounds.w).abs() +
-          (_glTextureBounds.y - _glTextureBounds.w) / 2;
-    } else {
-      boundsIndentHeight = (0.5 - _glTextureBounds.y).abs() +
-          (_glTextureBounds.y - _glTextureBounds.w) / 2;
-    }
-
+    int textureWidth = textureImg.width;
+    int textureHeight = textureImg.height;
+    double aspectRatio = min(1.0 / textureWidth, 1.0 / textureHeight);
+    double unitTextureWidth = textureWidth * aspectRatio;
+    double unitTextureHeight = textureHeight * aspectRatio;
+    double ratioX = 1.0 / unitTextureWidth;
+    double ratioY = 1.0 / unitTextureHeight;
+    double spriteSizeX = (glTextureBounds.z - glTextureBounds.x) / ratioX;
+    double spriteSizeY = ((1.0 - glTextureBounds.y) - (1.0 - glTextureBounds.w)) / ratioY;
+    double indentX = .5 - spriteSizeX / 2;
+    double indentY = .5 - spriteSizeY / 2;
 
     _glVertices = new Float32List.fromList([
-      indentWidth + boundsIndentWidth,
-      indentHeight + boundsIndentHeight,
-      indentWidth + boundsIndentWidth,
-      indentHeight + identityHeight + boundsIndentHeight,
-      indentWidth + identityWidth + boundsIndentWidth,
-      indentHeight + boundsIndentHeight,
-      indentWidth + identityWidth + boundsIndentWidth,
-      indentHeight + identityHeight + boundsIndentHeight
+      indentX,
+      indentY,
+      indentX,
+      indentY + spriteSizeY,
+      indentX + spriteSizeX,
+      indentY,
+      indentX + spriteSizeX,
+      indentY + spriteSizeY
     ]);
 
-    print(_glVertices);
+    _glTextureCoords = new Float32List.fromList([
+      _glTextureBounds.x,
+      _glTextureBounds.y,
+      _glTextureBounds.x,
+      _glTextureBounds.w,
+      _glTextureBounds.z,
+      _glTextureBounds.y,
+      _glTextureBounds.z,
+      _glTextureBounds.w
+    ]);
   }
 
   void setActiveTexture(Texture texture) {
@@ -67,15 +62,16 @@ class Sprite extends SceneObject {
   }
 
   void setActiveSubTexture(SubTexture subTexture) {
-    _texture = subTexture.parentTexture;
-    ImageElement textureImg = _texture.image;
+    Texture parentTexture = subTexture.parentTexture;
+    ImageElement textureImg = parentTexture.image;
     int width = textureImg.width;
     int height = textureImg.height;
     Vector4 boundingVector = subTexture.boundingRect.toVector4();
     _glTextureBounds = boundingVector
       ..setValues(boundingVector.x / width, 1 - boundingVector.w / height,
           boundingVector.z / width, 1 - boundingVector.y / height);
-    print(_glTextureBounds);
+    texture = parentTexture;
+    _texture = texture;
     rebuildCoordinates();
   }
 
@@ -86,6 +82,10 @@ class Sprite extends SceneObject {
   }
 
   Texture get texture => _texture;
+
+  void set texture(Texture texture) {
+    _texture = texture;
+  }
 
   webGL.Texture get glTexture => _texture.glTexture;
 

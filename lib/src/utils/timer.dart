@@ -23,7 +23,6 @@ class Timer {
 
   /// Initialize timer.
   void init() {
-    checkpoint(new DateTime.now().millisecondsSinceEpoch);
     resetAccumulator();
   }
 
@@ -36,7 +35,7 @@ class Timer {
   }
 
   /// Subtract accumulator.
-  void subtractAccumulator(int subtraction) {
+  void subtractAccumulator(num subtraction) {
     _accumulator -= subtraction;
   }
 

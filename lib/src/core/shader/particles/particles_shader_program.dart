@@ -10,8 +10,5 @@ Map<String, Uniform> _particlesShaderProgramUniforms = {
   'u_projection': new Uniform.Mat3()
 };
 
-final ShaderProgram particlesShaderProgram = new ShaderProgram(
-    _particlesVertexShader,
-    _particlesFragmentShader,
-    _particlesShaderProgramAttributes,
-    _particlesShaderProgramUniforms);
+final ShaderProgram particlesShaderProgram =
+    new ShaderProgram(_particlesVertexShader, _particlesFragmentShader);
