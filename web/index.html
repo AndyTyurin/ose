@@ -2,18 +2,53 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ose example</title>
-    <style>
-        body, canvas {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+    <title>OSE examples</title>
+    <link rel="stylesheet" href="main.css">
     <script type="application/dart" src="index.dart"></script>
     <script src="packages/browser/dart.js"></script>
+    <style>
+        figure {
+            width: 100%;
+            background: #eaeaea;
+        }
+
+        figure.example {
+            margin: 1vw auto;
+            width: 45vw;
+            padding: 1vw;
+        }
+
+        figure.example:after {
+            clear: both;
+            content: " ";
+            display: block;
+        }
+
+        figure.example > h3.title {
+            font-size: 1.25rem;
+            margin: 0 0 .5rem 0;
+        }
+
+        figure.example > figcaption.snapshot {
+            float: left;
+            margin-right: 2vw;
+        }
+    </style>
 </head>
 <body>
+    <main>
+        <header>
+            <h1 class="title">OSE examples</h1>
+        </header>
+        <figure class="example">
+            <figcaption class="snapshot">
+                <a href="/examples/sprite/sprite.html" title="Sprite example">
+                    <img src="/examples/sprite/snapshot.jpg" width="200" height="200" alt="Sprite example" />
+                </a>
+            </figcaption>
+            <h3 class="title">Sprite example</h3>
+            Spaceship is rotating clock-wise.
+        </figure>
+    </main>
 </body>
 </html>

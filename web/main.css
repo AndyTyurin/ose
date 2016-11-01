@@ -1,0 +1,41 @@
+html, body {
+    font: 11px roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+}
+
+header {
+    display: block;
+    width: 100%;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+header > ul.menu {
+    list-style: none;
+    margin: 0 0.75em 0 0;
+    padding: 0;
+}
+
+header > ul.menu,
+header > ul.menu > li.menu-item,
+header > span.title {
+    display: inline-block;
+}
+
+header > h1.title {
+    margin-bottom: 1.0em;
+}
+
+header > ul.menu > li.menu-item > a {
+    color: #53baff;
+}
+
+header > ul.menu > li.menu-item > a:hover {
+    color: #209cff;
+}
+
+header > span.title {
+    margin: 0 0 0 .75rem;
+}
