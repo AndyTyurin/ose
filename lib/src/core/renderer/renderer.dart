@@ -25,7 +25,11 @@ class Renderer {
     this.canvas = canvas ?? new CanvasElement();
     gl = this._initWebGL(this.canvas);
     _rendererState = RendererState.Stopped;
-    updateViewport(settings.width, settings.height, settings.pixelRatio);
+    updateViewport(
+        this.settings.width,
+        this.settings.height,
+        this.settings.pixelRatio
+    );
   }
 
   Future start() async {
@@ -213,8 +217,8 @@ class Renderer {
   }
 
   void updateViewport(int width, int height, [int pixelRatio = 1]) {
-    canvas.width ??= width * pixelRatio;
-    canvas.height ??= height * pixelRatio;
+    canvas.width = width * pixelRatio;
+    canvas.height = height * pixelRatio;
     gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
