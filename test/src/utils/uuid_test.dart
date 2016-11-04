@@ -1,7 +1,7 @@
-@TestOn('browser')
+@TestOn('content-shell')
 
 import 'package:test/test.dart';
-import 'package:ose/ose_utils.dart';
+import 'package:ose/ose_utils.dart' show generateUuid;
 
 void main() {
   group('generateUuid()', () {
