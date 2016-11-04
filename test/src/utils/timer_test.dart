@@ -9,7 +9,7 @@ void main() {
     timer.init();
     num t0 = timer.delta;
 
-    test('Delta time is difference of current and previous times', () {
+    test('#delta Delta time is difference of current and previous times', () {
       num t1 = new DateTime.now().millisecondsSinceEpoch;
       timer.checkpoint(t1);
       expect(timer.delta, t1 - t0);

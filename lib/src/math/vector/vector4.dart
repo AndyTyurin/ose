@@ -83,6 +83,10 @@ class Vector4 extends Vector {
   /// Divide [this] vector by [scale].
   Vector4 operator /(double scale) => clone()..scale(1 / scale);
 
+  /// [this] equal to [other].
+  bool operator ==(Vector4 other) =>
+      x == other.x && y == other.y && z == other.z && w == other.w;
+
   String toString() {
     return "Vector4: (${x}, ${y}, ${z}, ${w})";
   }

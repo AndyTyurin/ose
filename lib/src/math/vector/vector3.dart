@@ -74,6 +74,9 @@ class Vector3 extends Vector {
   /// Divide [this] vector by [scale].
   Vector3 operator /(double scale) => clone()..scale(1 / scale);
 
+  /// [this] equal to [other].
+  bool operator ==(Vector3 other) => x == other.x && y == other.y && z == other.z;
+
   String toString() {
     return "Vector3: (${x}, ${y}, ${z})";
   }
