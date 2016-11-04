@@ -33,6 +33,14 @@ class Vector4 extends Vector {
     w *= factor;
   }
 
+  /// To make [this] values absolute.
+  void absolute() {
+    x = x.abs();
+    y = y.abs();
+    z = z.abs();
+    w = w.abs();
+  }
+
   /// Add values of [v] to [this].
   void add(Vector4 v) {
     x += v.x;

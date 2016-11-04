@@ -30,6 +30,12 @@ class Vector2 extends Vector {
     y *= factor;
   }
 
+  /// To make [this] values absolute.
+  void absolute() {
+    x = x.abs();
+    y = y.abs();
+  }
+
   /// Multiply [this] to [v].
   double multiply(Vector2 v) {
     return x * v.x + y * v.y;
