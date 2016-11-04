@@ -33,8 +33,6 @@ if [[ "$current_version" != "" ]]; then
             echo "Next version: v$version"
             # Update pubspec.
             sed -i '' "s/^version:.*/version: $version/g" "./../pubspec.yaml" && echo "Version updated $current_version => $version for ./../pubspec.yaml."
-            # Generate changelog.
-            sh ./changelog.sh
         fi
     fi
 else
