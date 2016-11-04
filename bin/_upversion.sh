@@ -12,6 +12,7 @@ readonly SERVER_ALIAS="origin"
 
 if [[ "$CURRENT_BRANCH" != "master" ]]; then
     >&2 echo "Update version is available only for master branch."
+    exit 1
 fi
 
 current_version=`sh version.sh`
@@ -32,7 +33,9 @@ if [[ "$current_version" != "" ]]; then
         if [[ MAJOR -ne 0 ]] || [[ MINOR -ne 0 ]] || [[ PATCH -ne 0 ]]; then
             echo "Next version: v$version"
             # Update pubspec.
-            sed -i '' "s/^version:.*/version: $version/g" "./../pubspec.yaml" && echo "Version updated $current_version => $version for ./../pubspec.yaml."
+            sed -i '' "s/^version:.*/version: $version/g" "./../pubspec.yaml" && echo "Updated v$current_version => v$version"
+
+            sh ./_pushversion.sh current_version
         fi
     fi
 else
