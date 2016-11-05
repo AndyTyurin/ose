@@ -30,6 +30,21 @@ class Vector2 extends Vector {
     y *= factor;
   }
 
+  /// To make [this] values absolute.
+  void absolute() {
+    x = x.abs();
+    y = y.abs();
+  }
+
+  void rotate(double radians) {
+    double sin = -math.sin(radians);
+    double cos = math.cos(radians);
+    double nx = x * cos - y * sin;
+    double ny = x * sin + y * cos;
+    x = double.parse(nx.toStringAsFixed(8));
+    y = double.parse(ny.toStringAsFixed(8));;
+  }
+
   /// Multiply [this] to [v].
   double multiply(Vector2 v) {
     return x * v.x + y * v.y;
@@ -76,6 +91,9 @@ class Vector2 extends Vector {
 
   /// Add [this] vector by [other].
   Vector2 operator +(Vector2 other) => clone()..add(other);
+
+  /// [this] equal to [other].
+  bool operator ==(Vector2 other) => x == other.x && y == other.y;
 
   /// Multiply [this] by value.
   ///
