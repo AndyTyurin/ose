@@ -80,6 +80,11 @@ class Vector2 extends Vector {
     return math.sqrt((x * x) + (y * y));
   }
 
+  /// Get angle between [this] and [v] vectors.
+  double getAngleOf(Vector2 v) {
+    return math.acos(this * v);
+  }
+
   /// Clone [this] vector.
   Vector2 clone() => new Vector2(x, y);
 
