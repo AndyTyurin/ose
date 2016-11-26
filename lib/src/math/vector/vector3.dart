@@ -11,6 +11,9 @@ class Vector3 extends Vector {
   Vector3([double x = 0.0, double y = 0.0, double z = 0.0])
       : super(new Float32List.fromList([x, y, z]));
 
+  /// Create zero vector.
+  factory Vector3.zero() => new Vector3(.0, .0, .0);
+
   /// Copy vector from [other].
   factory Vector3.copy(Vector3 other) => new Vector3(other.x, other.y, other.z);
 
@@ -75,7 +78,13 @@ class Vector3 extends Vector {
   Vector3 operator /(double scale) => clone()..scale(1 / scale);
 
   /// [this] equal to [other].
-  bool operator ==(Vector3 other) => x == other.x && y == other.y && z == other.z;
+  bool operator ==(Vector3 other) =>
+    double.parse(x.toStringAsFixed(15)) ==
+        double.parse(other.x.toStringAsFixed(15)) &&
+    double.parse(y.toStringAsFixed(15)) ==
+        double.parse(other.y.toStringAsFixed(15)) &&
+    double.parse(z.toStringAsFixed(15)) ==
+        double.parse(other.z.toStringAsFixed(15));
 
   String toString() {
     return "Vector3: (${x}, ${y}, ${z})";

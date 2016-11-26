@@ -15,6 +15,9 @@ class Vector2 extends Vector {
   Vector2([double x = 0.0, double y = 0.0])
       : super(new Float32List.fromList([x, y]));
 
+  /// Create zero vector.
+  factory Vector2.zero() => new Vector2(.0, .0);
+
   /// Copy vector from [other].
   factory Vector2.copy(Vector2 other) => new Vector2(other.x, other.y);
 
@@ -41,8 +44,8 @@ class Vector2 extends Vector {
     double cos = math.cos(radians);
     double nx = x * cos - y * sin;
     double ny = x * sin + y * cos;
-    x = double.parse(nx.toStringAsFixed(8));
-    y = double.parse(ny.toStringAsFixed(8));;
+    x = nx;
+    y = ny;
   }
 
   /// Multiply [this] to [v].
@@ -82,6 +85,7 @@ class Vector2 extends Vector {
 
   /// Get angle between [this] and [v] vectors.
   double getAngleOf(Vector2 v) {
+    v = v.clone()..normalize();
     return math.acos(this * v);
   }
 
@@ -98,7 +102,11 @@ class Vector2 extends Vector {
   Vector2 operator +(Vector2 other) => clone()..add(other);
 
   /// [this] equal to [other].
-  bool operator ==(Vector2 other) => x == other.x && y == other.y;
+  bool operator ==(Vector2 other) =>
+      double.parse(x.toStringAsFixed(15)) ==
+          double.parse(other.x.toStringAsFixed(15)) &&
+      double.parse(y.toStringAsFixed(15)) ==
+          double.parse(other.y.toStringAsFixed(15));
 
   /// Multiply [this] by value.
   ///

@@ -119,10 +119,14 @@ class Matrix2 extends Matrix {
   /// Check is [this] equal to [other]
   bool operator ==(other) {
     return (other is Matrix2) &&
-        (m00 == other.m00) &&
-        (m01 == other.m01) &&
-        (m10 == other.m10) &&
-        (m11 == other.m11);
+        (double.parse(m00.toStringAsFixed(15)) ==
+            double.parse(other.m00.toStringAsFixed(15))) &&
+        (double.parse(m01.toStringAsFixed(15)) ==
+            double.parse(other.m01.toStringAsFixed(15))) &&
+        (double.parse(m10.toStringAsFixed(15)) ==
+            double.parse(other.m10.toStringAsFixed(15))) &&
+        (double.parse(m11.toStringAsFixed(15)) ==
+            double.parse(other.m11.toStringAsFixed(15)));
   }
 
   /// Add [this] values by [m] values and return new matrix.
