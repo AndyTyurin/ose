@@ -44,8 +44,8 @@ class Vector2 extends Vector {
     double cos = math.cos(radians);
     double nx = x * cos - y * sin;
     double ny = x * sin + y * cos;
-    x = double.parse(nx.toStringAsFixed(8));
-    y = double.parse(ny.toStringAsFixed(8));;
+    x = nx;
+    y = ny;
   }
 
   /// Multiply [this] to [v].
@@ -102,7 +102,11 @@ class Vector2 extends Vector {
   Vector2 operator +(Vector2 other) => clone()..add(other);
 
   /// [this] equal to [other].
-  bool operator ==(Vector2 other) => x == other.x && y == other.y;
+  bool operator ==(Vector2 other) =>
+      double.parse(x.toStringAsFixed(15)) ==
+          double.parse(other.x.toStringAsFixed(15)) &&
+      double.parse(y.toStringAsFixed(15)) ==
+          double.parse(other.y.toStringAsFixed(15));
 
   /// Multiply [this] by value.
   ///

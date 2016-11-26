@@ -100,15 +100,15 @@ class Matrix3 extends Matrix {
   /// Set specific values.
   void setValues(double m00, double m01, double m02, double m10, double m11,
       double m12, double m20, double m21, double m22) {
-    m00 = m00;
-    m01 = m01;
-    m02 = m02;
-    m10 = m10;
-    m11 = m11;
-    m12 = m12;
-    m20 = m20;
-    m21 = m21;
-    m22 = m22;
+    this.m00 = m00;
+    this.m01 = m01;
+    this.m02 = m02;
+    this.m10 = m10;
+    this.m11 = m11;
+    this.m12 = m12;
+    this.m20 = m20;
+    this.m21 = m21;
+    this.m22 = m22;
   }
 
   /// Negate matrix.
@@ -229,15 +229,24 @@ class Matrix3 extends Matrix {
   /// Check is equal to [other]
   bool operator ==(other) {
     return (other is Matrix3) &&
-        (m00 == other.m00) &&
-        (m01 == other.m01) &&
-        (m02 == other.m02) &&
-        (m10 == other.m10) &&
-        (m11 == other.m11) &&
-        (m12 == other.m12) &&
-        (m20 == other.m20) &&
-        (m21 == other.m21) &&
-        (m22 == other.m22);
+        (double.parse(m00.toStringAsFixed(15)) ==
+            double.parse(other.m00.toStringAsFixed(15))) &&
+        (double.parse(m01.toStringAsFixed(15)) ==
+            double.parse(other.m01.toStringAsFixed(15))) &&
+        (double.parse(m02.toStringAsFixed(15)) ==
+            double.parse(other.m02.toStringAsFixed(15))) &&
+        (double.parse(m10.toStringAsFixed(15)) ==
+            double.parse(other.m10.toStringAsFixed(15))) &&
+        (double.parse(m11.toStringAsFixed(15)) ==
+            double.parse(other.m11.toStringAsFixed(15))) &&
+        (double.parse(m12.toStringAsFixed(15)) ==
+            double.parse(other.m12.toStringAsFixed(15))) &&
+        (double.parse(m20.toStringAsFixed(15)) ==
+            double.parse(other.m20.toStringAsFixed(15))) &&
+        (double.parse(m21.toStringAsFixed(15)) ==
+            double.parse(other.m21.toStringAsFixed(15))) &&
+        (double.parse(m22.toStringAsFixed(15)) ==
+            double.parse(other.m22.toStringAsFixed(15)));
   }
 
   /// Add [this] values by [m] values and return new matrix.
