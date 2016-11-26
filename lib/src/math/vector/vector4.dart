@@ -13,6 +13,9 @@ class Vector4 extends Vector {
   Vector4([double x = 0.0, double y = 0.0, double z = 0.0, double w = 0.0])
       : super(new Float32List.fromList([x, y, z, w]));
 
+  /// Create zero vector.
+  factory Vector4.zero() => new Vector4(.0, .0, .0, .0);
+
   /// Copy vector from [other].
   factory Vector4.copy(Vector4 other) =>
       new Vector4(other.x, other.y, other.z, other.w);
@@ -85,7 +88,14 @@ class Vector4 extends Vector {
 
   /// [this] equal to [other].
   bool operator ==(Vector4 other) =>
-      x == other.x && y == other.y && z == other.z && w == other.w;
+      double.parse(x.toStringAsFixed(15)) ==
+          double.parse(other.x.toStringAsFixed(15)) &&
+      double.parse(y.toStringAsFixed(15)) ==
+          double.parse(other.y.toStringAsFixed(15)) &&
+      double.parse(z.toStringAsFixed(15)) ==
+          double.parse(other.z.toStringAsFixed(15)) &&
+      double.parse(w.toStringAsFixed(15)) ==
+          double.parse(other.w.toStringAsFixed(15));
 
   String toString() {
     return "Vector4: (${x}, ${y}, ${z}, ${w})";

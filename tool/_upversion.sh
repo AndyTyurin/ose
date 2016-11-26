@@ -31,11 +31,10 @@ if [[ "$current_version" != "" ]]; then
         version="$major.$minor.$patch"
 
         if [[ MAJOR -ne 0 ]] || [[ MINOR -ne 0 ]] || [[ PATCH -ne 0 ]]; then
-            echo "Next version: v$version"
             # Update pubspec.
             sed -i '' "s/^version:.*/version: $version/g" "./../pubspec.yaml" && echo "Updated v$current_version => v$version"
 
-            sh ./_pushversion.sh current_version
+            sh ./_pushversion.sh $current_version
         fi
     fi
 else
