@@ -15,6 +15,9 @@ class Vector2 extends Vector {
   Vector2([double x = 0.0, double y = 0.0])
       : super(new Float32List.fromList([x, y]));
 
+  /// Create zero vector.
+  factory Vector2.zero() => new Vector2(.0, .0);
+
   /// Copy vector from [other].
   factory Vector2.copy(Vector2 other) => new Vector2(other.x, other.y);
 

@@ -11,6 +11,9 @@ class Vector3 extends Vector {
   Vector3([double x = 0.0, double y = 0.0, double z = 0.0])
       : super(new Float32List.fromList([x, y, z]));
 
+  /// Create zero vector.
+  factory Vector3.zero() => new Vector3(.0, .0, .0);
+
   /// Copy vector from [other].
   factory Vector3.copy(Vector3 other) => new Vector3(other.x, other.y, other.z);
 
