@@ -44,7 +44,6 @@ class MouseController {
   }
 
   void _registerEvent(MouseEvent e) {
-    e.preventDefault();
     _pressedEvents.addFirst(e);
   }
 

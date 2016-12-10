@@ -3,6 +3,10 @@ part of ose_io;
 class TouchController {
   static TouchController _touch = new TouchController._internal();
 
+  Element element;
+
+  Element _boundElement;
+
   static num sensitive = .75;
 
   Touch _lastTouchAction;
@@ -16,19 +20,20 @@ class TouchController {
   void update() {}
 
   void bind() {
-    window.addEventListener('touchstart', _registerEvent, false);
-    window.addEventListener('touchend', _unregisterEvent, false);
-    window.addEventListener('touchmove', _registerMoveEvent, false);
+    element = element ?? window;
+    _boundElement = element;
+    _boundElement.addEventListener('touchstart', _registerEvent, false);
+    _boundElement.addEventListener('touchend', _unregisterEvent, false);
+    _boundElement.addEventListener('touchmove', _registerMoveEvent, false);
   }
 
   void unbind() {
-    window.removeEventListener('touchstart', _registerEvent, false);
-    window.removeEventListener('touchend', _unregisterEvent, false);
-    window.removeEventListener('touchmove', _registerMoveEvent, false);
+    _boundElement.removeEventListener('touchstart', _registerEvent, false);
+    _boundElement.removeEventListener('touchend', _unregisterEvent, false);
+    _boundElement.removeEventListener('touchmove', _registerMoveEvent, false);
   }
 
   void _registerEvent(TouchEvent e) {
-    e.preventDefault();
     if (_lastTouchAction == null) {
       _prevTouchAction = _lastTouchAction;
       _lastTouchAction = e.changedTouches[0];
@@ -48,7 +53,6 @@ class TouchController {
   }
 
   void _unregisterEvent(TouchEvent e) {
-    e.preventDefault();
     if (_lastTouchAction != null) {
       Touch foundTouchAction = e.changedTouches.firstWhere(
           (touch) => touch.identifier == _lastTouchAction.identifier);
@@ -57,6 +61,10 @@ class TouchController {
         _lastTouchAction = null;
       }
     }
+  }
+
+  void _setOfWheel(WheelEvent e) {
+    window.alert('wheel');
   }
 
   get movement => (_lastTouchAction != null && _prevTouchAction != null)
@@ -68,7 +76,8 @@ class TouchController {
 
   get movedTop => (movement?.y ?? 0) > ((sensitive > 0) ? 1 / sensitive : 0);
 
-  get movedBottom => (movement?.y ?? 0) < ((sensitive > 0) ? -1 / sensitive : 0);
+  get movedBottom =>
+      (movement?.y ?? 0) < ((sensitive > 0) ? -1 / sensitive : 0);
 
   get movedLeft => (movement?.x ?? 0) < ((sensitive > 0) ? -1 / sensitive : 0);
 
