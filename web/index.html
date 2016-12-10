@@ -7,21 +7,14 @@
     <script type="application/dart" src="index.dart"></script>
     <script src="packages/browser/dart.js"></script>
     <style>
-        figure {
-            width: 100%;
-            background: #eaeaea;
+        div.examples {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-flow: row wrap;
         }
-
         figure.example {
-            margin: 1vw auto;
-            width: 45vw;
-            padding: 1vw;
-        }
-
-        figure.example:after {
-            clear: both;
-            content: " ";
-            display: block;
+            margin: 1vw;
         }
 
         figure.example > h3.title {
@@ -29,26 +22,29 @@
             margin: 0 0 .5rem 0;
         }
 
-        figure.example > figcaption.snapshot {
-            float: left;
-            margin-right: 2vw;
+        figure.example > figcaption.screenshot img {
+            height: 10rem;
         }
     </style>
 </head>
 <body>
     <main>
         <header>
-            <h1 class="title">OSE examples</h1>
+            <h1 class="title">OSE / </h1>
+            <span class="about">game engine</span>
         </header>
-        <figure class="example">
-            <figcaption class="snapshot">
-                <a href="/examples/sprite/sprite.html" title="Sprite example">
-                    <img src="/examples/sprite/snapshot.jpg" width="200" height="200" alt="Sprite example" />
-                </a>
-            </figcaption>
-            <h3 class="title">Sprite example</h3>
-            Spaceship is rotating clock-wise.
-        </figure>
+        <div class="examples">
+          <figure class="example">
+              <figcaption class="screenshot">
+                  <a href="/examples/sprite/sprite.html" title="Sprite example">
+                      <img src="/examples/sprite/snapshot.jpg" alt="Sprite example" />
+                  </a>
+              </figcaption>
+              <a href="/examples/sprite/sprite.html" title="Sprite example">
+                Spaceship rotation
+              </a>
+          </figure>
+        </div>
     </main>
 </body>
 </html>

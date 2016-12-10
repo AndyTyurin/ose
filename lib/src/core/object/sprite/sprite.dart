@@ -10,9 +10,10 @@ class Sprite extends SceneObject {
 
   SpriteFilter filter;
 
-  Sprite() {
-    _glVertices =
-        new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
+  Sprite()
+      : super(
+            vertices: new Float32List.fromList(
+                [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0])) {
     _glTextureCoords =
         new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
     filter = new SpriteFilter();
@@ -28,7 +29,8 @@ class Sprite extends SceneObject {
     double ratioX = 1.0 / unitTextureWidth;
     double ratioY = 1.0 / unitTextureHeight;
     double spriteSizeX = (glTextureBounds.z - glTextureBounds.x) / ratioX;
-    double spriteSizeY = ((1.0 - glTextureBounds.y) - (1.0 - glTextureBounds.w)) / ratioY;
+    double spriteSizeY =
+        ((1.0 - glTextureBounds.y) - (1.0 - glTextureBounds.w)) / ratioY;
     double indentX = .5 - spriteSizeX / 2;
     double indentY = .5 - spriteSizeY / 2;
 
@@ -76,6 +78,9 @@ class Sprite extends SceneObject {
   }
 
   @override
+  void update(num dt) {}
+
+  @override
   void copyFrom(Sprite from) {
     super.copyFrom(from);
     _texture = from.texture;
@@ -90,8 +95,6 @@ class Sprite extends SceneObject {
   webGL.Texture get glTexture => _texture.glTexture;
 
   Vector4 get glTextureBounds => _glTextureBounds;
-
-  Float32List get glVertices => _glVertices;
 
   Float32List get glTextureCoords => _glTextureCoords;
 

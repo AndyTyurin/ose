@@ -23,20 +23,26 @@ class Renderer {
         settings = settings ?? new RendererSettings(),
         managers = new RendererManagers() {
     this.canvas = canvas ?? new CanvasElement();
+    this.canvas.width = this.settings.width;
+    this.canvas.height = this.settings.height;
     gl = this._initWebGL(this.canvas);
     _rendererState = RendererState.Stopped;
-    updateViewport(
-        this.settings.width,
-        this.settings.height,
-        this.settings.pixelRatio
-    );
+    updateViewport(this.settings.width, this.settings.height);
   }
 
   Future start() async {
     _rendererState = RendererState.StartRequested;
 
+    // Auto-resize window.
+    if (settings.resize) {
+      window.addEventListener('resize', _resize, false);
+    }
+
     // Initialize timer.
     timer.init();
+
+    // Initialize IO.
+    managers.ioManager.bind();
 
     await lifecycleControllers.onStartCtrl
       ..add(new StartEvent(this))
@@ -49,6 +55,14 @@ class Renderer {
 
   Future stop() async {
     _rendererState = RendererState.StopRequested;
+
+    // Unbind auto-resize.
+    if (settings.resize) {
+      window.removeEventListener('resize', _resize, false);
+    }
+
+    // Unbind IO.
+    managers.ioManager.unbind();
 
     await lifecycleControllers.onStopCtrl
       ..add(new StopEvent(this))
@@ -125,6 +139,8 @@ class Renderer {
       /// Render object.
       _renderObject(obj, scene, camera);
 
+      managers.ioManager.update();
+
       /// Per object post-render.
       await lifecycleControllers.onObjectPostRenderCtrl
         ..add(new ObjectPostRenderEvent(obj, scene, camera, this))
@@ -133,19 +149,21 @@ class Renderer {
   }
 
   void _renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
+    _updateObject(sceneObject);
+
     if (sceneObject is Shape) {
       sceneObject.rebuildColors();
     }
 
     sceneObject.transform.updateModelMatrix();
     camera.transform.updateProjectionMatrix();
-    if (settings.useMask) {
-      /// TODO: Check how could be use mask manager.
-      /// this.maskManager(gameObject, maskObject, MaskManager.intersect);
-      /// this.maskManager(gameObject, maskObject, MaskManager.subtract);
-      /// this.maskManager.subtract(gameObject, maskObject);
-      /// this.maskManager.intersect(gameObject, maskObject);
-    }
+    // if (settings.useMask) {
+    /// TODO: Check how could be use mask manager.
+    /// this.maskManager(gameObject, maskObject, MaskManager.intersect);
+    /// this.maskManager(gameObject, maskObject, MaskManager.subtract);
+    /// this.maskManager.subtract(gameObject, maskObject);
+    /// this.maskManager.intersect(gameObject, maskObject);
+    // }
 
     if (sceneObject is Sprite) {
       Texture texture = sceneObject.texture;
@@ -169,6 +187,22 @@ class Renderer {
     // TODO: Further we shall render groups.
     gl.drawArrays(webGL.TRIANGLE_STRIP, 0,
         (sceneObject as dynamic).glVertices.length ~/ 2);
+  }
+
+  void _updateObject(SceneObject sceneObject) {
+    _updateObjectActor(sceneObject);
+    sceneObject.update(dt);
+  }
+
+  void _updateObjectActor(SceneObject sceneObject) {
+    if (sceneObject.actor != null) {
+      Actor actor = sceneObject.actor;
+      if (actor is ControlActor) {
+        actor.update(sceneObject, managers.ioManager);
+      } else {
+        actor.update(sceneObject);
+      }
+    }
   }
 
   /// Set canvas width & height.
@@ -216,11 +250,16 @@ class Renderer {
     return gl;
   }
 
-  void updateViewport(int width, int height, [int pixelRatio = 1]) {
-    canvas.width = width * pixelRatio;
-    canvas.height = height * pixelRatio;
-    gl.viewport(0, 0, canvas.width, canvas.height);
+  void updateViewport(int width, int height) {
+    if (camera != null) {
+      camera.transform
+        ..width = width
+        ..height = height;
+    }
+    gl.viewport(0, 0, width, height);
   }
+
+  void _resize(_) => updateViewport(canvas.width, canvas.height);
 
   void _prepareTexture(Texture texture) {
     webGL.Texture glTexture = gl.createTexture();

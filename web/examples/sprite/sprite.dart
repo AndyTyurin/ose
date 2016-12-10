@@ -5,6 +5,8 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 import 'package:ose/ose.dart' as ose;
+import 'package:ose/ose_io.dart';
+
 import '../../index.dart' show initLogger;
 
 class SpriteExample {
@@ -16,7 +18,7 @@ class SpriteExample {
 
   CanvasElement canvas;
 
-  ose.Sprite _sprite;
+  Spaceship _spaceship;
 
   SpriteExample() : logger = new Logger('Sprite example') {
     _init();
@@ -33,12 +35,20 @@ class SpriteExample {
     _flushResources();
   }
 
-  // Initialize basic renderer eco-system.
-  // Create a new renderer, to setup canvas, initialize camera
+  // Initialize basic renderer system.
+  // Create a new renderer, setup canvas, initialize camera
   // and delegate event handlers.
   _init() {
-    _renderer = new ose.Renderer();
+    _renderer = new ose.Renderer(
+        settings: new ose.RendererSettings(
+            resize: true,
+            width: window.innerWidth,
+            height: window.innerHeight));
     canvas = _renderer.canvas;
+    window.addEventListener('resize', (_) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }, false);
     _renderer.scene = new ose.Scene();
     _renderer.camera = new ose.Camera(canvas.width, canvas.height);
     _renderer.onStart.listen(_onStart);
@@ -48,12 +58,14 @@ class SpriteExample {
 
   // Prepare sprite.
   // Load image, build a texture and apply it to sprite object.
-  Future _prepareSprite() async {
-    _sprite = new ose.Sprite();
+  Future _prepareSpaceship() async {
+    _spaceship = new Spaceship();
+    _spaceship.actor = new PlayerActor();
+
     ImageElement img = new ImageElement(src: '/examples/sprite/spaceship.png');
     try {
       await img.onLoad.listen((_) => _renderer.scene.children
-          .add(_sprite..setActiveTexture(new ose.Texture(img))));
+          .add(_spaceship..setActiveTexture(new ose.Texture(img))));
     } catch (e) {
       _handleSevereError(new Exception('Image not found'));
     }
@@ -62,8 +74,8 @@ class SpriteExample {
   // Handle start event.
   // Prepares sprite for renderer.
   Future _onStart(ose.StartEvent e) async {
-    logger.fine('Game has been started.');
-    await _prepareSprite();
+    logger.fine('Example has been started.');
+    await _prepareSpaceship();
   }
 
   // Handle stop event.
@@ -79,16 +91,46 @@ class SpriteExample {
 
   // Flush resources to reload fresh on start.
   _flushResources() {
-    _sprite = null;
+    _spaceship = null;
     canvas = null;
     _renderer = null;
   }
 
   // Handle frame before it will be rendered.
-  _onRender(ose.RenderEvent e) {
-    e.scene.children.forEach((ose.SceneObject obj) {
-      obj.transform.rotation += 0.01;
-    });
+  _onRender(ose.RenderEvent e) {}
+}
+
+class Spaceship extends ose.Sprite {
+  double rotationAcceleration = .0;
+
+  @override
+  void update(num dt) {
+    transform.rotation += rotationAcceleration;
+  }
+}
+
+class PlayerActor extends ose.ControlActor {
+  @override
+  void update(ose.SceneObject sceneObject, [IOManager ioManager]) {
+    KeyboardController keyboard = ioManager.keyboard;
+    MouseController mouse = ioManager.mouse;
+    TouchController touch = ioManager.touch;
+
+    if (sceneObject is Spaceship) {
+      if (keyboard.pressed(KeyCode.D) ||
+          mouse.movedRight && mouse.pressed(0) ||
+          touch.movedRight) {
+        sceneObject.transform.rotation += 0.075;
+      }
+      if (keyboard.pressed(KeyCode.A) ||
+          mouse.movedLeft && mouse.pressed(0) ||
+          touch.movedLeft) {
+        sceneObject.transform.rotation -= 0.075;
+      }
+      if (keyboard.pressed(KeyCode.W, ctrl: true)) {
+        sceneObject.transform.rotation = .0;
+      }
+    }
   }
 }
 
