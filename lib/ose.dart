@@ -11,6 +11,7 @@ import 'package:collection/collection.dart';
 
 import 'ose_math.dart';
 import 'ose_utils.dart' as utils;
+import 'ose_io.dart';
 
 part 'src/core/renderer/renderer.dart';
 part 'src/core/renderer/renderer_events.dart';
@@ -27,8 +28,9 @@ part 'src/core/camera/camera.dart';
 
 part 'src/core/scene/scene.dart';
 
-part 'src/core/object/game_object.dart';
-part 'src/core/object/group_object.dart';
+part 'src/core/actor/actor.dart';
+part 'src/core/actor/control_actor.dart';
+
 part 'src/core/object/scene_object.dart';
 part 'src/core/object/shape/shape.dart';
 part 'src/core/object/shape/rectangle.dart';

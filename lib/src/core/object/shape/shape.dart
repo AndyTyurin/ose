@@ -1,6 +1,6 @@
 part of ose;
 
-abstract class Shape extends GameObject {
+abstract class Shape extends SceneObject {
   static SolidColor defaultColor = new SolidColor(new Color.white());
 
   Float32List _glColors;
@@ -47,6 +47,9 @@ abstract class Shape extends GameObject {
       _prevColor = color.clone();
     }
   }
+
+  @override
+  void update(num dt) {}
 
   @override
   void copyFrom(Shape from) {

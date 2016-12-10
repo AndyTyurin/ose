@@ -11,10 +11,13 @@ class RendererManagers {
 
   final CameraManager cameraManager;
 
+  final IOManager ioManager;
+
   RendererManagers()
       : uniformManager = new UniformManager(),
         attributeManager = new AttributeManager(),
         shaderProgramManager = new ShaderProgramManager(),
         sceneManager = new SceneManager(),
-        cameraManager = new CameraManager();
+        cameraManager = new CameraManager(),
+        ioManager = new IOManager();
 }

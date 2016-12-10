@@ -7,9 +7,10 @@ html, body {
 
 header {
     display: block;
-    width: 100%;
-    margin: 1rem 0;
-    text-align: center;
+    padding: .75rem 1.75rem;
+    margin-bottom: 1rem;
+    background: #892f52;
+    color: #0d1007;
 }
 
 header > ul.menu {
@@ -25,17 +26,29 @@ header > span.title {
 }
 
 header > h1.title {
+    display: inline;
+    margin-bottom: 0;
+    font-size: 1.75rem;
+}
+
+header > span.about {
+    display: inline;
+    font-size: 1rem;
     margin-bottom: 1.0em;
 }
 
 header > ul.menu > li.menu-item > a {
-    color: #53baff;
+    color: #fff;
 }
 
 header > ul.menu > li.menu-item > a:hover {
-    color: #209cff;
+    color: #fff;
 }
 
 header > span.title {
     margin: 0 0 0 .75rem;
+}
+
+a, a:link, a:hover, a:visited {
+  color: #554fbd;
 }
