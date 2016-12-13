@@ -89,6 +89,12 @@ class Vector2 extends Vector {
     return math.acos(this * v);
   }
 
+  /// Get angle between [this] and [v] vectors.
+  double getAngleTo(Vector2 v) {
+    v = v.clone()..normalize();
+    return math.atan2(y, x) - math.atan2(v.y, v.x);
+  }
+
   /// Clone [this] vector.
   Vector2 clone() => new Vector2(x, y);
 

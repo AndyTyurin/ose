@@ -30,5 +30,11 @@ void main() {
       Vector2 vector = new Vector2(0.0, 1.0);
       expect(vector.getAngleOf(new Vector2(1.0, 0.0)), equals(math.PI / 2));
     });
+
+    test('#getAngleTo get angle distance to vector', () {
+      Vector2 vector = new Vector2(0.0, 1.0);
+      expect(vector.getAngleTo(new Vector2(1.0, 0.0)), equals(math.PI / 2));
+      expect(vector.getAngleTo(new Vector2(-1.0, 0.0)), equals(-math.PI / 2));
+    });
   });
 }
