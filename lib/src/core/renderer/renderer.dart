@@ -198,9 +198,9 @@ class Renderer {
     if (sceneObject.actor != null) {
       Actor actor = sceneObject.actor;
       if (actor is ControlActor) {
-        actor.update(sceneObject, managers.ioManager);
+        actor.update(scene, sceneObject, managers.ioManager);
       } else {
-        actor.update(sceneObject);
+        actor.update(scene, sceneObject);
       }
     }
   }

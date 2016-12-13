@@ -2,5 +2,5 @@ part of ose;
 
 abstract class ControlActor extends Actor {
   @override
-  void update(SceneObject sceneObject, [IOManager ioManager]);
+  void update(Scene scene, SceneObject sceneObject, [IOManager ioManager]);
 }

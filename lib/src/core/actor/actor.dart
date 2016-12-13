@@ -1,5 +1,5 @@
 part of ose;
 
 abstract class Actor {
-  void update(SceneObject sceneObject);
+  void update(Scene scene, SceneObject sceneObject);
 }
