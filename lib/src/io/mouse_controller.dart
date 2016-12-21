@@ -1,11 +1,17 @@
 part of ose_io;
 
+/// Mouse controller.
+/// Use [MouseController.pressed] method to check is button pressed or not.
 class MouseController {
   static MouseController _mouse = new MouseController._internal();
 
+  /// Sensitive.
   static num sensitive = .75;
 
+  /// Queue pressed mouse events.
   Queue<MouseEvent> _pressedEvents;
+
+  /// Move event.
   MouseEvent _moveEvent;
 
   MouseController._internal() {
@@ -14,6 +20,7 @@ class MouseController {
 
   factory MouseController() => _mouse;
 
+  /// Checks if button with modification has been pressed.
   bool pressed(int button,
       {bool shift: false,
       bool ctrl: false,
@@ -26,16 +33,19 @@ class MouseController {
     return event != null;
   }
 
+  /// Reset mouse controller state.
   void update() {
     _moveEvent = null;
   }
 
+  /// Bind mouse controller.
   void bind() {
     window.addEventListener('mousedown', _registerEvent, false);
     window.addEventListener('mousemove', _registerMoveEvent, false);
     window.addEventListener('mouseup', _unregisterEvent, false);
   }
 
+  /// Set off mouse controller.
   void unbind() {
     window.removeEventListener('mousedown', _registerEvent, false);
     window.removeEventListener('mousemove', _registerMoveEvent, false);

@@ -1,25 +1,35 @@
 part of ose;
 
+/// Transformation holds information about object's position and rotation.
+/// Basically it's needed to make matrix calculations, that are very important
+/// in shaders.
 abstract class Transform {
   static Vector2 defaultPosition = new Vector2(0.0, 0.0);
 
+  /// Position.
   Vector2 position;
 
+  /// Rotation.
   double rotation;
 
+  /// Forward vector.
   Vector2 _forward;
 
+  /// Translation matrix.
   Matrix3 _translationMatrix;
 
+  /// Rotation matrix.
   Matrix3 _rotationMatrix;
 
+  /// Previous position vector to track changes.
   Vector2 _prevPosition;
 
+  /// Previous rotation vector to track changes.
   double _prevRotation;
 
   /// Create new transformation.
   /// [position] - position vector.
-  /// [rotation] - rotation vector.
+  /// [rotation] - value in radians.
   Transform({Vector2 position, double rotation}) {
     this.position = position ?? defaultPosition.clone();
     this.rotation = rotation ?? .0;
@@ -28,12 +38,14 @@ abstract class Transform {
     _rotationMatrix = new Matrix3.identity();
   }
 
+  /// Update translation matrix on change.
   void updateTranslationMatrix([bool force = false]) {
     if (force || isPositionChanged) {
       _translationMatrix = new Matrix3.translationFromVector(position);
     }
   }
 
+  /// Update rotation matrix on change.
   void updateRotationMatrix([bool force = false]) {
     if (force || isRotationChanged) {
       _rotationMatrix = new Matrix3.rotationFromAngle(rotation);

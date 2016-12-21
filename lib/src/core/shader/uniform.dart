@@ -1,13 +1,17 @@
 part of ose;
 
+/// Uniforms are part of shader programs.
+/// There are needed to keep data and can be used inside your shader logic.
 class Uniform {
   static final Function eq = const ListEquality().equals;
 
+  /// Uniform type.
   QualifierType _type;
 
+  /// Uniform data.
   Float32List _storage;
 
-  // Attribute state.
+  // Uniform state.
   QualifierState state;
 
   /// Uniform use array.

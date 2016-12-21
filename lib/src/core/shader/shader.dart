@@ -1,6 +1,12 @@
 part of ose;
 
+/// There is a shader wrapper for webgl shaders that is commonly used
+/// by shader programs.
+/// There are two types of shaders - vertex & fragment shaders.
+/// Basically shader wrapper keeps content that will be launched by GPU.
 class Shader {
+
+  /// WebGL shader.
   webGL.Shader _glShader;
 
   /// Shader source.

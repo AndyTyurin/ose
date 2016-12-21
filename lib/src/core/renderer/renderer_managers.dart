@@ -1,23 +1,26 @@
 part of ose;
 
+/// It keeps references to different managers of the renderer.
 class RendererManagers {
-  final UniformManager uniformManager;
-
-  final AttributeManager attributeManager;
-
+  /// Manages shader programs.
   final ShaderProgramManager shaderProgramManager;
 
+  /// Manages scenes.
   final SceneManager sceneManager;
 
+  /// Manages cameras.
   final CameraManager cameraManager;
 
+  /// Manages input controllers such as keyboard, mouse & touch.
   final IOManager ioManager;
 
-  RendererManagers()
-      : uniformManager = new UniformManager(),
-        attributeManager = new AttributeManager(),
-        shaderProgramManager = new ShaderProgramManager(),
+  /// Manages filters.
+  final FilterManager filterManager;
+
+  RendererManagers(webGL.RenderingContext gl)
+      : shaderProgramManager = new ShaderProgramManager(),
         sceneManager = new SceneManager(),
         cameraManager = new CameraManager(),
-        ioManager = new IOManager();
+        ioManager = new IOManager(),
+        filterManager = new FilterManager(gl);
 }

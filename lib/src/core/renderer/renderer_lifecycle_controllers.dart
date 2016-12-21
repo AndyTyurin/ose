@@ -1,5 +1,6 @@
 part of ose;
 
+/// Define renderer lifecycles.
 class RendererLifecycleControllers {
   /// Stream controller for [_onStart] stream.
   final StreamController<StartEvent> onStartCtrl;

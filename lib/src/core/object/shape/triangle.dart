@@ -1,8 +1,11 @@
 part of ose;
 
+/// Triangle shape.
 class Triangle extends Shape {
-  Triangle() : super(vertices: getTriangleVerticesAroundCenter());
+  Triangle({Color color})
+      : super(vertices: getTriangleVerticesAroundCenter(), color: color);
 
+  /// Gets vertices positions.
   static Float32List getTriangleVerticesAroundCenter() {
     double topVertexCoord = sin(PI / 3);
     double delta = (1 - topVertexCoord) / 2;

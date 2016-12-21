@@ -1,27 +1,32 @@
 part of ose;
 
+/// Common abstract class is needed to describe our shapes, such as
+/// [Triangle], [Rectangle], [Circle].
 abstract class Shape extends SceneObject {
-  static SolidColor defaultColor = new SolidColor(new Color.white());
+  static SolidColor defaultColor = new SolidColor.white();
 
+  /// WebGL colors.
   Float32List _glColors;
 
-  ComplexColor color;
+  /// Shape color.
+  Color color;
 
-  ComplexColor _prevColor;
+  /// Previous shape color.
+  /// It's needed to track changes.
+  Color _prevColor;
 
-  ShapeFilter filter;
-
-  Shape({@required Float32List vertices, ComplexColor color})
+  Shape({@required Float32List vertices, Color color})
       : super(vertices: vertices) {
     this.color = color ?? defaultColor;
     _prevColor = defaultColor;
-    filter = new ShapeFilter();
     rebuildColors(true);
   }
 
+  /// Rebuild colors.
+  /// Method will be invoked automatically by renderer on shape color change.
   void rebuildColors([bool force]) {
     if (force || isColorChanged) {
-      ComplexColor complexColor = color ?? defaultColor;
+      Color complexColor = color ?? defaultColor;
       List<double> identityColors = complexColor.toIdentity();
       int numOfMissedColors =
           glVertices.length ~/ 2 - identityColors.length ~/ 4;

@@ -39,23 +39,17 @@ part 'src/core/object/shape/triangle.dart';
 part 'src/core/object/sprite/sprite.dart';
 
 part 'src/core/filter/filter.dart';
-part 'src/core/filter/shape/shape_filter.dart';
-part 'src/core/filter/particles/particles_filter.dart';
-part 'src/core/filter/sprite/sprite_filter.dart';
+part 'src/core/filter/basic/basic_filter.dart';
 
 part 'src/core/shader/attribute.dart';
 part 'src/core/shader/uniform.dart';
 part 'src/core/shader/shader_program.dart';
 part 'src/core/shader/shader.dart';
-part 'src/core/shader/shape/shape_shader_program.dart';
-part 'src/core/shader/shape/frag_shape_shader.dart';
-part 'src/core/shader/shape/vert_shape_shader.dart';
-part 'src/core/shader/particles/particles_shader_program.dart';
-part 'src/core/shader/particles/frag_particles_shader.dart';
-part 'src/core/shader/particles/vert_particles_shader.dart';
-part 'src/core/shader/sprite/sprite_shader_program.dart';
-part 'src/core/shader/sprite/frag_sprite_shader.dart';
-part 'src/core/shader/sprite/vert_sprite_shader.dart';
+
+part 'src/core/shader/basic/basic_shader_program.dart';
+part 'src/core/shader/basic/frag_basic_shader.dart';
+part 'src/core/shader/basic/vert_basic_shader.dart';
+
 part 'src/core/shader/qualifier_type.dart';
 part 'src/core/shader/qualifier_state.dart';
 
@@ -64,11 +58,11 @@ part 'src/core/manager/uniform_manager.dart';
 part 'src/core/manager/shader_program_manager.dart';
 part 'src/core/manager/camera_manager.dart';
 part 'src/core/manager/scene_manager.dart';
+part 'src/core/manager/filter_manager.dart';
 
 part 'src/core/texture/texture.dart';
 part 'src/core/texture/sub_texture.dart';
 
 part 'src/core/color/color.dart';
-part 'src/core/color/complex_color.dart';
 part 'src/core/color/solid_color.dart';
 part 'src/core/color/gradient_color.dart';

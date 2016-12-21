@@ -1,6 +1,7 @@
 library ose_example_sprite;
 
 import 'dart:html';
+import 'dart:math' as math;
 import 'dart:async';
 
 import 'package:logging/logging.dart';
@@ -39,21 +40,12 @@ class SpriteExample {
   // Create a new renderer, setup canvas, initialize camera
   // and delegate event handlers.
   _init() {
-    _renderer = new ose.Renderer(
-        settings: new ose.RendererSettings(
-            resize: true,
-            width: window.innerWidth,
-            height: window.innerHeight));
+    _renderer =
+        new ose.Renderer(settings: new ose.RendererSettings(fullscreen: true));
     canvas = _renderer.canvas;
-    window.addEventListener('resize', (_) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }, false);
-    _renderer.scene = new ose.Scene();
-    _renderer.camera = new ose.Camera(canvas.width, canvas.height);
     _renderer.onStart.listen(_onStart);
     _renderer.onStop.listen(_onStop);
-    _renderer.onRender.listen(_onRender);
+    _renderer.onObjectRender.listen(_onObjectRender);
   }
 
   // Prepare sprite.
@@ -75,7 +67,23 @@ class SpriteExample {
   // Prepares sprite for renderer.
   Future _onStart(ose.StartEvent e) async {
     logger.fine('Example has been started.');
-    await _prepareSpaceship();
+
+    _renderer.scene = new ose.Scene();
+    _renderer.camera = new ose.Camera(canvas.width, canvas.height);
+
+    // Register your custom filters.
+    // _renderer.registerFilters(filters);
+
+    // await _prepareSpaceship();
+    ose.Rectangle rect = new ose.Rectangle();
+    rect.transform.rotation = math.PI / 4;
+
+    ose.Circle circle = new ose.Circle(points: 6);
+    circle.color = new ose.SolidColor.red();
+    circle.transform.scale.setValues(.75, .75);
+
+    _renderer.scene.add(rect);
+    _renderer.scene.add(circle);
   }
 
   // Handle stop event.
@@ -97,7 +105,16 @@ class SpriteExample {
   }
 
   // Handle frame before it will be rendered.
-  _onRender(ose.RenderEvent e) {}
+  _onObjectRender(ose.ObjectRenderEvent e) {
+    ose.SceneObject obj = e.sceneObject;
+    if (obj is ose.Circle) {
+      obj.transform.rotation += 0.002;
+    } else if (obj is ose.Rectangle) {
+      obj.transform.rotation -= 0.004;
+    } else {
+      obj.transform.rotation += 0.001;
+    }
+  }
 }
 
 class Spaceship extends ose.Sprite {
@@ -111,7 +128,8 @@ class Spaceship extends ose.Sprite {
 
 class PlayerActor extends ose.ControlActor {
   @override
-  void update(ose.SceneObject sceneObject, [IOManager ioManager]) {
+  void update(ose.Scene scene, ose.SceneObject sceneObject,
+      [IOManager ioManager]) {
     KeyboardController keyboard = ioManager.keyboard;
     MouseController mouse = ioManager.mouse;
     TouchController touch = ioManager.touch;

@@ -1,5 +1,6 @@
 part of ose;
 
+/// tbd @andytyurin refactor it.
 abstract class ParticlesFilter extends Filter {
   ParticlesFilter() : super(particlesShaderProgram);
 

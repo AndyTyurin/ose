@@ -7,10 +7,11 @@ abstract class SceneObject extends Object with utils.UuidMixin {
 
   Actor actor;
 
-  Filter filter;
+  final List<Filter> filters;
 
   SceneObject({SceneObjectTransform transform, Float32List vertices})
-      : transform = transform ?? new SceneObjectTransform() {
+      : transform = transform ?? new SceneObjectTransform(),
+        filters = <Filter>[] {
     _glVertices = vertices;
   }
 

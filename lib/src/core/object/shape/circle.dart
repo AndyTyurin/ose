@@ -1,13 +1,18 @@
 part of ose;
 
+/// Circle shape.
 class Circle extends Shape {
+  /// Number of vertices points.
   int _points;
 
-  Circle([int points = 3])
-      : super(vertices: _getCircleVerticesByPoints(points)) {
+  /// Create a new circle, where
+  /// [points] - number of vertices point of a circle.
+  Circle({ Color color, int points: 3 })
+      : super(vertices: _getCircleVerticesByPoints(points), color: color) {
     _points = points;
   }
 
+  /// Calculates vertices positions by number of income points.
   static Float32List _getCircleVerticesByPoints(int points) {
     points = max(4, points);
     List<double> vertices = <double>[];

@@ -1,18 +1,20 @@
 part of ose;
 
+/// Attributes are part of shader programs.
+/// There are needed to keep data and can be used inside your shader logic.
 class Attribute {
   static final Function eq = const ListEquality().equals;
 
   /// Qualifier type.
   QualifierType _type;
 
-  /// Hold data.
+  /// Attribute data.
   Float32List _storage;
 
   /// WebGL buffer.
   webGL.Buffer _buffer;
 
-  // Attribute state.
+  /// Attribute state.
   QualifierState state;
 
   /// Attribute location.
