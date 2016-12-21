@@ -1,13 +1,12 @@
 part of ose;
 
+/// tbd @andytyurin refactor it.
 class SpriteFilter extends Filter {
   SpriteFilter() : super(spriteShaderProgram) {
     attributes.addAll({
       'a_texCoord': new Attribute.FloatArray2()
     });
     uniforms.addAll({
-      'u_model': new Uniform.Mat3(),
-      'u_projection': new Uniform.Mat3(),
       'u_texture': new Uniform.Int1(0)
     });
   }

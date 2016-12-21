@@ -1,48 +1,76 @@
 part of ose;
 
+/// It works with your camera, scene and his objects to show them on screen.
 class Renderer {
+  /// Lifecycle controllers.
   final RendererLifecycleControllers lifecycleControllers;
 
+  /// Renderer settings.
   final RendererSettings settings;
 
+  /// Timer for delta time calculation.
   final utils.Timer timer;
 
-  final RendererManagers managers;
+  /// Managers take some work by themself, they know about [this._gl].
+  RendererManagers _managers;
 
-  webGL.RenderingContext gl;
+  /// Webgl renderer context.
+  webGL.RenderingContext _gl;
 
+  /// Canvas element to use.
   CanvasElement canvas;
 
+  /// Current state of a renderer.
   RendererState _rendererState;
 
+  /// Current delta time between two last frames.
   double _dt;
 
   Renderer({CanvasElement canvas, RendererSettings settings})
       : timer = new utils.Timer(),
         lifecycleControllers = new RendererLifecycleControllers(),
-        settings = settings ?? new RendererSettings(),
-        managers = new RendererManagers() {
-    this.canvas = canvas ?? new CanvasElement();
-    this.canvas.width = this.settings.width;
-    this.canvas.height = this.settings.height;
-    gl = this._initWebGL(this.canvas);
-    _rendererState = RendererState.Stopped;
-    updateViewport(this.settings.width, this.settings.height);
+        settings = settings ?? new RendererSettings() {
+    _init(canvas, this.settings);
   }
 
+  /// Update viewport.
+  void updateViewport(int width, int height) {
+    if (camera != null) {
+      camera.transform
+        ..width = width
+        ..height = height;
+    }
+    canvas.width = width;
+    canvas.height = height;
+    _gl.viewport(0, 0, width, height);
+  }
+
+  /// Register filters
+  /// All filters must be registered by renderer to initialize it on startup.
+  /// Please use that method before you set filters to objects.
+  void registerFilters(List<Filter> filters) {
+    if (_rendererState == RendererState.Started) {
+      window.console.warn(
+          'Please for best perfomance to register your filters before start invokes.');
+    } else {
+      _managers.filterManager.filters = filters;
+    }
+  }
+
+  /// Start renderer.
   Future start() async {
     _rendererState = RendererState.StartRequested;
 
     // Auto-resize window.
-    if (settings.resize) {
-      window.addEventListener('resize', _resize, false);
+    if (settings.fullscreen) {
+      window.addEventListener('resize', _setFullscreen, false);
     }
 
     // Initialize timer.
     timer.init();
 
     // Initialize IO.
-    managers.ioManager.bind();
+    _managers.ioManager.bind();
 
     await lifecycleControllers.onStartCtrl
       ..add(new StartEvent(this))
@@ -50,19 +78,23 @@ class Renderer {
 
     _rendererState = RendererState.Started;
 
+    // Filters must be initialized before render starts.
+    _managers.filterManager.initFilters();
+
     window.animationFrame.then(_render);
   }
 
+  /// Stop renderer.
   Future stop() async {
     _rendererState = RendererState.StopRequested;
 
     // Unbind auto-resize.
-    if (settings.resize) {
-      window.removeEventListener('resize', _resize, false);
+    if (settings.fullscreen) {
+      window.removeEventListener('resize', _setFullscreen, false);
     }
 
     // Unbind IO.
-    managers.ioManager.unbind();
+    _managers.ioManager.unbind();
 
     await lifecycleControllers.onStopCtrl
       ..add(new StopEvent(this))
@@ -71,6 +103,70 @@ class Renderer {
     _rendererState = RendererState.Stopped;
   }
 
+  /// Initialize renderer.
+  _init(CanvasElement canvas, RendererSettings settings) {
+    _rendererState = RendererState.Stopped;
+    _initCanvas(canvas ?? new CanvasElement(), settings);
+    _initWebGL(this.canvas, settings);
+
+    if (_gl != null) {
+      _initManagers(_gl);
+      if (settings.fullscreen) {
+        _setFullscreen();
+      } else {
+        updateViewport(this.canvas.width, this.canvas.height);
+      }
+    }
+  }
+
+  /// Initialize renderer managers.
+  void _initManagers(webGL.RenderingContext gl) {
+    _managers = new RendererManagers(gl);
+  }
+
+  /// Initialize canvas.
+  void _initCanvas(CanvasElement canvas, settings) {
+    this.canvas = canvas;
+    this.canvas.width = settings.width;
+    this.canvas.height = settings.height;
+  }
+
+  /// Initialize webgl.
+  void _initWebGL(CanvasElement canvas, RendererSettings settings) {
+    _gl = _createRenderingContext(canvas, settings);
+
+    // tbd @andytyurin emit error by using of event listener.
+    if (_gl == null) throw 'WebGL is not supported';
+
+    // Disable depth.
+    _gl.disable(webGL.DEPTH_TEST);
+
+    // Enable blending.
+    if (settings.useTransparent) {
+      _gl.enable(webGL.BLEND);
+      _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
+    }
+
+    // Clear with color.
+    if (settings.useClear) {
+      _gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      _gl.clear(webGL.COLOR_BUFFER_BIT);
+    }
+  }
+
+  /// Create WebGL rendering context.
+  webGL.RenderingContext _createRenderingContext(
+      CanvasElement canvas, RendererSettings settings) {
+    return canvas.getContext3d(
+        alpha: settings.useTransparent,
+        premultipliedAlpha: settings.useTransparent,
+        antialias: settings.useAntialias,
+        stencil: settings.useMask,
+        preserveDrawingBuffer: settings.useClear);
+  }
+
+  /// Rendering cycle.
+  /// In best perfomance will be invoked 60 times per second.
   Future _render(num msSinceRendererStart) async {
     if (_rendererState != RendererState.StopRequested) {
       window.animationFrame.then(_render);
@@ -86,10 +182,11 @@ class Renderer {
         _dt = (timer.delta > fpsThresholdPerFrame)
             ? timer.delta
             : fpsThresholdPerFrame;
+
         // Pre-render scene.
         await lifecycleControllers.onRenderCtrl
-          ..add(new RenderEvent(managers.sceneManager.activeScene,
-              managers.cameraManager.activeCamera, this))
+          ..add(new RenderEvent(_managers.sceneManager.activeScene,
+              _managers.cameraManager.activeCamera, this))
           ..done;
 
         /// Render scene.
@@ -103,6 +200,7 @@ class Renderer {
     }
   }
 
+  /// Render scene.
   Future _renderScene(Scene scene, Camera camera) async {
     // Create clear mask.
     int clearMask = 0x00;
@@ -119,7 +217,7 @@ class Renderer {
 
     // Clear buffers by defined mask.
     if (clearMask > 0x00) {
-      gl.clear(clearMask);
+      _gl.clear(clearMask);
     }
 
     if (scene == null) {
@@ -130,6 +228,9 @@ class Renderer {
       throw 'Camera is not defined.';
     }
 
+    /// Update scene logic.
+    scene.update(dt, _managers.cameraManager);
+
     for (SceneObject obj in scene.children) {
       /// Per object pre-render.
       await lifecycleControllers.onObjectRenderCtrl
@@ -139,7 +240,7 @@ class Renderer {
       /// Render object.
       _renderObject(obj, scene, camera);
 
-      managers.ioManager.update();
+      _managers.ioManager.update();
 
       /// Per object post-render.
       await lifecycleControllers.onObjectPostRenderCtrl
@@ -148,6 +249,7 @@ class Renderer {
     }
   }
 
+  /// Render particular object.
   void _renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
     _updateObject(sceneObject);
 
@@ -157,357 +259,88 @@ class Renderer {
 
     sceneObject.transform.updateModelMatrix();
     camera.transform.updateProjectionMatrix();
-    // if (settings.useMask) {
-    /// TODO: Check how could be use mask manager.
-    /// this.maskManager(gameObject, maskObject, MaskManager.intersect);
-    /// this.maskManager(gameObject, maskObject, MaskManager.subtract);
-    /// this.maskManager.subtract(gameObject, maskObject);
-    /// this.maskManager.intersect(gameObject, maskObject);
+
+    // if (sceneObject is Sprite) {
+    //   Texture texture = sceneObject.texture;
+    //
+    //   if (texture.glTexture == null) {
+    //     _prepareTexture(texture);
+    //   }
     // }
 
-    if (sceneObject is Sprite) {
-      Texture texture = sceneObject.texture;
-
-      if (texture.glTexture == null) {
-        _prepareTexture(texture);
+    if ((sceneObject as dynamic).glVertices != null) {
+      if (sceneObject is Shape) {
+        _drawByFilter(_managers.filterManager.basicFilter, sceneObject);
       }
+
+      sceneObject.filters.forEach((filter) {
+        _drawByFilter(filter, sceneObject);
+      });
     }
-
-    // Prepare to use, apply filter values & bind filter.
-    _prepareFilter(sceneObject.filter);
-    sceneObject.filter.apply(sceneObject, scene, camera);
-    _bindFilter(sceneObject.filter);
-
-    if (sceneObject is Sprite) {
-      if (sceneObject.hasTexture) {
-        _bindTexture(sceneObject.texture);
-      }
-    }
-
-    // TODO: Further we shall render groups.
-    gl.drawArrays(webGL.TRIANGLE_STRIP, 0,
-        (sceneObject as dynamic).glVertices.length ~/ 2);
   }
 
+  /// Draw object by using of particular filter.
+  void _drawByFilter(Filter filter, SceneObject obj) {
+    FilterManager fm = _managers.filterManager;
+
+    fm.activeFilter = filter;
+
+    if (fm.activeFilter != null) {
+      fm.activeFilter.apply(_managers.filterManager, obj, scene, camera);
+      _managers.filterManager.bindFilter();
+      _gl.drawArrays(webGL.TRIANGLE_STRIP, 0,
+          (obj as dynamic).glVertices.length ~/ 2);
+    }
+  }
+
+  /// Update object logic.
   void _updateObject(SceneObject sceneObject) {
     _updateObjectActor(sceneObject);
     sceneObject.update(dt);
   }
 
+  /// Update object actor.
   void _updateObjectActor(SceneObject sceneObject) {
     if (sceneObject.actor != null) {
       Actor actor = sceneObject.actor;
       if (actor is ControlActor) {
-        actor.update(scene, sceneObject, managers.ioManager);
+        actor.update(scene, sceneObject, _managers.ioManager);
       } else {
         actor.update(scene, sceneObject);
       }
     }
   }
 
-  /// Set canvas width & height.
-  setCanvasSize(int width, int height, [int pixelRatio = 1]) {
-    canvas.width ??= (width * pixelRatio);
-    canvas.height ??= (height * pixelRatio);
-  }
+  void _setFullscreen([_]) => updateViewport(window.innerWidth, window.innerHeight);
 
-  /// Create WebGL rendering context.
-  webGL.RenderingContext _createRenderingContext(CanvasElement canvas) {
-    return canvas.getContext3d(
-        alpha: settings.useTransparent,
-        premultipliedAlpha: settings.useTransparent,
-        antialias: settings.useAntialias,
-        stencil: settings.useMask,
-        preserveDrawingBuffer: settings.useClear);
-  }
+  // void _prepareTexture(Texture texture) {
+  //   webGL.Texture glTexture = _gl.createTexture();
+  //   texture.glTexture = glTexture;
+  //   _gl.bindTexture(webGL.TEXTURE_2D, glTexture);
+  //   _gl.pixelStorei(webGL.UNPACK_FLIP_Y_WEBGL, 1);
+  //   _gl.texImage2D(webGL.TEXTURE_2D, 0, webGL.RGBA, webGL.RGBA,
+  //       webGL.UNSIGNED_BYTE, texture.image);
+  //   _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MAG_FILTER, webGL.LINEAR);
+  //   _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MIN_FILTER, webGL.LINEAR);
+  //   _gl.generateMipmap(webGL.TEXTURE_2D);
+  //   _gl.bindTexture(webGL.TEXTURE_2D, null);
+  // }
+  //
+  // _bindTexture(Texture texture) {
+  //   _gl.activeTexture(webGL.TEXTURE0);
+  //   _gl.bindTexture(webGL.TEXTURE_2D, texture.glTexture);
+  // }
 
-  /// Initialize WebGL.
-  webGL.RenderingContext _initWebGL(CanvasElement canvas) {
-    webGL.RenderingContext gl = _createRenderingContext(canvas);
-
-    if (gl == null) throw 'WebGL is not supported';
-
-    // Disable depth.
-    gl.disable(webGL.DEPTH_TEST);
-
-    // Enable stencil buffer usage.
-    if (settings.useMask) {
-      gl.enable(webGL.STENCIL_TEST);
-    }
-
-    // Enable blending.
-    if (settings.useTransparent) {
-      gl.enable(webGL.BLEND);
-      gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
-    }
-
-    // Clear with color.
-    if (settings.useClear) {
-      gl.clearColor(0.0, 0.0, 0.0, 1.0);
-      gl.clear(webGL.COLOR_BUFFER_BIT);
-    }
-
-    return gl;
-  }
-
-  void updateViewport(int width, int height) {
-    if (camera != null) {
-      camera.transform
-        ..width = width
-        ..height = height;
-    }
-    gl.viewport(0, 0, width, height);
-  }
-
-  void _resize(_) => updateViewport(canvas.width, canvas.height);
-
-  void _prepareTexture(Texture texture) {
-    webGL.Texture glTexture = gl.createTexture();
-    texture.glTexture = glTexture;
-    gl.bindTexture(webGL.TEXTURE_2D, glTexture);
-    gl.pixelStorei(webGL.UNPACK_FLIP_Y_WEBGL, 1);
-    gl.texImage2D(webGL.TEXTURE_2D, 0, webGL.RGBA, webGL.RGBA,
-        webGL.UNSIGNED_BYTE, texture.image);
-    gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MAG_FILTER, webGL.LINEAR);
-    gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MIN_FILTER, webGL.LINEAR);
-    gl.generateMipmap(webGL.TEXTURE_2D);
-    gl.bindTexture(webGL.TEXTURE_2D, null);
-  }
-
-  void _prepareAttribute(Attribute attribute) {
-    if (attribute.useBuffer && attribute.buffer == null) {
-      attribute.buffer = gl.createBuffer();
-    }
-  }
-
-  void _prepareShader(Shader shader) {
-    int glShaderType = (shader.type == ShaderType.Vertex)
-        ? webGL.VERTEX_SHADER
-        : webGL.FRAGMENT_SHADER;
-    shader.glShader = gl.createShader(glShaderType);
-    webGL.Shader glShader = shader.glShader;
-    gl.shaderSource(glShader, shader.source);
-    gl.compileShader(glShader);
-
-    // Checks shader compile status.
-    if (!gl.getShaderParameter(glShader, webGL.COMPILE_STATUS)) {
-      throw new Exception("Can't compile shader ${shader.type}");
-    }
-  }
-
-  void _prepareShaderProgram(ShaderProgram shaderProgram) {
-    if (shaderProgram.glProgram == null) {
-      webGL.Program glProgram = gl.createProgram();
-      shaderProgram.glProgram = glProgram;
-
-      Shader vertexShader = shaderProgram.vertexShader;
-      Shader fragmentShader = shaderProgram.fragmentShader;
-
-      _prepareShader(vertexShader);
-      _prepareShader(fragmentShader);
-
-      gl.attachShader(glProgram, vertexShader.glShader);
-      gl.attachShader(glProgram, fragmentShader.glShader);
-      gl.linkProgram(glProgram);
-
-      if (!gl.getProgramParameter(glProgram, webGL.LINK_STATUS)) {
-        throw new Exception("Can't compile program");
-      }
-    }
-  }
-
-  void _prepareFilter(Filter filter) {
-    _prepareShaderProgram(filter.shaderProgram);
-    filter.attributes.forEach((_, attribute) => _prepareAttribute(attribute));
-  }
-
-  void _bindAttributes(
-      ShaderProgram shaderProgram, Map<String, Attribute> attributes) {
-    attributes.forEach((name, attribute) {
-      _attributeManager.setActiveAttribute(name, attribute);
-      _bindAttribute(shaderProgram, name, attribute);
-    });
-  }
-
-  void _bindAttribute(
-      ShaderProgram shaderProgram, String name, Attribute attribute) {
-    webGL.Program glProgram = shaderProgram.glProgram;
-    bool shouldBindBuffer = _attributeManager.shouldBindAttribute(name);
-
-    if (!shouldBindBuffer && attribute.state == QualifierState.CACHED) return;
-
-    if (attribute.location != null) {
-      if (!attribute.isLocationBound) {
-        gl.bindAttribLocation(glProgram, attribute.location, name);
-        attribute.bindLocation();
-      }
-    } else {
-      attribute.location = gl.getAttribLocation(glProgram, name);
-    }
-
-    int attributeLocation = attribute.location;
-    bool useBuffer = attribute.useBuffer;
-    List attributeStorage = attribute.storage;
-    int attributeSize = 1;
-
-    switch (attribute.type) {
-      case QualifierType.Float1:
-        if (useBuffer) break;
-        gl.vertexAttrib1f(attributeLocation, attributeStorage[0]);
-        break;
-      case QualifierType.Float2:
-        if (useBuffer) {
-          attributeSize = 2;
-          break;
-        }
-        gl.vertexAttrib2f(
-            attributeLocation, attributeStorage[0], attributeStorage[1]);
-        break;
-      case QualifierType.Float3:
-        if (useBuffer) {
-          attributeSize = 3;
-          break;
-        }
-        gl.vertexAttrib3f(attributeLocation, attributeStorage[0],
-            attributeStorage[1], attributeStorage[2]);
-        break;
-      case QualifierType.Float4:
-        if (useBuffer) {
-          attributeSize = 4;
-          break;
-        }
-        gl.vertexAttrib4f(attributeLocation, attributeStorage[0],
-            attributeStorage[1], attributeStorage[2], attributeStorage[3]);
-        break;
-      default:
-        ;
-    }
-
-    if (attribute.useBuffer) {
-      gl.bindBuffer(webGL.ARRAY_BUFFER, attribute.buffer);
-
-      if (attribute.state == QualifierState.CHANGED) {
-        gl.enableVertexAttribArray(attributeLocation);
-        gl.vertexAttribPointer(
-            attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
-        gl.bufferData(webGL.ARRAY_BUFFER, attribute.storage, webGL.STATIC_DRAW);
-      }
-    }
-  }
-
-  void _bindUniforms(
-      ShaderProgram shaderProgram, Map<String, Uniform> uniforms) {
-    uniforms.forEach((name, uniform) {
-      _uniformManager.setActiveUniform(name, uniform);
-      _bindUniform(shaderProgram, name, uniform);
-    });
-  }
-
-  /// Apply uniform.
-  void _bindUniform(ShaderProgram shaderProgram, String name, Uniform uniform) {
-    webGL.Program glProgram = shaderProgram.glProgram;
-    bool shouldBindUniform = _uniformManager.shouldBindUniform(name);
-
-    if (!shouldBindUniform && uniform.state == QualifierState.CACHED) {
-      return;
-    }
-
-    if (uniform.location == null) {
-      uniform.location = gl.getUniformLocation(glProgram, name);
-    }
-
-    webGL.UniformLocation uniformLocation = uniform.location;
-
-    List uniformStorage = uniform.storage;
-
-    switch (uniform.type) {
-      case QualifierType.Int1:
-        if (uniform.useArray) {
-          gl.uniform1iv(uniformLocation, uniformStorage);
-          break;
-        }
-        gl.uniform1i(uniformLocation, uniformStorage[0]);
-        break;
-      case QualifierType.Float1:
-        if (uniform.useArray) {
-          gl.uniform1fv(uniformLocation, uniformStorage);
-          break;
-        }
-        gl.uniform1f(uniformLocation, uniformStorage[0]);
-        break;
-      case QualifierType.Float2:
-        if (uniform.useArray) {
-          gl.uniform2fv(uniformLocation, uniformStorage);
-          break;
-        }
-        gl.uniform2f(uniformLocation, uniformStorage[0], uniformStorage[1]);
-        break;
-      case QualifierType.Float3:
-        if (uniform.useArray) {
-          gl.uniform3fv(uniformLocation, uniformStorage);
-          break;
-        }
-        gl.uniform3f(uniformLocation, uniformStorage[0], uniformStorage[1],
-            uniformStorage[2]);
-        break;
-      case QualifierType.Float4:
-        if (uniform.useArray) {
-          gl.uniform4fv(uniformLocation, uniformStorage);
-          break;
-        }
-        gl.uniform4f(uniformLocation, uniformStorage[0], uniformStorage[1],
-            uniformStorage[2], uniformStorage[3]);
-        break;
-      case QualifierType.Mat2:
-        gl.uniformMatrix2fv(uniformLocation, false, uniformStorage);
-        break;
-      case QualifierType.Mat3:
-        gl.uniformMatrix3fv(uniformLocation, false, uniformStorage);
-        break;
-      default:
-        ;
-    }
-  }
-
-  _bindFilter(Filter filter) {
-    _bindShaderProgram(filter.shaderProgram);
-    _bindAttributes(filter.shaderProgram, filter.attributes);
-    _bindUniforms(filter.shaderProgram, filter.uniforms);
-  }
-
-  _bindShaderProgram(ShaderProgram shaderProgram) {
-    if (_shaderProgram != shaderProgram) {
-      _shaderProgram = shaderProgram;
-      gl.useProgram(_shaderProgram.glProgram);
-    }
-  }
-
-  _bindTexture(Texture texture) {
-    gl.activeTexture(webGL.TEXTURE0);
-    gl.bindTexture(webGL.TEXTURE_2D, texture.glTexture);
-  }
-
-  Scene get scene => managers.sceneManager.activeScene;
+  Scene get scene => _managers.sceneManager.activeScene;
 
   void set scene(Scene scene) {
-    managers.sceneManager.activeScene = scene;
+    _managers.sceneManager.activeScene = scene;
   }
 
-  Camera get camera => managers.cameraManager.activeCamera;
+  Camera get camera => _managers.cameraManager.activeCamera;
 
   void set camera(Camera camera) {
-    managers.cameraManager.activeCamera = camera;
-  }
-
-  ShaderProgram get _shaderProgram =>
-      managers.shaderProgramManager.activeShaderProgram;
-
-  AttributeManager get _attributeManager => managers.attributeManager;
-
-  UniformManager get _uniformManager => managers.uniformManager;
-
-  void set _shaderProgram(ShaderProgram shaderProgram) {
-    managers.shaderProgramManager.activeShaderProgram = shaderProgram;
+    _managers.cameraManager.activeCamera = camera;
   }
 
   RendererState get state => _rendererState;

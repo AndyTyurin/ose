@@ -8,15 +8,12 @@ class Sprite extends SceneObject {
   Float32List _glVertices;
   Float32List _glTextureCoords;
 
-  SpriteFilter filter;
-
   Sprite()
       : super(
             vertices: new Float32List.fromList(
                 [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0])) {
     _glTextureCoords =
         new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
-    filter = new SpriteFilter();
   }
 
   void rebuildCoordinates() {

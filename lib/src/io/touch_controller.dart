@@ -1,36 +1,38 @@
 part of ose_io;
 
+/// Touch
 class TouchController {
   static TouchController _touch = new TouchController._internal();
 
-  Element element;
-
-  Element _boundElement;
-
+  /// Mouse sensitive.
   static num sensitive = .75;
 
+  /// Will be used in touch event subscription.
+  Element element;
+
+  /// Last touch action (only one finger).
   Touch _lastTouchAction;
 
+  /// Previous touch action (ony one finger).
   Touch _prevTouchAction;
 
   TouchController._internal() {}
 
   factory TouchController() => _touch;
 
-  void update() {}
-
+  /// Bind touch controller.
   void bind() {
     element = element ?? window;
-    _boundElement = element;
-    _boundElement.addEventListener('touchstart', _registerEvent, false);
-    _boundElement.addEventListener('touchend', _unregisterEvent, false);
-    _boundElement.addEventListener('touchmove', _registerMoveEvent, false);
+    element.addEventListener('touchstart', _registerEvent, false);
+    element.addEventListener('touchend', _unregisterEvent, false);
+    element.addEventListener('touchmove', _registerMoveEvent, false);
   }
 
+  /// Set off touch controller.
   void unbind() {
-    _boundElement.removeEventListener('touchstart', _registerEvent, false);
-    _boundElement.removeEventListener('touchend', _unregisterEvent, false);
-    _boundElement.removeEventListener('touchmove', _registerMoveEvent, false);
+    element.removeEventListener('touchstart', _registerEvent, false);
+    element.removeEventListener('touchend', _unregisterEvent, false);
+    element.removeEventListener('touchmove', _registerMoveEvent, false);
   }
 
   void _registerEvent(TouchEvent e) {
@@ -61,10 +63,6 @@ class TouchController {
         _lastTouchAction = null;
       }
     }
-  }
-
-  void _setOfWheel(WheelEvent e) {
-    window.alert('wheel');
   }
 
   get movement => (_lastTouchAction != null && _prevTouchAction != null)

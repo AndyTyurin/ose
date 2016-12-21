@@ -1,5 +1,6 @@
 part of ose_webgl;
 
+/// tbd @andytyurin will be refactored soon...
 class Particles extends GameObject {
   Filter filter;
 

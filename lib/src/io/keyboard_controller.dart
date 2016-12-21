@@ -1,8 +1,11 @@
 part of ose_io;
 
+/// Keyboard controller.
+/// Use [KeyboardController.pressed] method to check is keyboard pressed or not.
 class KeyboardController {
   static KeyboardController _keyboard = new KeyboardController._internal();
 
+  /// Queue of pressed keyboard events.
   Queue<KeyboardEvent> _pressedEvents;
 
   KeyboardController._internal() {
@@ -11,6 +14,7 @@ class KeyboardController {
 
   factory KeyboardController() => _keyboard;
 
+  /// Checks if key code with modification has been pressed.
   bool pressed(int code,
       {bool shift: false,
       bool ctrl: false,
@@ -23,11 +27,13 @@ class KeyboardController {
     return event != null;
   }
 
+  /// Bind controller.
   void bind() {
     window.addEventListener('keydown', _registerEvent, false);
     window.addEventListener('keyup', _unregisterEvent, false);
   }
 
+  /// Set off controller.
   void unbind() {
     window.removeEventListener('keydown', _registerEvent, false);
     window.removeEventListener('keyup', _unregisterEvent, false);
