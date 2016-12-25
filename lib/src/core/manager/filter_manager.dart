@@ -23,25 +23,23 @@ class FilterManager {
   /// Basic filter that is commonly used for objects like primitives.
   BasicFilter _basicFilter;
 
+  /// Sprite filter that is commonly used for sprite objects.
+  SpriteFilter _spriteFilter;
+
   /// Bound shader program.
   ShaderProgram _boundShaderProgram;
 
   FilterManager(this._gl) {
     _basicFilter = new BasicFilter();
-    _defaultFilters = <Filter>[_basicFilter];
+    _spriteFilter = new SpriteFilter();
+    _defaultFilters = <Filter>[_basicFilter, _spriteFilter];
     _filters = <Filter>[];
     _attributeManager = new AttributeManager(this._gl);
     _uniformManager = new UniformManager(this._gl);
   }
 
-  /// Initialize filters.
-  /// Before you will use filters you should setup them, to create
-  /// shader programs, initialize attributes & uniforms and make other
-  /// preparations. We should invoke [Renderer.registerFilters] before.
-  void initFilters() {
-    (<Filter>[]..addAll(_defaultFilters)..addAll(_filters))
-        .toList()
-        .forEach(_prepareFilter);
+  void initDefaultFilters() {
+    _defaultFilters.forEach(prepareFilter);
   }
 
   /// Update attributes values.
@@ -70,7 +68,7 @@ class FilterManager {
   }
 
   /// Prepare filter.
-  void _prepareFilter(Filter filter) {
+  void prepareFilter(Filter filter) {
     _prepareShaderProgram(filter.shaderProgram);
   }
 
@@ -127,7 +125,7 @@ class FilterManager {
   Filter get activeFilter => _activeFilter;
 
   void set activeFilter(Filter filter) {
-    if (_filters.contains(filter) || filter == _basicFilter) {
+    if (_filters.contains(filter) || _defaultFilters.contains(filter)) {
       _activeFilter = filter;
     } else {
       window.console.warn('Filter has not been registered');
@@ -135,6 +133,8 @@ class FilterManager {
   }
 
   BasicFilter get basicFilter => _basicFilter;
+
+  SpriteFilter get spriteFilter => _spriteFilter;
 
   List<Filter> get defaultFitlers => _defaultFilters;
 }

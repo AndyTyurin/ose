@@ -36,6 +36,6 @@ class Circle extends Shape {
   }
 
   Circle clone() {
-    return new Circle(_points)..copyFrom(this);
+    return new Circle(points: _points)..copyFrom(this);
   }
 }

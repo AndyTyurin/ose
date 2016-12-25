@@ -1,6 +1,6 @@
 part of ose;
 
-class Texture {
+class Texture extends Object with utils.UuidMixin {
   final ImageElement image;
 
   webGL.Texture _glTexture;
@@ -8,7 +8,7 @@ class Texture {
   Texture(ImageElement image) : image = image;
 
   operator ==(Texture other) {
-    return image == other.image && _glTexture == other.glTexture;
+    return this.uuid == other.uuid;
   }
 
   webGL.Texture get glTexture => _glTexture;

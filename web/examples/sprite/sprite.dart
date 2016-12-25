@@ -50,40 +50,82 @@ class SpriteExample {
 
   // Prepare sprite.
   // Load image, build a texture and apply it to sprite object.
-  Future _prepareSpaceship() async {
-    _spaceship = new Spaceship();
-    _spaceship.actor = new PlayerActor();
-
-    ImageElement img = new ImageElement(src: '/examples/sprite/spaceship.png');
-    try {
-      await img.onLoad.listen((_) => _renderer.scene.children
-          .add(_spaceship..setActiveTexture(new ose.Texture(img))));
-    } catch (e) {
-      _handleSevereError(new Exception('Image not found'));
-    }
-  }
+  // Future _prepareSpaceship() async {
+  //   _spaceship = new Spaceship();
+  //   _spaceship.actor = new PlayerActor();
+  //
+  //   ImageElement img = new ImageElement(src: '/examples/sprite/spaceship.png');
+  //   try {
+  //     await img.onLoad.listen((_) => _renderer.scene.children
+  //         .add(_spaceship..setActiveTexture(new ose.Texture(img))));
+  //   } catch (e) {
+  //     _handleSevereError(new Exception('Image not found'));
+  //   }
+  // }
 
   // Handle start event.
   // Prepares sprite for renderer.
   Future _onStart(ose.StartEvent e) async {
     logger.fine('Example has been started.');
 
-    _renderer.scene = new ose.Scene();
-    _renderer.camera = new ose.Camera(canvas.width, canvas.height);
+    ose.Scene scene = _renderer.scene = new ose.Scene();
+    ose.Camera camera =
+        _renderer.camera = new ose.Camera(canvas.width, canvas.height);
 
-    // Register your custom filters.
-    // _renderer.registerFilters(filters);
+    // Resource loader is needed to get game resources.
+    ose.ResourceLoader resLoader = new ose.ResourceLoader();
 
-    // await _prepareSpaceship();
-    ose.Rectangle rect = new ose.Rectangle();
-    rect.transform.rotation = math.PI / 4;
+    resLoader.onLoad.listen((e) {
+      print('Resource loaded by path ${e.path}');
+    });
+    resLoader.onProgress.listen((e) {
+      if (e.lengthComputable) {
+        print('Loaded ${e.loaded} / ${e.total} bytes by path ${e.path}');
+      } else {
+        print('Loaded ${e.loaded} bytes by path ${e.path}');
+      }
 
-    ose.Circle circle = new ose.Circle(points: 6);
-    circle.color = new ose.SolidColor.red();
-    circle.transform.scale.setValues(.75, .75);
+    });
+    resLoader.onError.listen((e) {
+      print(e.error.toString());
+    });
 
-    _renderer.scene.add(rect);
-    _renderer.scene.add(circle);
+    // _renderer.assetManager.registerFilters({
+    //   'gaussFilter': new GaussFilter(),
+    //   'sharpFilter': new SharpFilter(),
+    //   'blurFilter': new BlurFilter()
+    // });
+
+    _renderer.assetManager.registerTextures({
+      'spaceship': await resLoader.loadTexture('/examples/sprite/spaceship.png')
+    });
+
+    /// Wait while textures will be loaded.
+    await _renderer.assetManager.onTextureRegister.first;
+
+    ose.Texture spaceshipTexture = _renderer.assetManager.textures['spaceship'];
+
+    Spaceship spaceship = new Spaceship();
+    spaceship.transform.scale.setValues(.5, .5);
+    spaceship.actor = new PlayerActor();
+    spaceship.setActiveTexture(spaceshipTexture);
+
+    scene.add(spaceship);
+
+    // ose.Rectangle rect = new ose.Rectangle();
+    // rect.transform.rotation = math.PI / 4;
+    //
+    // ose.Circle circle = new ose.Circle(points: 6);
+    // circle.color = new ose.SolidColor.red();
+    // circle.transform.scale.setValues(.75, .75);
+    //
+    // ose.Triangle triangle = new ose.Triangle();
+    // triangle.color = new ose.SolidColor.fromHex('00FF00FF');
+    // triangle.transform.scale.setValues(.35, .35);
+    //
+    // _renderer.scene.add(rect);
+    // _renderer.scene.add(circle);
+    // _renderer.scene.add(triangle);
   }
 
   // Handle stop event.
@@ -105,16 +147,7 @@ class SpriteExample {
   }
 
   // Handle frame before it will be rendered.
-  _onObjectRender(ose.ObjectRenderEvent e) {
-    ose.SceneObject obj = e.sceneObject;
-    if (obj is ose.Circle) {
-      obj.transform.rotation += 0.002;
-    } else if (obj is ose.Rectangle) {
-      obj.transform.rotation -= 0.004;
-    } else {
-      obj.transform.rotation += 0.001;
-    }
-  }
+  _onObjectRender(ose.ObjectRenderEvent e) {}
 }
 
 class Spaceship extends ose.Sprite {

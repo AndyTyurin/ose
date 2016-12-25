@@ -72,14 +72,14 @@ class Renderer {
     // Initialize IO.
     _managers.ioManager.bind();
 
+    // Initialize filters.
+    _managers.filterManager.initDefaultFilters();
+
     await lifecycleControllers.onStartCtrl
       ..add(new StartEvent(this))
       ..done;
 
     _rendererState = RendererState.Started;
-
-    // Filters must be initialized before render starts.
-    _managers.filterManager.initFilters();
 
     window.animationFrame.then(_render);
   }
@@ -121,7 +121,9 @@ class Renderer {
 
   /// Initialize renderer managers.
   void _initManagers(webGL.RenderingContext gl) {
-    _managers = new RendererManagers(gl);
+    _managers = new RendererManagers(gl,
+        onFilterRegister: _onFilterRegister,
+        onTextureRegister: _onTextureRegister);
   }
 
   /// Initialize canvas.
@@ -152,6 +154,16 @@ class Renderer {
       _gl.clearColor(0.0, 0.0, 0.0, 1.0);
       _gl.clear(webGL.COLOR_BUFFER_BIT);
     }
+  }
+
+  /// Prepare filter.
+  void _onFilterRegister(FilterRegisterEvent e) {
+    _managers.filterManager.prepareFilter(e.filter);
+  }
+
+  /// Prepare texture.
+  void _onTextureRegister(TextureRegisterEvent e) {
+    _managers.textureManager.prepareTexture(e.texture);
   }
 
   /// Create WebGL rendering context.
@@ -259,18 +271,16 @@ class Renderer {
 
     sceneObject.transform.updateModelMatrix();
     camera.transform.updateProjectionMatrix();
-
-    // if (sceneObject is Sprite) {
-    //   Texture texture = sceneObject.texture;
-    //
-    //   if (texture.glTexture == null) {
-    //     _prepareTexture(texture);
-    //   }
-    // }
+    camera.transform.updateViewMatrix();
 
     if ((sceneObject as dynamic).glVertices != null) {
       if (sceneObject is Shape) {
         _drawByFilter(_managers.filterManager.basicFilter, sceneObject);
+      }
+
+      if (sceneObject is Sprite) {
+        _managers.textureManager.bindTexture(sceneObject.texture);
+        _drawByFilter(_managers.filterManager.spriteFilter, sceneObject);
       }
 
       sceneObject.filters.forEach((filter) {
@@ -284,12 +294,11 @@ class Renderer {
     FilterManager fm = _managers.filterManager;
 
     fm.activeFilter = filter;
-
     if (fm.activeFilter != null) {
       fm.activeFilter.apply(_managers.filterManager, obj, scene, camera);
       _managers.filterManager.bindFilter();
-      _gl.drawArrays(webGL.TRIANGLE_STRIP, 0,
-          (obj as dynamic).glVertices.length ~/ 2);
+      _gl.drawArrays(
+          webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
     }
   }
 
@@ -311,25 +320,8 @@ class Renderer {
     }
   }
 
-  void _setFullscreen([_]) => updateViewport(window.innerWidth, window.innerHeight);
-
-  // void _prepareTexture(Texture texture) {
-  //   webGL.Texture glTexture = _gl.createTexture();
-  //   texture.glTexture = glTexture;
-  //   _gl.bindTexture(webGL.TEXTURE_2D, glTexture);
-  //   _gl.pixelStorei(webGL.UNPACK_FLIP_Y_WEBGL, 1);
-  //   _gl.texImage2D(webGL.TEXTURE_2D, 0, webGL.RGBA, webGL.RGBA,
-  //       webGL.UNSIGNED_BYTE, texture.image);
-  //   _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MAG_FILTER, webGL.LINEAR);
-  //   _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MIN_FILTER, webGL.LINEAR);
-  //   _gl.generateMipmap(webGL.TEXTURE_2D);
-  //   _gl.bindTexture(webGL.TEXTURE_2D, null);
-  // }
-  //
-  // _bindTexture(Texture texture) {
-  //   _gl.activeTexture(webGL.TEXTURE0);
-  //   _gl.bindTexture(webGL.TEXTURE_2D, texture.glTexture);
-  // }
+  void _setFullscreen([_]) =>
+      updateViewport(window.innerWidth, window.innerHeight);
 
   Scene get scene => _managers.sceneManager.activeScene;
 
@@ -342,6 +334,8 @@ class Renderer {
   void set camera(Camera camera) {
     _managers.cameraManager.activeCamera = camera;
   }
+
+  AssetManager get assetManager => _managers.assetManager;
 
   RendererState get state => _rendererState;
 
