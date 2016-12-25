@@ -68,6 +68,7 @@ part 'src/core/manager/asset_manager.dart';
 part 'src/core/manager/texture_manager.dart';
 
 part 'src/core/texture/texture.dart';
+part 'src/core/texture/original_texture.dart';
 part 'src/core/texture/sub_texture.dart';
 
 part 'src/core/color/color.dart';

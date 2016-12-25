@@ -16,7 +16,7 @@ class Sprite extends SceneObject {
         new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
   }
 
-  void rebuildCoordinates() {
+  void _rebuildCoordinates() {
     ImageElement textureImg = _texture.image;
     int textureWidth = textureImg.width;
     int textureHeight = textureImg.height;
@@ -54,24 +54,23 @@ class Sprite extends SceneObject {
     ]);
   }
 
-  void setActiveTexture(Texture texture) {
+  void _setOriginalTexture(OriginalTexture texture) {
     _texture = texture;
     _glTextureBounds = new Vector4(0.0, 0.0, 1.0, 1.0);
-    rebuildCoordinates();
+    _rebuildCoordinates();
   }
 
-  void setActiveSubTexture(SubTexture subTexture) {
-    Texture parentTexture = subTexture.parentTexture;
-    ImageElement textureImg = parentTexture.image;
+  void _setSubTexture(SubTexture texture) {
+    OriginalTexture originalTexture = texture.originalTexture;
+    ImageElement textureImg = originalTexture.image;
     int width = textureImg.width;
     int height = textureImg.height;
-    Vector4 boundingVector = subTexture.boundingRect.toVector4();
+    Vector4 boundingVector = texture.boundingRect.toVector4();
     _glTextureBounds = boundingVector
       ..setValues(boundingVector.x / width, 1 - boundingVector.w / height,
           boundingVector.z / width, 1 - boundingVector.y / height);
-    texture = parentTexture;
     _texture = texture;
-    rebuildCoordinates();
+    _rebuildCoordinates();
   }
 
   @override
@@ -86,7 +85,11 @@ class Sprite extends SceneObject {
   Texture get texture => _texture;
 
   void set texture(Texture texture) {
-    _texture = texture;
+    if (texture is OriginalTexture) {
+      _setOriginalTexture(texture);
+    } else if (texture is SubTexture) {
+      _setSubTexture(texture);
+    }
   }
 
   webGL.Texture get glTexture => _texture.glTexture;

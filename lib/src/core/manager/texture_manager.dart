@@ -1,5 +1,6 @@
 part of ose;
 
+/// Manages textures.
 class TextureManager {
   /// WebGL rendering context.
   webGL.RenderingContext _gl;
@@ -10,7 +11,7 @@ class TextureManager {
   TextureManager(this._gl);
 
   /// Prepare texture.
-  prepareTexture(Texture texture) {
+  prepareTexture(OriginalTexture texture) {
     webGL.Texture glTexture = _gl.createTexture();
     texture.glTexture = glTexture;
     _gl.bindTexture(webGL.TEXTURE_2D, glTexture);

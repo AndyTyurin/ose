@@ -19,7 +19,7 @@ class ResourceLoader {
   }
 
   /// Load texture by [path].
-  Future loadTexture(String path) async {
+  Future<OriginalTexture> loadTexture(String path) async {
     ImageElement img = new ImageElement();
     HttpRequest
         .request(path,
@@ -47,10 +47,10 @@ class ResourceLoader {
     _onProgressCtrl.add(new ResourceProgressEvent(path, e.loaded, e.total, e.lengthComputable));
   }
 
-  /// Load image & create [Texture].
+  /// Load image & create [OriginalTexture].
   /// Fires [onLoad].
-  Texture _onTextureLoad(String path, ImageElement img) {
-    Texture texture = new Texture(img);
+  OriginalTexture _onTextureLoad(String path, ImageElement img) {
+    OriginalTexture texture = new OriginalTexture(img);
     _onLoadCtrl.add(new ResourceLoadEvent(path, texture));
     return texture;
   }
@@ -89,7 +89,7 @@ class ResourceLoader {
 
 /// Resource loading event.
 class ResourceLoadEvent {
-  /// Can be [ImageElement] or [String].
+  /// Can be [Texture] or [Shader].
   dynamic resource;
 
   /// Resource path.

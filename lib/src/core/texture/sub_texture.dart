@@ -1,11 +1,18 @@
 part of ose;
 
-class SubTexture {
-  final Texture parentTexture;
+class SubTexture extends Texture {
+  /// Original texture.
+  /// Note, sub texture can't work without original texture.
+  final OriginalTexture originalTexture;
 
+  /// Bounding rectangle in percent.
   final Rect boundingRect;
 
-  SubTexture(Texture parentTexture, Rect boundingRect)
-      : parentTexture = parentTexture,
-        boundingRect = boundingRect;
+  SubTexture(this.originalTexture, this.boundingRect);
+
+  void set glTexture(webGL.Texture glTexture) {
+    originalTexture.glTexture = glTexture;
+  }
+
+  webGL.Texture get glTexture => originalTexture.glTexture;
 }
