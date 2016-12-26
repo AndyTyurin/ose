@@ -46,6 +46,7 @@ class SceneObjectTransform extends Transform {
     _scaleMatrix = transform.scaleMatrix.clone();
     _modelMatrix = transform.modelMatrix.clone();
     _updatePrevValues();
+    updateModelMatrix(true);
   }
 
   SceneObjectTransform clone() {
