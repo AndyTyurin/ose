@@ -146,7 +146,7 @@ class Spaceship extends ose.Sprite {
       }
     }
 
-    transform.rotation += rotationSpeed;
+    transform.rotation += rotationSpeed / 100 * dt;
 
     isLeftRotation = false;
     isRightRotation = false;

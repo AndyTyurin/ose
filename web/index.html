@@ -9,7 +9,7 @@
     <style>
         div.examples {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: center;
           flex-flow: row wrap;
         }
@@ -25,6 +25,11 @@
         figure.example > figcaption.screenshot img {
             height: 10rem;
         }
+
+        figure.example {
+          width: 120px;
+          margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -36,12 +41,22 @@
         <div class="examples">
           <figure class="example">
               <figcaption class="screenshot">
+                  <a href="/examples/shape/shape.html" title="Shape example">
+                      <img src="/examples/shape/screenshot.jpg" alt="Sprite example" />
+                  </a>
+              </figcaption>
+              <a href="/examples/shape/shape.html" title="Shape example">
+                Basic shapes
+              </a>
+          </figure>
+          <figure class="example">
+              <figcaption class="screenshot">
                   <a href="/examples/sprite/sprite.html" title="Sprite example">
-                      <img src="/examples/sprite/snapshot.jpg" alt="Sprite example" />
+                      <img src="/examples/sprite/screenshot.jpg" alt="Sprite example" />
                   </a>
               </figcaption>
               <a href="/examples/sprite/sprite.html" title="Sprite example">
-                Spaceship rotation
+                Spaceship A D, Mouse, Touch rotation.
               </a>
           </figure>
         </div>
