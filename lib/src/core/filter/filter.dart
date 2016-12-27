@@ -8,12 +8,13 @@ abstract class Filter extends Object with utils.UuidMixin {
 
   Filter(this.shaderProgram) {
     attributes.addAll({
-      'a_position': new Attribute.FloatArray2()..location = 0
+      'a_position': new Attribute.FloatArray2()..location = 0,
     });
     uniforms.addAll({
       'u_model': new Uniform.Mat3(),
       'u_projection': new Uniform.Mat3(),
-      'u_view': new Uniform.Mat3()
+      'u_view': new Uniform.Mat3(),
+      'u_zLevel': new Uniform.Float1(.0)
     });
   }
 
@@ -27,6 +28,7 @@ abstract class Filter extends Object with utils.UuidMixin {
 
     filterManager.updateUniforms({
       'u_model': obj.transform.modelMatrix,
+      'u_zLevel': obj.transform.z,
       'u_projection': camera.transform.projectionMatrix,
       'u_view': camera.transform.viewMatrix
     });
