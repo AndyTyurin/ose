@@ -3,8 +3,6 @@ part of ose;
 class SceneObjectTransform extends Transform {
   static Vector2 defaultScale = new Vector2(1.0, 1.0);
 
-  double z;
-
   Vector2 scale;
 
   Vector2 _oldScale;
@@ -16,7 +14,6 @@ class SceneObjectTransform extends Transform {
   SceneObjectTransform({Vector2 position, Vector2 scale, double rotation})
       : super(position: position, rotation: rotation) {
     this.scale = scale ?? defaultScale.clone();
-    zLevel = .0;
     updateModelMatrix(true);
   }
 

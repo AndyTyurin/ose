@@ -63,8 +63,8 @@ class FilterManager {
       _boundShaderProgram = _activeFilter.shaderProgram;
       _gl.useProgram(_boundShaderProgram.glProgram);
     }
-    _attributeManager.bindAttributes(_activeFilter.shaderProgram);
-    _uniformManager.bindUniforms(_activeFilter.shaderProgram);
+    _attributeManager.bindAttributes(_boundShaderProgram);
+    _uniformManager.bindUniforms(_boundShaderProgram);
   }
 
   /// Prepare filter.

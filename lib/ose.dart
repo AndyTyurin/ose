@@ -1,5 +1,6 @@
 library ose;
 
+import 'dart:collection';
 import 'dart:html';
 import 'dart:async';
 import 'dart:math';
@@ -32,6 +33,7 @@ part 'src/core/actor/actor.dart';
 part 'src/core/actor/control_actor.dart';
 
 part 'src/core/object/scene_object.dart';
+part 'src/core/object/scene_object_group.dart';
 part 'src/core/object/shape/shape.dart';
 part 'src/core/object/shape/rectangle.dart';
 part 'src/core/object/shape/circle.dart';

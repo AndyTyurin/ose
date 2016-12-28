@@ -263,33 +263,53 @@ class Renderer {
 
   /// Render particular object.
   void _renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
-    _updateObject(sceneObject);
-
-    if (sceneObject is Shape) {
-      sceneObject.rebuildColors();
-    }
-
-    sceneObject.transform.updateModelMatrix();
-    camera.transform.updateProjectionMatrix();
-    camera.transform.updateViewMatrix();
-
-    if ((sceneObject as dynamic).glVertices != null) {
-      if (sceneObject is Shape) {
-        _drawByFilter(_managers.filterManager.basicFilter, sceneObject);
-      }
-
-      if (sceneObject is Sprite) {
-        _managers.textureManager.bindTexture(sceneObject.texture);
-        _drawByFilter(_managers.filterManager.spriteFilter, sceneObject);
-      }
-
-      sceneObject.filters.forEach((filter) {
-        _drawByFilter(filter, sceneObject);
-      });
+    if (sceneObject is SceneObjectGroup) {
+      _drawGroup(sceneObject);
+    } else {
+      _drawObject(sceneObject);
     }
   }
 
+  void _drawShape(Shape shape) {
+    shape.rebuildColors();
+    _drawByFilter(_managers.filterManager.basicFilter, shape);
+  }
+
+  void _drawSprite(Sprite sprite) {
+    _managers.textureManager.bindTexture(sprite.texture);
+    _drawByFilter(_managers.filterManager.spriteFilter, sprite);
+    _managers.textureManager.unbindTexture();
+  }
+
+  void _drawObject(SceneObject sceneObject) {
+    _updateObject(sceneObject);
+    camera.transform.updateProjectionMatrix();
+    camera.transform.updateViewMatrix();
+    sceneObject.transform.updateModelMatrix();
+    if (sceneObject is Sprite) {
+      _drawSprite(sceneObject);
+    } else if (sceneObject is Shape) {
+      _drawShape(sceneObject);
+    }
+
+      _applyFilters(sceneObject);
+  }
+
+  void _applyFilters(SceneObject sceneObject) {
+    sceneObject.filters.forEach((filter) {
+      _drawByFilter(filter, sceneObject);
+    });
+  }
+
+  void _drawGroup(SceneObjectGroup group) {
+    group.transform.updateModelMatrix();
+    group.children.forEach((sceneObject) {
+      _drawObject(sceneObject);
+    });
+  }
+
   /// Draw object by using of particular filter.
+  /// Be careful, objects should have [glVertices].
   void _drawByFilter(Filter filter, SceneObject obj) {
     FilterManager fm = _managers.filterManager;
 

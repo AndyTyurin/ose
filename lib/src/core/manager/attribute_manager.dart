@@ -5,23 +5,14 @@ class AttributeManager {
   /// Equality tool for lists.
   static final Function eq = const ListEquality().equals;
 
-  /// Previous attributes.
-  final Map<String, Attribute> prevAttributes;
-
-  /// Current attributes.
-  final Map<String, Attribute> nextAttributes;
-
   /// Rendering context.
   webGL.RenderingContext _gl;
 
-  AttributeManager(this._gl)
-      : prevAttributes = <String, Attribute>{},
-        nextAttributes = <String, Attribute>{};
+  AttributeManager(this._gl);
 
   /// Bind attributes.
   void bindAttributes(ShaderProgram shaderProgram) {
     shaderProgram.attributes.forEach((name, attribute) {
-      _setActiveAttribute(name, attribute);
       _bindAttribute(shaderProgram, name, attribute);
     });
   }
@@ -40,24 +31,9 @@ class AttributeManager {
     });
   }
 
-  /// Check is attribute was changed or not.
-  /// If attribute was change return [true].
-  bool _shouldBindAttribute(String name) {
-    return prevAttributes[name] != nextAttributes[name];
-  }
-
-  /// Set current attribute to be an active.
-  void _setActiveAttribute(String name, Attribute attribute) {
-    prevAttributes[name] = nextAttributes[name];
-    nextAttributes[name] = attribute;
-  }
-
   /// Bind attribute to shader program.
   void _bindAttribute(
       ShaderProgram shaderProgram, String name, Attribute attribute) {
-    bool shouldBindBuffer = _shouldBindAttribute(name);
-
-    if (!shouldBindBuffer && attribute.state == QualifierState.CACHED) return;
 
     int attributeLocation = attribute.location;
     bool useBuffer = attribute.useBuffer;
@@ -100,13 +76,11 @@ class AttributeManager {
     if (attribute.useBuffer) {
       _gl.bindBuffer(webGL.ARRAY_BUFFER, attribute.buffer);
 
-      if (attribute.state == QualifierState.CHANGED) {
-        _gl.enableVertexAttribArray(attributeLocation);
-        _gl.vertexAttribPointer(
-            attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
-        _gl.bufferData(
-            webGL.ARRAY_BUFFER, attribute.storage, webGL.STATIC_DRAW);
-      }
+      _gl.enableVertexAttribArray(attributeLocation);
+      _gl.vertexAttribPointer(
+          attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
+      _gl.bufferData(
+          webGL.ARRAY_BUFFER, attribute.storage, webGL.STATIC_DRAW);
     }
   }
 

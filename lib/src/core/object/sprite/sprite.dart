@@ -6,12 +6,12 @@ class Sprite extends SceneObject {
   Vector4 _glTextureBounds;
 
   Float32List _glVertices;
+
   Float32List _glTextureCoords;
 
-  Sprite()
-      : super(
-            vertices: new Float32List.fromList(
-                [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0])) {
+  Sprite() {
+    _glVertices =
+        new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
     _glTextureCoords =
         new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
   }
@@ -97,6 +97,8 @@ class Sprite extends SceneObject {
   Vector4 get glTextureBounds => _glTextureBounds;
 
   Float32List get glTextureCoords => _glTextureCoords;
+
+  Float32List get glVertices => _glVertices;
 
   bool get hasTexture => _texture != null;
 }

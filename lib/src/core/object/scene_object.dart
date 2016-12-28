@@ -3,23 +3,19 @@ part of ose;
 abstract class SceneObject extends Object with utils.UuidMixin {
   final SceneObjectTransform transform;
 
-  Float32List _glVertices;
+  SceneObjectGroup parent;
 
   Actor actor;
 
   final List<Filter> filters;
 
-  SceneObject({SceneObjectTransform transform, Float32List vertices})
+  SceneObject({SceneObjectTransform transform})
       : transform = transform ?? new SceneObjectTransform(),
-        filters = <Filter>[] {
-    _glVertices = vertices;
-  }
+        filters = <Filter>[];
 
   void update(num dt);
 
   void copyFrom(SceneObject from) {
     transform.copyFrom(from.transform);
   }
-
-  Float32List get glVertices => _glVertices;
 }

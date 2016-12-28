@@ -13,8 +13,7 @@ abstract class Filter extends Object with utils.UuidMixin {
     uniforms.addAll({
       'u_model': new Uniform.Mat3(),
       'u_projection': new Uniform.Mat3(),
-      'u_view': new Uniform.Mat3(),
-      'u_zLevel': new Uniform.Float1(.0)
+      'u_view': new Uniform.Mat3()
     });
   }
 
@@ -26,9 +25,14 @@ abstract class Filter extends Object with utils.UuidMixin {
       });
     }
 
+    Matrix3 modelMatrix = obj.transform.modelMatrix;
+
+    if (obj.parent != null) {
+      modelMatrix *= obj.parent.transform.modelMatrix;
+    }
+
     filterManager.updateUniforms({
-      'u_model': obj.transform.modelMatrix,
-      'u_zLevel': obj.transform.z,
+      'u_model': modelMatrix,
       'u_projection': camera.transform.projectionMatrix,
       'u_view': camera.transform.viewMatrix
     });
