@@ -240,9 +240,17 @@ class Renderer {
       throw 'Camera is not defined.';
     }
 
-    /// Update scene logic.
+    // Update scene logic.
     scene.update(dt, _managers.cameraManager);
 
+    // Update lightning.
+    _updateLights(scene.lights);
+
+    // Update camera
+    camera.transform.updateProjectionMatrix();
+    camera.transform.updateViewMatrix();
+
+    // Traverse by objects.
     for (SceneObject obj in scene.children) {
       /// Per object pre-render.
       await lifecycleControllers.onObjectRenderCtrl
@@ -278,13 +286,12 @@ class Renderer {
   void _drawSprite(Sprite sprite) {
     _managers.textureManager.bindTexture(sprite.texture);
     _drawByFilter(_managers.filterManager.spriteFilter, sprite);
+    _drawByLightning(sprite, scene.lights);
     _managers.textureManager.unbindTexture();
   }
 
   void _drawObject(SceneObject sceneObject) {
     _updateObject(sceneObject);
-    camera.transform.updateProjectionMatrix();
-    camera.transform.updateViewMatrix();
     sceneObject.transform.updateModelMatrix();
     if (sceneObject is Sprite) {
       _drawSprite(sceneObject);
@@ -292,13 +299,21 @@ class Renderer {
       _drawShape(sceneObject);
     }
 
-      _applyFilters(sceneObject);
+    _applyFilters(sceneObject);
   }
 
   void _applyFilters(SceneObject sceneObject) {
     sceneObject.filters.forEach((filter) {
       _drawByFilter(filter, sceneObject);
     });
+  }
+
+  void _updateLights(Iterable<Light> lights) {
+    lights.forEach(_updateLight);
+  }
+
+  void _updateLight(Light light) {
+    light.update(dt);
   }
 
   void _drawGroup(SceneObjectGroup group) {
@@ -320,6 +335,14 @@ class Renderer {
       _gl.drawArrays(
           webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
     }
+  }
+
+  void _drawByLightning(Sprite obj, Iterable<Light> lights) {
+    SpriteFilter activeFilter = _managers.filterManager.activeFilter;
+    lights.forEach((light) {
+        activeFilter.setActiveLight(light);
+        _drawByFilter(activeFilter, obj);
+    });
   }
 
   /// Update object logic.

@@ -95,6 +95,16 @@ class Vector2 extends Vector {
     return math.atan2(y, x) - math.atan2(v.y, v.x);
   }
 
+  /// Get direction of [this] to [v].
+  Vector2 getDirectionTo(Vector2 v) {
+    return getDistanceTo(v)..normalize();
+  }
+
+  /// Get distance of [this] to [v].
+  Vector2 getDistanceTo(Vector2 v) {
+    return (v.clone() - this);
+  }
+
   /// Clone [this] vector.
   Vector2 clone() => new Vector2(x, y);
 

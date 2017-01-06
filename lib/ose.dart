@@ -13,6 +13,7 @@ import 'package:collection/collection.dart';
 import 'ose_math.dart';
 import 'ose_utils.dart' as utils;
 import 'ose_io.dart';
+import 'ose_physic.dart';
 
 part 'src/core/renderer/renderer.dart';
 part 'src/core/renderer/renderer_events.dart';
@@ -24,6 +25,7 @@ part 'src/core/renderer/renderer_managers.dart';
 part 'src/core/transform/camera_transform.dart';
 part 'src/core/transform/transform.dart';
 part 'src/core/transform/scene_object_transform.dart';
+part 'src/core/transform/light_transform.dart';
 
 part 'src/core/camera/camera.dart';
 
@@ -78,3 +80,6 @@ part 'src/core/color/solid_color.dart';
 part 'src/core/color/gradient_color.dart';
 
 part 'src/core/loader/resource_loader.dart';
+
+part 'src/core/light/light.dart';
+part 'src/core/light/directional_light.dart';

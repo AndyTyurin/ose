@@ -14,5 +14,7 @@ class SubTexture extends Texture {
     originalTexture.glTexture = glTexture;
   }
 
-  webGL.Texture get glTexture => originalTexture.glTexture;
+  webGL.Texture get glTexture => originalTexture?.glTexture;
+
+  ImageElement get image => originalTexture?.image;
 }

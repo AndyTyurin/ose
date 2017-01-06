@@ -38,6 +38,10 @@ class Attribute {
     state = QualifierState.INITIALIZED;
   }
 
+  /// b1
+  factory Attribute.Bool1([bool b0]) =>
+      new Attribute._internal(QualifierType.Bool1, [(b0) ? 1.0 : .0]);
+
   /// f1
   factory Attribute.Float1([double f0]) =>
       new Attribute._internal(QualifierType.Float1, [f0]);

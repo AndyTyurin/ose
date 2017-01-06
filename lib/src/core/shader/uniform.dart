@@ -32,6 +32,10 @@ class Uniform {
     state = QualifierState.INITIALIZED;
   }
 
+  /// b1
+  factory Uniform.Bool1([bool b0]) =>
+      new Uniform._internal(QualifierType.Bool1, [(b0) ? 1.0 : .0]);
+
   /// i1
   factory Uniform.Int1([int i0]) =>
       new Uniform._internal(QualifierType.Int1, [i0]);
