@@ -158,6 +158,9 @@ class SolidColor implements Color {
     ];
   }
 
+  @override
+  Float32List toTypeIdentity() => new Float32List.fromList(toIdentity());
+
   bool operator ==(SolidColor SolidColor) {
     return rgba == SolidColor.rgba;
   }

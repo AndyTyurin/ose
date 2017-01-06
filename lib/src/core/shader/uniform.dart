@@ -103,13 +103,18 @@ class Uniform {
 
     if (utils.isNumeric(value)) {
       storage = new Float32List.fromList([double.parse(value.toString())]);
+    } else if (value is bool) {
+      storage = new Float32List.fromList([(value) ? 1.0 : .0]);
     } else if (value is Vector || value is Matrix) {
       storage = new Float32List.fromList(value.storage);
     } else if (value is Float32List) {
       storage = new Float32List.fromList(value);
     } else if (value is Int8List) {
       storage = new Int8List.fromList(value);
+    } else if (value is TypedIdentity) {
+      storage = value.toTypeIdentity();
     } else {
+      window.console.error("Can't update attribute by value ${value}");
       throw ArgumentError;
     }
 

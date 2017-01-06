@@ -29,7 +29,8 @@ class Scene {
 
   Scene()
       : _uuid = utils.generateUuid(),
-        _children = new Set();
+        _children = new Set(),
+        _lights = new Set();
 
   /// Add a new object to scene.
   void add(dynamic obj) {

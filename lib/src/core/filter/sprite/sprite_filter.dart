@@ -16,21 +16,31 @@ class SpriteFilter extends Filter {
   /// See [Filter.apply].
   void apply(
       FilterManager filterManager, Sprite obj, Scene scene, Camera camera) {
+
+    // Default light values.
     bool useDirectionalLight = false;
-    Vector2 lightDirection = null;
-    SolidColor lightColor = null;
+    Vector2 lightDirection = new Vector2.zero();
+    SolidColor lightColor = new SolidColor.white();
+
+    // Handle light.
     if (_activeLight != null) {
       if (_activeLight is DirectionalLight) {
         useDirectionalLight = true;
         lightDirection = (_activeLight as DirectionalLight).direction;
       }
+
       filterManager.updateUniforms({
         'u_lightDirection': lightDirection,
         'u_lightColor': lightColor,
         'u_useDirectionalLight': useDirectionalLight
       });
     }
+
     filterManager.updateAttributes({'a_texCoord': obj.glTextureCoords});
+
+    // Reset light.
+    _activeLight = null;
+
     super.apply(filterManager, obj, scene, camera);
   }
 

@@ -79,10 +79,14 @@ class Attribute {
 
     if (value is double) {
       storage = new Float32List.fromList([value]);
+    } else if (value is bool) {
+      storage = new Float32List.fromList([(value) ? 1.0 : .0]);
     } else if (value is Vector || value is Matrix) {
       storage = value.storage;
     } else if (value is Float32List) {
       storage = new Float32List.fromList(value);
+    } else if (value is TypedIdentity) {
+      storage = value.toTypeIdentity();
     } else {
       throw ArgumentError;
     }

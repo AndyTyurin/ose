@@ -100,6 +100,10 @@ class SpriteExample {
     spaceship.actor = new PlayerActor();
     spaceship.texture = spaceshipTexture;
 
+    // Create & add lightning to scene.
+    ose.DirectionalLight directionalLight = new ose.DirectionalLight();
+    scene.add(directionalLight);
+
     // Add sprite to scene.
     scene.add(spaceship);
   }

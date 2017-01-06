@@ -25,7 +25,6 @@ part 'src/core/renderer/renderer_managers.dart';
 part 'src/core/transform/camera_transform.dart';
 part 'src/core/transform/transform.dart';
 part 'src/core/transform/scene_object_transform.dart';
-part 'src/core/transform/light_transform.dart';
 
 part 'src/core/camera/camera.dart';
 
