@@ -284,10 +284,15 @@ class Renderer {
   }
 
   void _drawSprite(Sprite sprite) {
-    _managers.textureManager.bindTexture(sprite.texture);
+    _managers.textureManager.bindTexture(sprite.texture, TextureType.Color);
+    if (sprite.normalMap != null) {
+      _managers.textureManager
+          .bindTexture(sprite.normalMap, TextureType.Normal);
+    }
     _drawByFilter(_managers.filterManager.spriteFilter, sprite);
-    _drawByLightning(sprite, scene.lights);
-    _managers.textureManager.unbindTexture();
+    // _drawByLightning(sprite, scene.lights);
+    _managers.textureManager.unbindTexture(TextureType.Color);
+    _managers.textureManager.unbindTexture(TextureType.Normal);
   }
 
   void _drawObject(SceneObject sceneObject) {
@@ -337,13 +342,15 @@ class Renderer {
     }
   }
 
-  void _drawByLightning(Sprite obj, Iterable<Light> lights) {
-    SpriteFilter activeFilter = _managers.filterManager.activeFilter;
-    lights.forEach((light) {
-        activeFilter.setActiveLight(light);
-        _drawByFilter(activeFilter, obj);
-    });
-  }
+  // void _drawByLightning(Sprite obj, Iterable<Light> lights) {
+  //   SpriteFilter activeFilter = _managers.filterManager.activeFilter;
+  //   _gl.blendFunc(webGL.SRC_ALPHA, webGL.DST_ALPHA);
+  //   lights.forEach((light) {
+  //     activeFilter.setActiveLight(light);
+  //     _drawByFilter(activeFilter, obj);
+  //   });
+  //   _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
+  // }
 
   /// Update object logic.
   void _updateObject(SceneObject sceneObject) {

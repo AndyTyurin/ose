@@ -13,7 +13,6 @@ import 'package:collection/collection.dart';
 import 'ose_math.dart';
 import 'ose_utils.dart' as utils;
 import 'ose_io.dart';
-import 'ose_physic.dart';
 
 part 'src/core/renderer/renderer.dart';
 part 'src/core/renderer/renderer_events.dart';
@@ -73,6 +72,7 @@ part 'src/core/manager/texture_manager.dart';
 part 'src/core/texture/texture.dart';
 part 'src/core/texture/original_texture.dart';
 part 'src/core/texture/sub_texture.dart';
+part 'src/core/texture/texture_type.dart';
 
 part 'src/core/color/color.dart';
 part 'src/core/color/solid_color.dart';
@@ -82,3 +82,5 @@ part 'src/core/loader/resource_loader.dart';
 
 part 'src/core/light/light.dart';
 part 'src/core/light/directional_light.dart';
+part 'src/core/light/point_light.dart';
+part 'src/core/light/ambient_light.dart';

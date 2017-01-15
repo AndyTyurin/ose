@@ -37,7 +37,6 @@ class CameraTransform extends Transform {
     if (force || shouldUpdateProjectionMatrix) {
       _projectionMatrix = new Matrix3.projection(_width, _height, _scale);
       _isProjectionValuesChanged = false;
-      _updatePrevValues();
     }
   }
 
@@ -47,6 +46,7 @@ class CameraTransform extends Transform {
       updateTranslationMatrix(force);
       updateRotationMatrix(force);
       _viewMatrix = rotationMatrix * translationMatrix;
+      _updatePrevValues();
     }
   }
 

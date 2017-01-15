@@ -1,3 +1,18 @@
 part of ose;
 
-enum QualifierType { Bool1, Float1, Float2, Float3, Float4, Int1, Mat2, Mat3 }
+enum QualifierType {
+  Bool1,
+  Bool2,
+  Bool3,
+  Bool4,
+  Float1,
+  Float2,
+  Float3,
+  Float4,
+  Int1,
+  Int2,
+  Int3,
+  Int4,
+  Mat2,
+  Mat3
+}

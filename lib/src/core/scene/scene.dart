@@ -27,6 +27,9 @@ class Scene {
   /// List with lights.
   Set<Light> _lights;
 
+  /// Ambient light.
+  AmbientLight _ambientLight;
+
   Scene()
       : _uuid = utils.generateUuid(),
         _children = new Set(),
@@ -59,11 +62,19 @@ class Scene {
   }
 
   void _addLight(Light light) {
-    _lights.add(light);
+    if (light is AmbientLight) {
+      _ambientLight = light;
+    } else {
+      _lights.add(light);
+    }
   }
 
   void _removeLight(Light light) {
-    _lights.remove(light);
+    if (light is AmbientLight) {
+      _ambientLight = null;
+    } else {
+      _lights.remove(light);
+    }
   }
 
   /// Scene logic handler.
@@ -75,4 +86,6 @@ class Scene {
   Set<SceneObject> get children => _children;
 
   Set<Light> get lights => _lights;
+
+  AmbientLight get ambientLight => _ambientLight;
 }

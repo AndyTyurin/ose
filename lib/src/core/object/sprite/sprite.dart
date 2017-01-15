@@ -3,6 +3,8 @@ part of ose;
 class Sprite extends SceneObject {
   Texture _texture;
 
+  Texture _normalMapTexture;
+
   Vector4 _glTextureBounds;
 
   Float32List _glVertices;
@@ -84,6 +86,8 @@ class Sprite extends SceneObject {
 
   Texture get texture => _texture;
 
+  Texture get colorMap => _texture;
+
   void set texture(Texture texture) {
     if (texture is OriginalTexture) {
       _setOriginalTexture(texture);
@@ -92,7 +96,19 @@ class Sprite extends SceneObject {
     }
   }
 
+  void set colorMap(Texture texture) {
+    this.texture = texture;
+  }
+
+  Texture get normalMap => _normalMapTexture;
+
+  void set normalMap(Texture texture) {
+    _normalMapTexture = texture;
+  }
+
   webGL.Texture get glTexture => _texture.glTexture;
+
+  webGL.Texture get glNormalMap => _normalMapTexture.glTexture;
 
   Vector4 get glTextureBounds => _glTextureBounds;
 

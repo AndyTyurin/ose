@@ -56,6 +56,11 @@ class FilterManager {
     });
   }
 
+  /// Ignore spefic uniforms from binding on iteration.
+  void ignoreUniforms(List<String> uniforms) {
+    _uniformManager.ignoreUniforms.addAll(uniforms);
+  }
+
   /// Bind active filter.
   /// See [activeFilter].
   void bindFilter() {
@@ -92,11 +97,11 @@ class FilterManager {
 
       _gl.linkProgram(glProgram);
 
-      _attributeManager.generateLocations(shaderProgram);
-
       if (!_gl.getProgramParameter(glProgram, webGL.LINK_STATUS)) {
         throw new Exception("Can't compile program");
       }
+
+      _attributeManager.generateLocations(shaderProgram);
     }
   }
 
