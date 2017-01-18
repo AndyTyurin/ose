@@ -52,6 +52,6 @@ String _genVertexSpriteSrc(int maxLights) {
                 "v_lightRay[i].y = lightRay.x * u_m[1][0] - lightRay.y * u_m[0][0];"
             "}"
             // Set vertex position.
-            "gl_Position = vec4((u_p * vec3(pos, 1.0) * u_v).xy, 1.0, 1.0);"
+            "gl_Position = vec4((u_p * u_v * vec3(pos, 1.0)).xy, 1.0, 1.0);"
         "}";
 }

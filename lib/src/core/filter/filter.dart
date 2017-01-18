@@ -34,7 +34,7 @@ abstract class Filter extends Object with utils.UuidMixin {
     filterManager.updateUniforms({
       'u_p': camera.transform.projectionMatrix,
       'u_m': modelMatrix,
-      'u_v': camera.transform.viewMatrix.clone()..inverse()
+      'u_v': camera.transform.viewMatrix
     });
   }
 
