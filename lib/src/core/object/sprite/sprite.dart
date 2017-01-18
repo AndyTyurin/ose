@@ -3,15 +3,17 @@ part of ose;
 class Sprite extends SceneObject {
   Texture _texture;
 
+  Texture _normalMapTexture;
+
   Vector4 _glTextureBounds;
 
   Float32List _glVertices;
+
   Float32List _glTextureCoords;
 
-  Sprite()
-      : super(
-            vertices: new Float32List.fromList(
-                [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0])) {
+  Sprite() {
+    _glVertices =
+        new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
     _glTextureCoords =
         new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
   }
@@ -84,6 +86,8 @@ class Sprite extends SceneObject {
 
   Texture get texture => _texture;
 
+  Texture get colorMap => _texture;
+
   void set texture(Texture texture) {
     if (texture is OriginalTexture) {
       _setOriginalTexture(texture);
@@ -92,11 +96,25 @@ class Sprite extends SceneObject {
     }
   }
 
+  void set colorMap(Texture texture) {
+    this.texture = texture;
+  }
+
+  Texture get normalMap => _normalMapTexture;
+
+  void set normalMap(Texture texture) {
+    _normalMapTexture = texture;
+  }
+
   webGL.Texture get glTexture => _texture.glTexture;
+
+  webGL.Texture get glNormalMap => _normalMapTexture.glTexture;
 
   Vector4 get glTextureBounds => _glTextureBounds;
 
   Float32List get glTextureCoords => _glTextureCoords;
+
+  Float32List get glVertices => _glVertices;
 
   bool get hasTexture => _texture != null;
 }

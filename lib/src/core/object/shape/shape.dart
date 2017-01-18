@@ -8,6 +8,8 @@ abstract class Shape extends SceneObject {
   /// WebGL colors.
   Float32List _glColors;
 
+  Float32List _glVertices;
+
   /// Shape color.
   Color color;
 
@@ -15,8 +17,8 @@ abstract class Shape extends SceneObject {
   /// It's needed to track changes.
   Color _prevColor;
 
-  Shape({@required Float32List vertices, Color color})
-      : super(vertices: vertices) {
+  Shape({@required Float32List vertices, Color color}) {
+    _glVertices = vertices;
     this.color = color ?? defaultColor;
     _prevColor = defaultColor;
     rebuildColors(true);
@@ -61,6 +63,8 @@ abstract class Shape extends SceneObject {
     super.copyFrom(from);
     color = from.color.clone();
   }
+
+  Float32List get glVertices => _glVertices;
 
   Float32List get glColors => _glColors;
 

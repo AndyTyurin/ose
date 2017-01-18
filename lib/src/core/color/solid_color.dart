@@ -41,6 +41,9 @@ class SolidColor implements Color {
   /// Create a solid blue color.
   factory SolidColor.blue() => new SolidColor([0, 0, 255, 255]);
 
+  /// Create a solid yellow color.
+  factory SolidColor.yellow() => new SolidColor([255, 0, 255, 255]);
+
   /// Create a solid white color.
   factory SolidColor.white() => new SolidColor([255, 255, 255, 255]);
 
@@ -158,6 +161,9 @@ class SolidColor implements Color {
     ];
   }
 
+  @override
+  Float32List toTypeIdentity() => new Float32List.fromList(toIdentity());
+
   bool operator ==(SolidColor SolidColor) {
     return rgba == SolidColor.rgba;
   }
@@ -171,4 +177,20 @@ class SolidColor implements Color {
   List<double> get identity => rgba2identity(_rgba);
 
   String get hex => rgba2hex(_rgba);
+
+  void set alpha(int alpha) {
+    _rgba[3] = max(0, min(255, alpha));
+  }
+
+  void set r(int r) {
+    _rgba[0] = max(0, min(255, r));
+  }
+
+  void set g(int g) {
+    _rgba[1] = max(0, min(255, g));
+  }
+
+  void set b(int b) {
+    _rgba[2] = max(0, min(255, b));
+  }
 }

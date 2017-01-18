@@ -11,18 +11,23 @@ class UniformManager {
   /// Next uniforms.
   final Map<String, Uniform> nextUniforms;
 
+  final Set<String> ignoreUniforms;
+
   /// Rendering context.
   webGL.RenderingContext _gl;
 
   UniformManager(this._gl)
       : prevUniforms = <String, Uniform>{},
-        nextUniforms = <String, Uniform>{};
+        nextUniforms = <String, Uniform>{},
+        ignoreUniforms = new Set<String>();
 
   /// Bind uniforms.
   void bindUniforms(ShaderProgram shaderProgram) {
     shaderProgram.uniforms.forEach((name, uniform) {
-      _setActiveUniform(name, uniform);
-      _bindUniform(shaderProgram, name, uniform);
+      if (!ignoreUniforms.contains(name)) {
+        _setActiveUniform(name, uniform);
+        _bindUniform(shaderProgram, name, uniform);
+      }
     });
   }
 
@@ -56,12 +61,43 @@ class UniformManager {
     List uniformStorage = uniform.storage;
 
     switch (uniform.type) {
-      case QualifierType.Int1:
+      case QualifierType.Bool1:
         if (uniform.useArray) {
           _gl.uniform1iv(uniformLocation, uniformStorage);
           break;
         }
         _gl.uniform1i(uniformLocation, uniformStorage[0]);
+        break;
+      case QualifierType.Int1:
+        if (uniform.useArray) {
+          uniformStorage = new Int32List.fromList(uniformStorage);
+          _gl.uniform1iv(uniformLocation, uniformStorage);
+          break;
+        }
+        _gl.uniform1i(uniformLocation, uniformStorage[0]);
+        break;
+      case QualifierType.Int2:
+        if (uniform.useArray) {
+          _gl.uniform2iv(uniformLocation, uniformStorage);
+          break;
+        }
+        _gl.uniform2i(uniformLocation, uniformStorage[0], uniformStorage[1]);
+        break;
+      case QualifierType.Int3:
+        if (uniform.useArray) {
+          _gl.uniform3iv(uniformLocation, uniformStorage);
+          break;
+        }
+        _gl.uniform3i(uniformLocation, uniformStorage[0], uniformStorage[1],
+            uniformStorage[2]);
+        break;
+      case QualifierType.Int4:
+        if (uniform.useArray) {
+          _gl.uniform4iv(uniformLocation, uniformStorage);
+          break;
+        }
+        _gl.uniform4i(uniformLocation, uniformStorage[0], uniformStorage[1],
+            uniformStorage[2], uniformStorage[3]);
         break;
       case QualifierType.Float1:
         if (uniform.useArray) {
@@ -94,7 +130,7 @@ class UniformManager {
             uniformStorage[2], uniformStorage[3]);
         break;
       case QualifierType.Mat2:
-        _gl.uniformMatrix2fv(uniformLocation, false, uniformStorage);
+          _gl.uniformMatrix2fv(uniformLocation, false, uniformStorage);
         break;
       case QualifierType.Mat3:
         _gl.uniformMatrix3fv(uniformLocation, false, uniformStorage);

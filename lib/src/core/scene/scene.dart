@@ -22,20 +22,59 @@ class Scene {
   String _uuid;
 
   /// List with scene objects.
-  List<SceneObject> _children;
+  Set<SceneObject> _children;
+
+  /// List with lights.
+  Set<Light> _lights;
+
+  /// Ambient light.
+  AmbientLight _ambientLight;
 
   Scene()
       : _uuid = utils.generateUuid(),
-        _children = <SceneObject>[];
+        _children = new Set(),
+        _lights = new Set();
 
   /// Add a new object to scene.
-  void add(SceneObject obj) {
-    _children.add(obj);
+  void add(dynamic obj) {
+    if (obj is Light) {
+      _addLight(obj);
+    } else {
+      _addObject(obj);
+    }
   }
 
   /// Remove object from a scene.
-  void remove(SceneObject obj) {
+  void remove(dynamic obj) {
+    if (obj is Light) {
+      _removeLight(obj);
+    } else {
+      _removeObject(obj);
+    }
+  }
+
+  void _addObject(SceneObject obj) {
+    _children.add(obj);
+  }
+
+  void _removeObject(SceneObject obj) {
     _children.remove(obj);
+  }
+
+  void _addLight(Light light) {
+    if (light is AmbientLight) {
+      _ambientLight = light;
+    } else {
+      _lights.add(light);
+    }
+  }
+
+  void _removeLight(Light light) {
+    if (light is AmbientLight) {
+      _ambientLight = null;
+    } else {
+      _lights.remove(light);
+    }
   }
 
   /// Scene logic handler.
@@ -44,5 +83,9 @@ class Scene {
 
   String get uuid => _uuid;
 
-  List<SceneObject> get children => _children;
+  Set<SceneObject> get children => _children;
+
+  Set<Light> get lights => _lights;
+
+  AmbientLight get ambientLight => _ambientLight;
 }

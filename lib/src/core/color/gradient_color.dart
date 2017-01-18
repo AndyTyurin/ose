@@ -37,5 +37,8 @@ class GradientColor implements Color {
     return identity;
   }
 
+  @override
+  Float32List toTypeIdentity() => new Float32List.fromList(toIdentity());
+
   List<SolidColor> get colors => _colors;
 }

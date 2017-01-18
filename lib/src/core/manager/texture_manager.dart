@@ -2,11 +2,19 @@ part of ose;
 
 /// Manages textures.
 class TextureManager {
+  static final Map<TextureType, int> typeToLocationMap = <TextureType, int>{
+    TextureType.Color: webGL.TEXTURE0,
+    TextureType.Normal: webGL.TEXTURE1
+  };
+
   /// WebGL rendering context.
   webGL.RenderingContext _gl;
 
-  /// Currently bound texture.
-  Texture _boundTexture;
+  /// Currently bound color map texture.
+  Texture _boundColorMapTexture;
+
+  /// Currently bound normal map texture.
+  Texture _boundNormalMapTexture;
 
   TextureManager(this._gl);
 
@@ -25,19 +33,30 @@ class TextureManager {
   }
 
   /// Bind texture.
-  bindTexture(Texture texture) {
-    if (_boundTexture != texture) {
-      _gl.activeTexture(webGL.TEXTURE0);
-      _gl.bindTexture(webGL.TEXTURE_2D, texture.glTexture);
-      _boundTexture = texture;
+  bindTexture(Texture texture, [TextureType textureType = TextureType.Color]) {
+    if (textureType == TextureType.Color && _boundColorMapTexture != texture) {
+      _bindParticularTexture(texture, typeToLocationMap[TextureType.Color]);
+    } else if (textureType == TextureType.Normal && _boundNormalMapTexture != texture) {
+      _bindParticularTexture(texture, typeToLocationMap[TextureType.Normal]);
     }
   }
 
-  /// Unbind texture.
-  unbindTexture() {
-    if (_boundTexture != null) {
+  /// Unbind bound texture.
+  unbindTexture([TextureType textureType = TextureType.Color]) {
+    if (textureType == TextureType.Color) {
+      _gl.activeTexture(typeToLocationMap[TextureType.Color]);
       _gl.bindTexture(webGL.TEXTURE_2D, null);
-      _boundTexture = null;
+      _boundColorMapTexture = null;
+    } else if (textureType == TextureType.Normal) {
+      _gl.activeTexture(typeToLocationMap[TextureType.Normal]);
+      _gl.bindTexture(webGL.TEXTURE_2D, null);
+      _boundNormalMapTexture = null;
     }
+  }
+
+  // Bind particular texture to specific texture location.
+  _bindParticularTexture(Texture texture, int location) {
+    _gl.activeTexture(location);
+    _gl.bindTexture(webGL.TEXTURE_2D, texture.glTexture);
   }
 }

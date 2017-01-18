@@ -1,5 +1,6 @@
 library ose;
 
+import 'dart:collection';
 import 'dart:html';
 import 'dart:async';
 import 'dart:math';
@@ -32,6 +33,7 @@ part 'src/core/actor/actor.dart';
 part 'src/core/actor/control_actor.dart';
 
 part 'src/core/object/scene_object.dart';
+part 'src/core/object/scene_object_group.dart';
 part 'src/core/object/shape/shape.dart';
 part 'src/core/object/shape/rectangle.dart';
 part 'src/core/object/shape/circle.dart';
@@ -70,9 +72,15 @@ part 'src/core/manager/texture_manager.dart';
 part 'src/core/texture/texture.dart';
 part 'src/core/texture/original_texture.dart';
 part 'src/core/texture/sub_texture.dart';
+part 'src/core/texture/texture_type.dart';
 
 part 'src/core/color/color.dart';
 part 'src/core/color/solid_color.dart';
 part 'src/core/color/gradient_color.dart';
 
 part 'src/core/loader/resource_loader.dart';
+
+part 'src/core/light/light.dart';
+part 'src/core/light/directional_light.dart';
+part 'src/core/light/point_light.dart';
+part 'src/core/light/ambient_light.dart';

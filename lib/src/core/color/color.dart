@@ -1,7 +1,7 @@
 part of ose;
 
 /// Common interface for colors.
-abstract class Color {
+abstract class Color implements TypedIdentity {
   /// Translate colors to double representation.
   List<double> toIdentity();
 

@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:ose/ose.dart' as ose;
 import 'package:ose/ose_io.dart';
+import 'package:ose/ose_math.dart';
 
 import '../../index.dart' show initLogger;
 
@@ -48,6 +49,8 @@ class SpriteExample {
     canvas = _renderer.canvas;
     _renderer.onStart.listen(_onStart);
     _renderer.onStop.listen(_onStop);
+    _renderer.onObjectRender.listen(_onObjectRender);
+    _renderer.onRender.listen(_onRender);
   }
 
   // Handle start event.
@@ -82,31 +85,77 @@ class SpriteExample {
     });
 
     /// Map key alias.
-    const String SPACESHIP = 'spaceship';
+    const String SPACESHIP_COLOR_MAP = 'spaceship_color_map';
+    const String SPACESHIP_NORMAL_MAP = 'spaceship_normal_map';
+    const String SPACESHIP_COLOR_MAP1 = 'spaceship_color_map1';
+    const String SPACESHIP_NORMAL_MAP1 = 'spaceship_normal_map1';
 
     /// Load and register textures in asset manager to use them.
     _renderer.assetManager.registerTextures({
-        "${SPACESHIP}":
-          await resourceLoader.loadTexture('/examples/sprite/spaceship.png')
+      "${SPACESHIP_COLOR_MAP1}":
+          await resourceLoader.loadTexture('/examples/sprite/ss1.png'),
+      "${SPACESHIP_NORMAL_MAP1}":
+          await resourceLoader.loadTexture('/examples/sprite/ss1_normal2.png'),
+      "${SPACESHIP_COLOR_MAP}":
+          await resourceLoader.loadTexture('/examples/sprite/ss1.png'),
+      "${SPACESHIP_NORMAL_MAP}":
+          await resourceLoader.loadTexture('/examples/sprite/ss1_normal.png')
     });
 
-
     /// Grab texture from asset manager.
-    ose.Texture spaceshipTexture = _renderer.assetManager.textures[SPACESHIP];
+    ose.Texture spaceshipColorTexture =
+        _renderer.assetManager.textures[SPACESHIP_COLOR_MAP];
+    ose.Texture spaceshipNormalTexture =
+        _renderer.assetManager.textures[SPACESHIP_NORMAL_MAP];
+    ose.Texture spaceshipColorTexture1 =
+        _renderer.assetManager.textures[SPACESHIP_COLOR_MAP1];
+    ose.Texture spaceshipNormalTexture1 =
+        _renderer.assetManager.textures[SPACESHIP_NORMAL_MAP1];
 
     /// Create a new sprite with texture and actor logic.
     Spaceship spaceship = new Spaceship();
-    spaceship.transform.scale.setValues(.5, .5);
     spaceship.actor = new PlayerActor();
-    spaceship.texture = spaceshipTexture;
+    spaceship.transform.scale.setValues(.5, .5);
+    spaceship.colorMap = spaceshipColorTexture;
+    spaceship.normalMap = spaceshipNormalTexture;
+    Spaceship spaceship1 = new Spaceship();
+    spaceship1.transform.scale.setValues(.5, .5);
+    spaceship1.transform.position.setValues(2.0, 0.0);
+    spaceship1.colorMap = spaceshipColorTexture;
+    spaceship1.normalMap = spaceshipNormalTexture;
 
-    // Add sprite to scene.
+    // Create & add lightning to scene.
+    ose.DirectionalLight directionalLight = new ose.DirectionalLight(
+        direction: new Vector2(0.0, 1.0),
+        color: new ose.SolidColor.white()..alpha = 255);
+    ose.AmbientLight ambientLight =
+        new ose.AmbientLight(color: new ose.SolidColor.white()..alpha = 15);
+    ose.PointLight pointLight = new ose.PointLight(color: new ose.SolidColor.green(), falloff: new Vector3(.4, 1.5, 10.0));
+    pointLight.position.setValues(1.0, 0.0);
+    scene.add(ambientLight);
+    scene.add(directionalLight);
+    scene.add(pointLight);
     scene.add(spaceship);
+    scene.add(spaceship1);
+
+    _spaceship = spaceship;
   }
 
   // Handle stop event.
   void _onStop(ose.StopEvent e) {
     logger.fine('Game has been stopped');
+  }
+
+  void _onObjectRender(ose.ObjectRenderEvent e) {
+    if (e.sceneObject.actor == null) {
+      e.sceneObject.transform.rotation += 0.01;
+    }
+  }
+
+  void _onRender(ose.RenderEvent e) {
+    if (_spaceship != null) {
+      e.camera.transform.position = _spaceship.transform.position;
+    }
   }
 
   // Flush resources to reload fresh on start.
@@ -121,36 +170,52 @@ class SpriteExample {
 class Spaceship extends ose.Sprite {
   static double rotationAcceleration = .003;
   static double rotationDamping = .004;
+  static double acceleration = .01;
+  static double damping = .005;
   double rotationSpeed = .0;
+  double speed = .0;
   bool isLeftRotation = false;
   bool isRightRotation = false;
-  bool isBreak = false;
+  bool isMoveForward = false;
+  bool isMoveBackward = false;
 
   @override
   void update(num dt) {
-    if (isBreak) {
-      rotationSpeed = .0;
+    if (isRightRotation) {
+      rotationSpeed += rotationAcceleration;
+    } else if (isLeftRotation) {
+      rotationSpeed -= rotationAcceleration;
     } else {
-      if (isRightRotation) {
-        rotationSpeed += rotationAcceleration;
-      } else if (isLeftRotation) {
-        rotationSpeed -= rotationAcceleration;
+      double rotationSign = rotationSpeed.sign;
+      rotationSpeed = rotationSpeed.abs() - rotationDamping;
+      if (rotationSpeed < .0) {
+        rotationSpeed = .0;
       } else {
-        double rotationSign = rotationSpeed.sign;
-        rotationSpeed = rotationSpeed.abs() - rotationDamping;
-        if (rotationSpeed < .0) {
-          rotationSpeed = .0;
-        } else {
-          rotationSpeed *= rotationSign;
-        }
+        rotationSpeed *= rotationSign;
+      }
+    }
+
+    if (isMoveForward) {
+      speed += acceleration;
+    } else if (isMoveBackward) {
+      speed -= acceleration;
+    } else {
+      double moveSign = speed.sign;
+      speed = speed.abs() - damping;
+      if (speed < .0) {
+        speed = .0;
+      } else {
+        speed *= moveSign;
       }
     }
 
     transform.rotation += rotationSpeed / 100 * dt;
+    transform.position += transform.forward * (speed / 100 * dt);
 
     isLeftRotation = false;
     isRightRotation = false;
-    isBreak = false;
+    isMoveForward = false;
+    isMoveBackward = false;
   }
 
   void rotateRight() {
@@ -161,8 +226,12 @@ class Spaceship extends ose.Sprite {
     isLeftRotation = true;
   }
 
-  void breakSpeed() {
-    isBreak = true;
+  void moveForward() {
+    isMoveForward = true;
+  }
+
+  void moveBackward() {
+    isMoveBackward = true;
   }
 }
 
@@ -186,8 +255,11 @@ class PlayerActor extends ose.ControlActor {
           touch.movedLeft) {
         spaceship.rotateLeft();
       }
-      if (keyboard.pressed(KeyCode.W, ctrl: true)) {
-        spaceship.breakSpeed();
+      if (keyboard.pressed(KeyCode.W)) {
+        spaceship.moveForward();
+      }
+      if (keyboard.pressed(KeyCode.S)) {
+        spaceship.moveBackward();
       }
     }
   }

@@ -240,9 +240,17 @@ class Renderer {
       throw 'Camera is not defined.';
     }
 
-    /// Update scene logic.
+    // Update scene logic.
     scene.update(dt, _managers.cameraManager);
 
+    // Update lightning.
+    _updateLights(scene.lights);
+
+    // Update camera
+    camera.transform.updateProjectionMatrix();
+    camera.transform.updateViewMatrix();
+
+    // Traverse by objects.
     for (SceneObject obj in scene.children) {
       /// Per object pre-render.
       await lifecycleControllers.onObjectRenderCtrl
@@ -263,33 +271,65 @@ class Renderer {
 
   /// Render particular object.
   void _renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
-    _updateObject(sceneObject);
-
-    if (sceneObject is Shape) {
-      sceneObject.rebuildColors();
-    }
-
-    sceneObject.transform.updateModelMatrix();
-    camera.transform.updateProjectionMatrix();
-    camera.transform.updateViewMatrix();
-
-    if ((sceneObject as dynamic).glVertices != null) {
-      if (sceneObject is Shape) {
-        _drawByFilter(_managers.filterManager.basicFilter, sceneObject);
-      }
-
-      if (sceneObject is Sprite) {
-        _managers.textureManager.bindTexture(sceneObject.texture);
-        _drawByFilter(_managers.filterManager.spriteFilter, sceneObject);
-      }
-
-      sceneObject.filters.forEach((filter) {
-        _drawByFilter(filter, sceneObject);
-      });
+    if (sceneObject is SceneObjectGroup) {
+      _drawGroup(sceneObject);
+    } else {
+      _drawObject(sceneObject);
     }
   }
 
+  void _drawShape(Shape shape) {
+    shape.rebuildColors();
+    _drawByFilter(_managers.filterManager.basicFilter, shape);
+  }
+
+  void _drawSprite(Sprite sprite) {
+    _managers.textureManager.bindTexture(sprite.texture, TextureType.Color);
+    if (sprite.normalMap != null) {
+      _managers.textureManager
+          .bindTexture(sprite.normalMap, TextureType.Normal);
+    }
+    _drawByFilter(_managers.filterManager.spriteFilter, sprite);
+    // _drawByLightning(sprite, scene.lights);
+    _managers.textureManager.unbindTexture(TextureType.Color);
+    _managers.textureManager.unbindTexture(TextureType.Normal);
+  }
+
+  void _drawObject(SceneObject sceneObject) {
+    _updateObject(sceneObject);
+    sceneObject.transform.updateModelMatrix();
+    if (sceneObject is Sprite) {
+      _drawSprite(sceneObject);
+    } else if (sceneObject is Shape) {
+      _drawShape(sceneObject);
+    }
+
+    _applyFilters(sceneObject);
+  }
+
+  void _applyFilters(SceneObject sceneObject) {
+    sceneObject.filters.forEach((filter) {
+      _drawByFilter(filter, sceneObject);
+    });
+  }
+
+  void _updateLights(Iterable<Light> lights) {
+    lights.forEach(_updateLight);
+  }
+
+  void _updateLight(Light light) {
+    light.update(dt);
+  }
+
+  void _drawGroup(SceneObjectGroup group) {
+    group.transform.updateModelMatrix();
+    group.children.forEach((sceneObject) {
+      _drawObject(sceneObject);
+    });
+  }
+
   /// Draw object by using of particular filter.
+  /// Be careful, objects should have [glVertices].
   void _drawByFilter(Filter filter, SceneObject obj) {
     FilterManager fm = _managers.filterManager;
 
@@ -301,6 +341,16 @@ class Renderer {
           webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
     }
   }
+
+  // void _drawByLightning(Sprite obj, Iterable<Light> lights) {
+  //   SpriteFilter activeFilter = _managers.filterManager.activeFilter;
+  //   _gl.blendFunc(webGL.SRC_ALPHA, webGL.DST_ALPHA);
+  //   lights.forEach((light) {
+  //     activeFilter.setActiveLight(light);
+  //     _drawByFilter(activeFilter, obj);
+  //   });
+  //   _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
+  // }
 
   /// Update object logic.
   void _updateObject(SceneObject sceneObject) {

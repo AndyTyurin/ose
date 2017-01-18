@@ -56,6 +56,11 @@ class FilterManager {
     });
   }
 
+  /// Ignore spefic uniforms from binding on iteration.
+  void ignoreUniforms(List<String> uniforms) {
+    _uniformManager.ignoreUniforms.addAll(uniforms);
+  }
+
   /// Bind active filter.
   /// See [activeFilter].
   void bindFilter() {
@@ -63,8 +68,8 @@ class FilterManager {
       _boundShaderProgram = _activeFilter.shaderProgram;
       _gl.useProgram(_boundShaderProgram.glProgram);
     }
-    _attributeManager.bindAttributes(_activeFilter.shaderProgram);
-    _uniformManager.bindUniforms(_activeFilter.shaderProgram);
+    _attributeManager.bindAttributes(_boundShaderProgram);
+    _uniformManager.bindUniforms(_boundShaderProgram);
   }
 
   /// Prepare filter.
@@ -92,11 +97,11 @@ class FilterManager {
 
       _gl.linkProgram(glProgram);
 
-      _attributeManager.generateLocations(shaderProgram);
-
       if (!_gl.getProgramParameter(glProgram, webGL.LINK_STATUS)) {
         throw new Exception("Can't compile program");
       }
+
+      _attributeManager.generateLocations(shaderProgram);
     }
   }
 

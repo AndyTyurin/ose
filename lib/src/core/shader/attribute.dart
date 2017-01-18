@@ -38,6 +38,10 @@ class Attribute {
     state = QualifierState.INITIALIZED;
   }
 
+  /// b1
+  factory Attribute.Bool1([bool b0]) =>
+      new Attribute._internal(QualifierType.Bool1, [(b0) ? 1.0 : .0]);
+
   /// f1
   factory Attribute.Float1([double f0]) =>
       new Attribute._internal(QualifierType.Float1, [f0]);
@@ -75,10 +79,14 @@ class Attribute {
 
     if (value is double) {
       storage = new Float32List.fromList([value]);
+    } else if (value is bool) {
+      storage = new Float32List.fromList([(value) ? 1.0 : .0]);
     } else if (value is Vector || value is Matrix) {
       storage = value.storage;
     } else if (value is Float32List) {
       storage = new Float32List.fromList(value);
+    } else if (value is TypedIdentity) {
+      storage = value.toTypeIdentity();
     } else {
       throw ArgumentError;
     }

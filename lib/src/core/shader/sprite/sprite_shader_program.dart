@@ -1,4 +1,7 @@
 part of ose;
 
-final ShaderProgram spriteShaderProgram =
-    new ShaderProgram(_spriteVertexShader, _spriteFragmentShader);
+ShaderProgram createSpriteShaderProgram(int maxLights) {
+  return new ShaderProgram(
+      new Shader(ShaderType.Vertex, _genVertexSpriteSrc(maxLights)),
+      new Shader(ShaderType.Fragment, _genFragmentSpriteSrc(maxLights)));
+}

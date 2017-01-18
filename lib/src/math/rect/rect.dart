@@ -1,6 +1,6 @@
 part of ose_math;
 
-class Rect {
+class Rect implements TypedIdentity {
   num x0;
 
   num x1;
@@ -28,4 +28,7 @@ class Rect {
     return new Vector4(
         x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble());
   }
+
+  @override
+  Float32List toTypeIdentity() => new Float32List.fromList([x0, y0, x1, y1]);
 }

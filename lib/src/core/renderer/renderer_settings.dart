@@ -14,6 +14,9 @@ class RendererSettings {
   /// Which color will be used to dispose window.
   int clearColor;
 
+  /// Max lights.
+  int maxLights;
+
   /// Use transparent graphics such as png textures.
   bool useTransparent;
 
@@ -34,6 +37,7 @@ class RendererSettings {
       int height: 600,
       int fpsThreshold: 60,
       int clearColor: 0x000000,
+      int maxLight: 4,
       bool fullscreen: false,
       bool useTransparent: true,
       bool useMask: true,
@@ -44,6 +48,7 @@ class RendererSettings {
     this.fullscreen = fullscreen;
     this.fpsThreshold = max(1, min(60, fpsThreshold));
     this.clearColor = clearColor ?? 0; // todo: change to Color
+    this.maxLights = maxLights;
     this.useTransparent = useTransparent;
     this.useMask = useMask;
     this.useClear = useClear;
