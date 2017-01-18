@@ -40,7 +40,7 @@ String _genVertexSpriteSrc(int maxLights) {
             // Iterate through the lights and set ray to each one if light has been bound.
             "for (int i = 0; i < ${maxLights}; i++) {"
                 "if (u_lightType[i] == 0) {"
-                    "continue;"
+                    "break;"
                 "}"
                 "vec2 lightRay;"
                 "if (u_lightType[i] == 1) {"

@@ -35,13 +35,13 @@ String _genFragmentSpriteSrc(int maxLights) {
             "vec3 finalColor = color.rgb;"
             // Get normal from normal map texture.
             "vec2 N = normalize(texture2D(u_normalMap, v_texCoord).xy * 2.0 - 1.0);"
-            // Attenuation factor.
-            "float attenuation = 1.0;"
             // Process each light.
             "for (int i = 0; i < ${maxLights}; i++) {"
                 "if (u_lightType[i] == 0) {"
-                    "continue;"
+                    "break;"
                 "}"
+                // Attenuation factor.
+                "float attenuation = 1.0;"
                 // Get light direction.
                 "vec2 L = normalize(v_lightRay[i]);"
                 // Calculate light diffuse.
