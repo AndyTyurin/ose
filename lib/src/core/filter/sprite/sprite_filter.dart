@@ -14,7 +14,8 @@ class SpriteFilter extends Filter {
       'u_lightPosition': new Uniform.FloatArray2(),
       'u_lightColor': new Uniform.FloatArray4(),
       'u_lightFalloff': new Uniform.FloatArray3(),
-      'u_lightType': new Uniform.IntArray1()
+      'u_lightType': new Uniform.IntArray1(),
+      'u_useNormalMap': new Uniform.Bool1(false)
     });
   }
 
@@ -24,25 +25,26 @@ class SpriteFilter extends Filter {
     filterManager.updateAttributes({'a_texCoord': obj.glTextureCoords});
 
     AmbientLight ambientLight = scene.ambientLight;
-    List<int> lightTypes = <int>[];
-    List<double> lightPositions = <double>[];
-    List<double> lightColors = <double>[];
-    List<double> lightFalloffs = <double>[];
-    List<double> lightDirections = <double>[];
 
     bool useDirectionalLight = false;
     bool usePointLight = false;
 
-    for (int i = 0; i < maxLights; i++) {
-      Light light =
-          (scene.lights.length > i) ? scene.lights.elementAt(i) : null;
-      int lightType = 0;
-      Vector2 lightPosition = new Vector2.zero();
-      SolidColor lightColor = new SolidColor.white();
-      Vector3 lightFalloff = new Vector3.zero();
-      Vector2 lightDirection = new Vector2.zero();
+    if (_isLightningAvailable(obj, scene)) {
+      List<int> lightTypes = <int>[];
+      List<double> lightPositions = <double>[];
+      List<double> lightColors = <double>[];
+      List<double> lightFalloffs = <double>[];
+      List<double> lightDirections = <double>[];
 
-      if (light != null) {
+      for (int i = 0; i < maxLights; i++) {
+        Light light =
+            (scene.lights.length > i) ? scene.lights.elementAt(i) : null;
+        int lightType = 0;
+        Vector2 lightPosition = new Vector2.zero();
+        SolidColor lightColor = new SolidColor.white();
+        Vector3 lightFalloff = new Vector3.zero();
+        Vector2 lightDirection = new Vector2.zero();
+        if (light == null) break;
         if (light is DirectionalLight) {
           useDirectionalLight = true;
           lightType = 1;
@@ -56,37 +58,57 @@ class SpriteFilter extends Filter {
         lightColor = light.color;
         lightTypes.add(lightType);
         lightColors.addAll(lightColor.toIdentity());
-      } else {
-        lightTypes.add(0);
+        lightDirections.addAll(lightDirection.storage);
+        lightFalloffs.addAll(lightFalloff.storage);
+        lightPositions.addAll(lightPosition.storage);
       }
 
-      lightDirections.addAll(lightDirection.storage);
-      lightFalloffs.addAll(lightFalloff.storage);
-      lightPositions.addAll(lightPosition.storage);
-    }
+      if (!useDirectionalLight) {
+        _ignoreDirectionalLight(filterManager);
+      }
 
-    if (!useDirectionalLight) {
-      filterManager.ignoreUniforms(['u_lightFalloff', 'u_lightPosition']);
-    }
+      if (!usePointLight) {
+        _ignorePointLight(filterManager);
+      }
 
-    if (!usePointLight) {
-      filterManager.ignoreUniforms(['u_lightDirection']);
+      filterManager.updateUniforms({
+        'u_lightPosition': new Float32List.fromList(lightPositions),
+        'u_lightColor': new Float32List.fromList(lightColors),
+        'u_lightFalloff': new Float32List.fromList(lightFalloffs),
+        'u_lightType': new Int8List.fromList(lightTypes),
+        'u_lightDirection': new Float32List.fromList(lightDirections),
+        'u_useNormalMap': true
+      });
+    } else {
+      _ignoreComplexLightning(filterManager);
     }
 
     if (ambientLight == null) {
-      filterManager.ignoreUniforms(['u_ambientLight']);
+      filterManager.ignoreUniforms(['u_ambientLightColor']);
+    } else {
+      filterManager.updateUniforms({
+        'u_ambientLightColor':
+            ambientLight?.color ?? new SolidColor([0, 0, 0, 0])
+      });
     }
-
-    filterManager.updateUniforms({
-      'u_ambientLightColor':
-          ambientLight?.color ?? new SolidColor([0, 0, 0, 0]),
-      'u_lightPosition': new Float32List.fromList(lightPositions),
-      'u_lightColor': new Float32List.fromList(lightColors),
-      'u_lightFalloff': new Float32List.fromList(lightFalloffs),
-      'u_lightType': new Int8List.fromList(lightTypes),
-      'u_lightDirection': new Float32List.fromList(lightDirections)
-    });
 
     super.apply(filterManager, obj, scene, camera);
   }
+
+  void _ignoreDirectionalLight(FilterManager filterManager) {
+    filterManager.ignoreUniforms(['u_lightDirection']);
+  }
+
+  void _ignorePointLight(FilterManager filterManager) {
+    filterManager.ignoreUniforms(['u_lightFalloff', 'u_lightPosition']);
+  }
+
+  void _ignoreComplexLightning(FilterManager filterManager) {
+    _ignoreDirectionalLight(filterManager);
+    _ignorePointLight(filterManager);
+    filterManager.ignoreUniforms(['u_lightType', 'u_lightColor']);
+  }
+
+  bool _isLightningAvailable(Sprite obj, Scene scene) =>
+      obj.normalMap != null && scene.lights.length > 0;
 }

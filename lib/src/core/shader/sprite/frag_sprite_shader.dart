@@ -23,6 +23,8 @@ String _genFragmentSpriteSrc(int maxLights) {
         // 1 - directional light.
         // 2 - spot light.
         "uniform int u_lightType[${maxLights}];"
+        // Use normal map.
+        "uniform bool u_useNormalMap;"
         // Lights rays (directiona vector & distance from light source to target
         // object). For directional lights it will be converted to direction vector.
         "varying vec2 v_lightRay[${maxLights}];"
@@ -33,27 +35,29 @@ String _genFragmentSpriteSrc(int maxLights) {
             "vec4 color = texture2D(u_colorMap, v_texCoord);"
             // Final color will be accumulated by lightning.
             "vec3 finalColor = color.rgb;"
-            // Get normal from normal map texture.
-            "vec2 N = normalize(texture2D(u_normalMap, v_texCoord).xy * 2.0 - 1.0);"
-            // Process each light.
-            "for (int i = 0; i < ${maxLights}; i++) {"
-                "if (u_lightType[i] == 0) {"
-                    "break;"
+            "if (u_useNormalMap == true) {"
+                // Get normal from normal map texture.
+                "vec2 N = normalize(texture2D(u_normalMap, v_texCoord).xy * 2.0 - 1.0);"
+                // Process each light.
+                "for (int i = 0; i < ${maxLights}; i++) {"
+                    "if (u_lightType[i] == 0) {"
+                        "break;"
+                    "}"
+                    // Attenuation factor.
+                    "float attenuation = 1.0;"
+                    // Get light direction.
+                    "vec2 L = normalize(v_lightRay[i]);"
+                    // Calculate light diffuse.
+                    "vec3 lightDiffuse = (u_lightColor[i].rgb * u_lightColor[i].a) * max(dot(N, L), 0.0);"
+                    // Calculate attenuation for spot light.
+                    "if (u_lightType[i] == 2) {"
+                        "vec3 lightFalloff = u_lightFalloff[i];"
+                        "float D = length(v_lightRay[i]);"
+                        "attenuation = 1.0 / (lightFalloff.x + lightFalloff.y * D + lightFalloff.z * D * D);"
+                    "}"
+                    // Accumulate lightning.
+                    "finalColor += lightDiffuse * attenuation;"
                 "}"
-                // Attenuation factor.
-                "float attenuation = 1.0;"
-                // Get light direction.
-                "vec2 L = normalize(v_lightRay[i]);"
-                // Calculate light diffuse.
-                "vec3 lightDiffuse = (u_lightColor[i].rgb * u_lightColor[i].a) * max(dot(N, L), 0.0);"
-                // Calculate attenuation for spot light.
-                "if (u_lightType[i] == 2) {"
-                    "vec3 lightFalloff = u_lightFalloff[i];"
-                    "float D = length(v_lightRay[i]);"
-                    "attenuation = 1.0 / (lightFalloff.x + lightFalloff.y * D + lightFalloff.z * D * D);"
-                "}"
-                // Accumulate lightning.
-                "finalColor += lightDiffuse * attenuation;"
             "}"
             // Set color.
             "gl_FragColor = vec4(u_ambientLightColor.rgb * u_ambientLightColor.a + finalColor, color.a);"

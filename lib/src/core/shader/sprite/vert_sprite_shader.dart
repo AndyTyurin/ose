@@ -27,6 +27,8 @@ String _genVertexSpriteSrc(int maxLights) {
         // 1 - directional light.
         // 2 - spot light.
         "uniform int u_lightType[${maxLights}];"
+        // Use normal map.
+        "uniform bool u_useNormalMap;"
         // Lights rays (directiona vector & distance from light source to target
         // object). For directional lights it will be converted to direction vector.
         "varying vec2 v_lightRay[${maxLights}];"
@@ -37,19 +39,21 @@ String _genVertexSpriteSrc(int maxLights) {
             "vec2 pos = (u_m * vec3(a_position * 2.0 - 1.0, 1.0)).xy;"
             // Set texel position.
             "v_texCoord = a_texCoord;"
-            // Iterate through the lights and set ray to each one if light has been bound.
-            "for (int i = 0; i < ${maxLights}; i++) {"
-                "if (u_lightType[i] == 0) {"
-                    "break;"
+            "if (u_useNormalMap == true) {"
+                // Iterate through the lights and set ray to each one if light has been bound.
+                "for (int i = 0; i < ${maxLights}; i++) {"
+                    "if (u_lightType[i] == 0) {"
+                        "break;"
+                    "}"
+                    "vec2 lightRay;"
+                    "if (u_lightType[i] == 1) {"
+                        "lightRay = u_lightDirection[i];"
+                    "} else if (u_lightType[i] == 2) {"
+                        "lightRay = vec2(u_lightPosition[i].x - pos.x, pos.y - u_lightPosition[i].y);"
+                    "}"
+                    "v_lightRay[i].x = lightRay.x * u_m[0][0] + lightRay.y * u_m[1][0];"
+                    "v_lightRay[i].y = lightRay.x * u_m[1][0] - lightRay.y * u_m[0][0];"
                 "}"
-                "vec2 lightRay;"
-                "if (u_lightType[i] == 1) {"
-                    "lightRay = u_lightDirection[i];"
-                "} else if (u_lightType[i] == 2) {"
-                    "lightRay = vec2(u_lightPosition[i].x - pos.x, pos.y - u_lightPosition[i].y);"
-                "}"
-                "v_lightRay[i].x = lightRay.x * u_m[0][0] + lightRay.y * u_m[1][0];"
-                "v_lightRay[i].y = lightRay.x * u_m[1][0] - lightRay.y * u_m[0][0];"
             "}"
             // Set vertex position.
             "gl_Position = vec4((u_p * u_v * vec3(pos, 1.0)).xy, 1.0, 1.0);"
