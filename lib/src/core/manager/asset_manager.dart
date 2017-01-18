@@ -31,7 +31,9 @@ class AssetManager {
       window.console.warn("Texture with name \"${name}\" already registered.");
     } else {
       textures[name] = texture;
-      _onTextureRegister(new TextureRegisterEvent(name, texture));
+      if (_onTextureRegister != null) {
+        _onTextureRegister(new TextureRegisterEvent(name, texture));
+      }
     }
   }
 
@@ -46,7 +48,9 @@ class AssetManager {
       window.console.warn("Filter with name \"${name}\" already registered.");
     } else {
       filters[name] = filter;
-      _onFilterRegister(new FilterRegisterEvent(name, filter));
+      if (_onFilterRegister != null) {
+        _onFilterRegister(new FilterRegisterEvent(name, filter));
+      }
     }
   }
 
