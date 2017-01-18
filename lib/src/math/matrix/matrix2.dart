@@ -45,6 +45,30 @@ class Matrix2 extends Matrix {
     this.m11 = m11;
   }
 
+  /// Return determinant of [this].
+  double determinant() {
+    return m00 * m11 - m10 * m01;
+  }
+
+  void adjugate() {
+    transpose();
+  }
+
+  void inverse() {
+    double det = determinant();
+
+    if (det > .0) {
+      adjugate();
+      scale(1 / det);
+    }
+  }
+
+  double entry(int col, int row) {
+    return _storage[index(col, row)];
+  }
+
+  int index(int col, int row) => (row * 3) + col;
+
   /// Negate [this] matrix.
   void negate() {
     m00 = -m00;

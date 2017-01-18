@@ -111,6 +111,111 @@ class Matrix3 extends Matrix {
     this.m22 = m22;
   }
 
+  /// Return determinant of [this].
+  double determinant() {
+    return m00 * m11 * m22 +
+        m10 * m21 * m02 +
+        m20 * m01 * m12 -
+        m20 * m11 * m02 -
+        m00 * m21 * m12 -
+        m10 * m01 * m22;
+  }
+
+  Matrix2 minor(int col, int row) {
+    double n00 = .0;
+    double n01 = .0;
+    double n10 = .0;
+    double n11 = .0;
+    if (col == 0 && row == 0) {
+      n00 = m11;
+      n10 = m21;
+      n01 = m12;
+      n11 = m22;
+    } else if (col == 1 && row == 0) {
+      n00 = m01;
+      n10 = m21;
+      n01 = m02;
+      n11 = m22;
+    } else if (col == 2 && row == 0) {
+      n00 = m01;
+      n10 = m11;
+      n01 = m02;
+      n11 = m12;
+    } else if (col == 0 && row == 1) {
+      n00 = m10;
+      n10 = m20;
+      n01 = m12;
+      n11 = m22;
+    } else if (col == 1 && row == 1) {
+      n00 = m00;
+      n10 = m20;
+      n01 = m02;
+      n11 = m22;
+    } else if (col == 2 && row == 1) {
+      n00 = m00;
+      n10 = m10;
+      n01 = m02;
+      n11 = m12;
+    } else if (col == 0 && row == 2) {
+      n00 = m10;
+      n10 = m20;
+      n01 = m11;
+      n11 = m21;
+    } else if (col == 1 && row == 2) {
+      n00 = m00;
+      n10 = m20;
+      n01 = m01;
+      n11 = m21;
+    } else if (col == 2 && row == 2) {
+      n00 = m00;
+      n10 = m10;
+      n01 = m01;
+      n11 = m11;
+    }
+    return new Matrix2.fromValues(n00, n01, n10, n11);
+  }
+
+  void cofactor() {
+    double n00 = minor(0, 0).determinant();
+    double n10 = -minor(1, 0).determinant();
+    double n20 = minor(2, 0).determinant();
+    double n01 = -minor(0, 1).determinant();
+    double n11 = minor(1, 1).determinant();
+    double n21 = -minor(2, 1).determinant();
+    double n02 = minor(0, 2).determinant();
+    double n12 = -minor(1, 2).determinant();
+    double n22 = minor(2, 2).determinant();
+    m00 = n00;
+    m10 = n10;
+    m20 = n20;
+    m01 = n01;
+    m11 = n11;
+    m21 = n21;
+    m02 = n02;
+    m12 = n12;
+    m22 = n22;
+  }
+
+  void adjugate() {
+    cofactor();
+    transpose();
+  }
+
+  void inverse() {
+    double det = determinant();
+
+    if (det > .0) {
+      adjugate();
+      scale(1 / det);
+    }
+  }
+
+  double entry(int col, int row) {
+    return _storage[index(col, row)];
+  }
+
+  int index(int col, int row) => (row * 3) + col;
+
   /// Negate matrix.
   void negate() {
     m00 = -m00;

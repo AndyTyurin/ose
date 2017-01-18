@@ -45,7 +45,7 @@ class CameraTransform extends Transform {
     if (force || shouldUpdateViewMatrix) {
       updateTranslationMatrix(force);
       updateRotationMatrix(force);
-      _viewMatrix = rotationMatrix * translationMatrix;
+      _viewMatrix = (rotationMatrix * translationMatrix)..inverse();
       _updatePrevValues();
     }
   }

@@ -153,9 +153,9 @@ class SpriteExample {
   }
 
   void _onRender(ose.RenderEvent e) {
-    // if (_spaceship != null) {
-    //   e.camera.transform.rotation += 0.01;
-    // }
+    if (_spaceship != null) {
+      e.camera.transform.position = _spaceship.transform.position;
+    }
   }
 
   // Flush resources to reload fresh on start.

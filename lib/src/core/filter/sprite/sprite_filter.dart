@@ -24,11 +24,6 @@ class SpriteFilter extends Filter {
     filterManager.updateAttributes({'a_texCoord': obj.glTextureCoords});
 
     AmbientLight ambientLight = scene.ambientLight;
-
-    if (ambientLight == null) {
-      filterManager.ignoreUniforms(['u_ambientLight']);
-    }
-
     List<int> lightTypes = <int>[];
     List<double> lightPositions = <double>[];
     List<double> lightColors = <double>[];
@@ -76,6 +71,10 @@ class SpriteFilter extends Filter {
 
     if (!usePointLight) {
       filterManager.ignoreUniforms(['u_lightDirection']);
+    }
+
+    if (ambientLight == null) {
+      filterManager.ignoreUniforms(['u_ambientLight']);
     }
 
     filterManager.updateUniforms({

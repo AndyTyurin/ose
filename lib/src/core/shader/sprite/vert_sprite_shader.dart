@@ -12,8 +12,10 @@ String _genVertexSpriteSrc(int maxLights) {
         "attribute vec2 a_position;"
         // Texel position.
         "attribute vec2 a_texCoord;"
-        // Model-View matrix.
-        "uniform mat3 u_mv;"
+        // Model matrix.
+        "uniform mat3 u_m;"
+        // View matrix.
+        "uniform mat3 u_v;"
         // Projection matrix.
         "uniform mat3 u_p;"
         // Lights positions (only for spot lights).
@@ -32,7 +34,7 @@ String _genVertexSpriteSrc(int maxLights) {
         "varying vec2 v_texCoord;"
         "void main() {"
             // Convert to projection-view-model space from -1 to 1.
-            "vec2 pos = (u_mv * vec3(a_position * 2.0 - 1.0, 1.0)).xy;"
+            "vec2 pos = (u_m * vec3(a_position * 2.0 - 1.0, 1.0)).xy;"
             // Set texel position.
             "v_texCoord = a_texCoord;"
             // Iterate through the lights and set ray to each one if light has been bound.
@@ -46,10 +48,10 @@ String _genVertexSpriteSrc(int maxLights) {
                 "} else if (u_lightType[i] == 2) {"
                     "lightRay = vec2(u_lightPosition[i].x - pos.x, pos.y - u_lightPosition[i].y);"
                 "}"
-                "v_lightRay[i].x = lightRay.x * u_mv[0][0] + lightRay.y * u_mv[1][0];"
-                "v_lightRay[i].y = lightRay.x * u_mv[1][0] - lightRay.y * u_mv[0][0];"
+                "v_lightRay[i].x = lightRay.x * u_m[0][0] + lightRay.y * u_m[1][0];"
+                "v_lightRay[i].y = lightRay.x * u_m[1][0] - lightRay.y * u_m[0][0];"
             "}"
             // Set vertex position.
-            "gl_Position = vec4((u_p * vec3(pos, 1.0)).xy, 1.0, 1.0);"
+            "gl_Position = vec4((u_p * vec3(pos, 1.0) * u_v).xy, 1.0, 1.0);"
         "}";
 }

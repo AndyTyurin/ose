@@ -10,7 +10,11 @@ abstract class Filter extends Object with utils.UuidMixin {
     attributes.addAll({
       'a_position': new Attribute.FloatArray2()..location = 0,
     });
-    uniforms.addAll({'u_p': new Uniform.Mat3(), 'u_mv': new Uniform.Mat3()});
+    uniforms.addAll({
+      'u_p': new Uniform.Mat3(),
+      'u_m': new Uniform.Mat3(),
+      'u_v': new Uniform.Mat3()
+    });
   }
 
   /// Apply filter by updating attributes and uniforms by using of filter manager.
@@ -29,7 +33,8 @@ abstract class Filter extends Object with utils.UuidMixin {
 
     filterManager.updateUniforms({
       'u_p': camera.transform.projectionMatrix,
-      'u_mv': modelMatrix * camera.transform.viewMatrix
+      'u_m': modelMatrix,
+      'u_v': camera.transform.viewMatrix.clone()..inverse()
     });
   }
 
