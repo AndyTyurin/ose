@@ -17,8 +17,8 @@ class RendererSettings {
   /// Max lights.
   int maxLights;
 
-  /// Use transparent graphics such as png textures.
-  bool useTransparent;
+  /// Use alpha for canvas.
+  bool useAlpha;
 
   /// Use masking on renderer. (Still not working).
   bool useMask;
@@ -39,7 +39,7 @@ class RendererSettings {
       int clearColor: 0x000000,
       int maxLight: 4,
       bool fullscreen: false,
-      bool useTransparent: true,
+      bool useAlpha: false,
       bool useMask: true,
       bool useClear: true,
       bool useAntialias: true}) {
@@ -49,7 +49,7 @@ class RendererSettings {
     this.fpsThreshold = max(1, min(60, fpsThreshold));
     this.clearColor = clearColor ?? 0; // todo: change to Color
     this.maxLights = maxLights;
-    this.useTransparent = useTransparent;
+    this.useAlpha = useAlpha;
     this.useMask = useMask;
     this.useClear = useClear;
     this.useAntialias = useAntialias;

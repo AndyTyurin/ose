@@ -144,10 +144,8 @@ class Renderer {
     _gl.disable(webGL.DEPTH_TEST);
 
     // Enable blending.
-    if (settings.useTransparent) {
-      _gl.enable(webGL.BLEND);
-      _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_CONSTANT_ALPHA);
-    }
+    _gl.enable(webGL.BLEND);
+    _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
 
     // Clear with color.
     if (settings.useClear) {
@@ -170,8 +168,8 @@ class Renderer {
   webGL.RenderingContext _createRenderingContext(
       CanvasElement canvas, RendererSettings settings) {
     return canvas.getContext3d(
-        alpha: settings.useTransparent,
-        premultipliedAlpha: settings.useTransparent,
+        alpha: settings.useAlpha,
+        premultipliedAlpha: settings.useAlpha,
         antialias: settings.useAntialias,
         stencil: settings.useMask,
         preserveDrawingBuffer: settings.useClear);

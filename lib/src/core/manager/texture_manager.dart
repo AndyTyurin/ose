@@ -26,8 +26,8 @@ class TextureManager {
     _gl.pixelStorei(webGL.UNPACK_FLIP_Y_WEBGL, 1);
     _gl.texImage2D(webGL.TEXTURE_2D, 0, webGL.RGBA, webGL.RGBA,
         webGL.UNSIGNED_BYTE, texture.image);
-    _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MAG_FILTER, webGL.LINEAR);
-    _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MIN_FILTER, webGL.LINEAR);
+    _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MAG_FILTER, webGL.NEAREST);
+    _gl.texParameteri(webGL.TEXTURE_2D, webGL.TEXTURE_MIN_FILTER, webGL.NEAREST);
     _gl.generateMipmap(webGL.TEXTURE_2D);
     _gl.bindTexture(webGL.TEXTURE_2D, null);
   }
