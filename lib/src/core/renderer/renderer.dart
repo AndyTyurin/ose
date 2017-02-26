@@ -146,7 +146,7 @@ class Renderer {
     // Enable blending.
     if (settings.useTransparent) {
       _gl.enable(webGL.BLEND);
-      _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
+      _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_CONSTANT_ALPHA);
     }
 
     // Clear with color.
