@@ -1,39 +1,55 @@
 part of ose;
 
-/// There is a shader wrapper for webgl shaders that is commonly used
-/// by shader programs.
-/// There are two types of shaders - vertex & fragment shaders.
-/// Basically shader wrapper keeps content that will be launched by GPU.
-class Shader {
-
-  /// WebGL shader.
-  webGL.Shader _glShader;
+/// Shader represents a peace of program, that will execute code on GPU part.
+/// The current implementation is a wrapper around webgl shader and keeps info
+/// about shader's source & type. It seems useful for [ShaderProgram].
+///
+/// [Shader] constructor will initialize webgl shader by compiling.
+/// If an error occurs, the compiling error message will be shown.
+///
+/// You haven't to create it manually, as a [ShaderProgram] do it by itself.
+/// Basically you do not need to interact with [Shader] directly at all.
+class Shader extends Object with utils.UuidMixin {
+  /// WebGL rendering context.
+  final webGL.RenderingContext context;
 
   /// Shader source.
-  String _source;
+  final String source;
 
   /// Shader type.
   /// [ShaderType.Vertex] or [ShaderType.Fragment].
-  ShaderType _type;
+  final ShaderType type;
 
-  /// Create new shader.
-  /// [_type] is [ShaderType.Vertex] or [ShaderType.Fragment].
-  /// [_source] is shader source.
-  Shader(this._type, this._source);
+  /// WebGL shader.
+  webGL.Shader glShader;
 
-  webGL.Shader get glShader => _glShader;
-
-  void set glShader(webGL.Shader glShader) {
-    if (_glShader != null) {
-      throw new Exception('WebGL shader already set');
-    }
-    _glShader = glShader;
+  /// Create a new shader wrapper.
+  Shader(this.context, this.type, this.source) {
+    _initWebGLShader(type, source);
   }
 
-  String get source => _source;
+  /// Initialize webgl shader.
+  void _initWebGLShader(ShaderType type, String source) {
+    webGL.Shader shader = context.createShader(_getWebGLShaderType(type));
+    context.shaderSource(shader, source);
+    context.compileShader(shader);
 
-  ShaderType get type => _type;
+    // Check compilation status.
+    if (!context.getShaderParameter(shader, webGL.COMPILE_STATUS)) {
+      window.console.error("Shader#${uuid} could not be compiled");
+      window.console.error(context.getShaderInfoLog(shader));
+      return;
+    }
+
+    glShader = shader;
+  }
+
+  /// Map [ShaderType] to specific webgl vertex or fragment type.
+  int _getWebGLShaderType(ShaderType type) {
+    return (type == ShaderType.Vertex)
+        ? webGL.VERTEX_SHADER
+        : webGL.FRAGMENT_SHADER;
+  }
 }
 
-/// Shader types.
 enum ShaderType { Vertex, Fragment }
