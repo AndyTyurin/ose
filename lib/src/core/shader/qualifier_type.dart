@@ -1,5 +1,8 @@
 part of ose;
 
+/**
+ * Represent qualifier types for [Uniform] and [Attribute].
+ */
 enum QualifierType {
   Bool1,
   Bool2,

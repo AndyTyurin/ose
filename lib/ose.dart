@@ -60,7 +60,6 @@ part 'src/core/shader/sprite/vert_sprite_shader.dart';
 part 'src/core/shader/qualifier_type.dart';
 part 'src/core/shader/qualifier_state.dart';
 
-part 'src/core/manager/attribute_manager.dart';
 part 'src/core/manager/uniform_manager.dart';
 part 'src/core/manager/shader_program_manager.dart';
 part 'src/core/manager/camera_manager.dart';

@@ -1,7 +1,9 @@
 /// SPM manages shader programs as well as keeps link to active one.
 ///
-/// Be familiar with [ShaderProgram] engine's implementation variant of
-/// shader program.
+/// By using of [register] method, a new shader program can be created and kept.
+/// Each shader program must be registered before usage. It gives flexibility
+/// of controlling all programs at once to make some batch operations at
+/// preparation stage.
 ///
 /// Note, that only one shader program can be bound per draw, but usually
 /// multiply are used to show up pretty graphics.
@@ -11,34 +13,50 @@
 /// * Apply post-processing, which is covered by [Filter];
 /// * Particle systems (not implemented yet).
 ///
-/// Each shader program must be registered before usage. It gives flexibility
-/// of controlling all programs at once to make some batch operations at
-/// preparation stage (PS).
-
 part of ose;
 
 class ShaderProgramManager {
+  /// WebGL rendering context.
+  final webGL.RenderingContext context;
+
+  /// Map with list of shader program and unique key.
   final Map<String, ShaderProgram> shaderPrograms;
 
+  /// Shader program that is currently bound.
   ShaderProgram _boundShaderProgram;
 
-  ShaderProgramManager() : shaderPrograms = <String, ShaderProgram>{};
+  ShaderProgramManager(this.context)
+      : shaderPrograms = <String, ShaderProgram>{};
 
   /// Bind specific shader program by [name].
-  /// Only added shader programs can be bound.
-  /// Use [add] to add shader before binding.
-  void bindShaderProgram(String name) {
-    if (shaderPrograms.containsKey(name)) {
-      _boundShaderProgram = shaderPrograms[name];
+  /// Only registered shader programs can be bound.
+  void bind(String name) {
+    if (!shaderPrograms.containsKey(name)) {
+      window.console.error('Could not bind non registered \'${name}\' program');
+      return;
     }
+    _boundShaderProgram = shaderPrograms[name];
+    _boundShaderProgram.bind();
   }
 
-  /// Add shader program.
-  /// Returns [true] if has been added, [false] if not.
-  bool add(String name, ShaderProgram shaderProgram) {
-    if (shaderPrograms.containsKey(name)) return false;
-    shaderPrograms[name] = shaderProgram;
-    return true;
+  /// Register a new shader program.
+  /// New shader program will be created and registered by using of
+  /// unique key [name] and shader sources, such as
+  /// vertex source [vSource] and fragment source [fSource].
+  void register(String name, String vSource, String fSource) {
+    if (shaderPrograms.containsKey(name)) {
+      window.console
+          .warn("Program#${shaderPrograms[name].uuid} already registered");
+      return;
+    }
+    ShaderProgram program = _createShaderProgram(vSource, fSource);
+
+    if (program == null) {
+      window.console.error("Could not register program");
+      return;
+    }
+
+    shaderPrograms[name] = program;
   }
 
   /// Remove shader program.
@@ -49,6 +67,10 @@ class ShaderProgramManager {
       return true;
     }
     return false;
+  }
+
+  ShaderProgram _createShaderProgram(String vSource, String fSource) {
+    return new ShaderProgram(context, vSource, fSource);
   }
 
   ShaderProgram get boundShaderProgram => _boundShaderProgram;

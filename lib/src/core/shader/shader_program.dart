@@ -31,7 +31,7 @@ const String shaderFragmentHeaderDefinitions = ""
 /// Shader program is a wrapper around [webGL.Program].
 /// It keeps attributes, uniforms, initialize webgl program and shaders.
 ///
-/// To create a custom [ShaderProgram], use [ShaderProgramManager.create]
+/// To create a custom [ShaderProgram], use [ShaderProgramManager.register]
 /// instead of using constructor.
 class ShaderProgram extends Object with utils.UuidMixin {
   /// WebGL rendering context.
@@ -56,6 +56,81 @@ class ShaderProgram extends Object with utils.UuidMixin {
       : attributes = <String, Attribute>{},
         uniforms = <String, Uniform>{} {
     _initShaderProgram(vSource, fSource);
+  }
+
+  /// Bind shader program.
+  void bind() {
+    // tbd @andytyurin to implement uniforms binding.
+    // _bindUniforms();
+    _bindAttributes();
+  }
+
+  /// Bind all attributes.
+  void _bindAttributes() {
+    attributes.forEach((name, attribute) {
+      _bindAttribute(name, attribute);
+    });
+  }
+
+  /// Bind attribute.
+  void _bindAttribute(String name, Attribute attribute) {
+    List attributeStorage = attribute.storage;
+    int attributeLocation = attribute.location;
+    bool shouldUseBuffer = attribute.shouldUseBuffer;
+    int attributeSize = 1;
+
+    // Use appropriate setting by qualifier type.
+    switch (attribute.type) {
+      case QualifierType.Float1:
+        if (shouldUseBuffer) break;
+        context.vertexAttrib1f(attributeLocation, attributeStorage[0]);
+        break;
+      case QualifierType.Float2:
+        if (shouldUseBuffer) {
+          attributeSize = 2;
+          break;
+        }
+        context.vertexAttrib2f(
+            attributeLocation, attributeStorage[0], attributeStorage[1]);
+        break;
+      case QualifierType.Float3:
+        if (shouldUseBuffer) {
+          attributeSize = 3;
+          break;
+        }
+        context.vertexAttrib3f(attributeLocation, attributeStorage[0],
+            attributeStorage[1], attributeStorage[2]);
+        break;
+      case QualifierType.Float4:
+        if (shouldUseBuffer) {
+          attributeSize = 4;
+          break;
+        }
+        context.vertexAttrib4f(attributeLocation, attributeStorage[0],
+            attributeStorage[1], attributeStorage[2], attributeStorage[3]);
+        break;
+      default:
+        ;
+    }
+
+    // Use buffer for vertex-array values.
+    if (attribute.shouldUseBuffer) {
+      context.bindBuffer(webGL.ARRAY_BUFFER, attribute.glBuffer);
+
+      // Enable vertex attribute array & pointer at initial.
+      if (attribute.state == QualifierState.INITIALIZED) {
+        context.enableVertexAttribArray(attributeLocation);
+        context.vertexAttribPointer(
+            attributeLocation, attributeSize, webGL.FLOAT, false, 0, 0);
+      }
+
+      // Update buffer only the data is new or has been changed since last set.
+      if (attribute.state == QualifierState.INITIALIZED ||
+          attribute.state == QualifierState.CHANGED) {
+        context.bufferData(
+            webGL.ARRAY_BUFFER, attribute.storage, webGL.STATIC_DRAW);
+      }
+    }
   }
 
   void _initShaderProgram(String vSource, String fSource) {

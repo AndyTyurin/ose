@@ -14,9 +14,6 @@ class FilterManager {
   /// Currently active filter.
   Filter _activeFilter;
 
-  /// Attribute manager handles attributes.
-  AttributeManager _attributeManager;
-
   /// Uniform manager handles uniforms.
   UniformManager _uniformManager;
 
@@ -34,7 +31,6 @@ class FilterManager {
     _spriteFilter = new SpriteFilter();
     _defaultFilters = <Filter>[_basicFilter, _spriteFilter];
     _filters = <Filter>[];
-    _attributeManager = new AttributeManager(this._gl);
     _uniformManager = new UniformManager(this._gl);
   }
 
@@ -68,7 +64,6 @@ class FilterManager {
       _boundShaderProgram = _activeFilter.shaderProgram;
       _gl.useProgram(_boundShaderProgram.glProgram);
     }
-    _attributeManager.bindAttributes(_boundShaderProgram);
     _uniformManager.bindUniforms(_boundShaderProgram);
   }
 
@@ -93,15 +88,11 @@ class FilterManager {
       _gl.attachShader(glProgram, vertexShader.glShader);
       _gl.attachShader(glProgram, fragmentShader.glShader);
 
-      _attributeManager.prepareAttributes(shaderProgram);
-
       _gl.linkProgram(glProgram);
 
       if (!_gl.getProgramParameter(glProgram, webGL.LINK_STATUS)) {
         throw new Exception("Can't compile program");
       }
-
-      _attributeManager.generateLocations(shaderProgram);
     }
   }
 

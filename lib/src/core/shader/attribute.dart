@@ -1,18 +1,20 @@
 part of ose;
 
-/// Attributes are part of shader programs.
-/// There are needed to keep data and can be used inside your shader logic.
+/// Attributes are variables in [ShaderProgram].
+/// Same as uniforms are used to share data between CPU and GPU parts, but
+/// mostly have been used in vertex shader and represents state for each vertex.
 class Attribute {
+  /// Equalization function.
   static final Function eq = const ListEquality().equals;
 
   /// Qualifier type.
-  QualifierType _type;
+  final QualifierType _type;
 
   /// Attribute data.
   Float32List _storage;
 
   /// WebGL buffer.
-  webGL.Buffer _buffer;
+  webGL.Buffer _glBuffer;
 
   /// Attribute state.
   QualifierState state;
@@ -20,11 +22,8 @@ class Attribute {
   /// Attribute location.
   int _location;
 
-  /// Is attribute location was bound.
-  bool _isLocationBound;
-
   /// Attribute use buffer.
-  bool _useBuffer;
+  bool _shouldUseBuffer;
 
   Attribute._internal(this._type, List<double> storage,
       [bool useBuffer = true]) {
@@ -33,8 +32,7 @@ class Attribute {
       _storage =
           (storage.length > 0) ? new Float32List.fromList(storage) : null;
     }
-    _useBuffer = useBuffer;
-    _isLocationBound = false;
+    _shouldUseBuffer = useBuffer;
     state = QualifierState.INITIALIZED;
   }
 
@@ -74,9 +72,26 @@ class Attribute {
   factory Attribute.FloatArray4([List<double> data]) =>
       new Attribute._internal(QualifierType.Float4, data, true);
 
+  /// Update value that is stored in [Attribute].
+  /// [value] can be one of the types below:
+  /// * [double];
+  /// * [bool];
+  /// * [Vector];
+  /// * [Matrix];
+  /// * [Float32List];
+  /// * [TypedIdentity].
+  ///
+  /// At the end, passed [value] will be converted to [Float32List] type, kept
+  /// and could be retrived by using of [storage].
+  ///
+  /// There is a small approach of caching implement for [Attribute].
+  /// If passed [value] has been changed since last [update], the state will be
+  /// changed [QualifierState.CHANGED], otherwise [QualifierState.CACHED].
+  /// At initial, state is equal to [QualifierState.INITIALIZED].
   void update(dynamic value) {
     Float32List storage;
 
+    // Convert to [Float32List].
     if (value is double) {
       storage = new Float32List.fromList([value]);
     } else if (value is bool) {
@@ -100,10 +115,6 @@ class Attribute {
     _storage = storage;
   }
 
-  void bindLocation() {
-    _isLocationBound = true;
-  }
-
   bool operator ==(Attribute another) {
     return eq(storage, another.storage) &&
         type == another.type &&
@@ -114,20 +125,17 @@ class Attribute {
 
   Float32List get storage => _storage;
 
-  bool get useBuffer => _useBuffer;
+  bool get shouldUseBuffer => _shouldUseBuffer;
 
-  webGL.Buffer get buffer => _buffer;
+  webGL.Buffer get glBuffer => _glBuffer;
 
-  void set buffer(webGL.Buffer buffer) {
-    _buffer = buffer;
+  void set glBuffer(webGL.Buffer buffer) {
+    _glBuffer = buffer;
   }
 
   int get location => _location;
 
   void set location(int location) {
     _location = location;
-    _isLocationBound = false;
   }
-
-  bool get isLocationBound => _isLocationBound;
 }
