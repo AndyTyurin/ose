@@ -1,7 +1,13 @@
 part of ose;
 
 /// Uniforms are part of shader programs.
-/// There are needed to keep data and can be used inside your shader logic.
+///
+/// There are needed to keep data and can be used inside your shader logic for
+/// both vertex & fragment.
+///
+/// Keep in mind, uniforms are constants and it's not necessary to push values
+/// to GPU each time to use them in shaders. Only if value has been changed,
+/// it's take a place to send data to GPU.
 class Uniform {
   static final Function eq = const ListEquality().equals;
 
@@ -16,9 +22,6 @@ class Uniform {
 
   /// Uniform use array.
   bool _useArray;
-
-  /// Uniform location.
-  webGL.UniformLocation location;
 
   Uniform._internal(this._type, List storage, [bool isArray = false]) {
     if (storage != null) {
@@ -170,9 +173,23 @@ class Uniform {
     return new Uniform._internal(QualifierType.Mat3, data);
   }
 
-  /// Update storage values.
+  /// Update value that is stored in [Uniform].
+  /// [value] can be one of the types below:
+  /// * [number] – [int] and [double] will be handled differently;
+  /// * [bool];
+  /// * [Vector];
+  /// * [Matrix];
+  /// * [Float32List];
+  /// * [Int8List];
+  /// * [TypedIdentity].
   ///
-  /// Use [update] if you want to change uniform's values.
+  /// At the end, passed [value] will be converted to [Float32List] type, kept
+  /// and could be retrived by using of [storage].
+  ///
+  /// There is a small approach of caching implement for [Attribute].
+  /// If passed [value] has been changed since last [update], the state will be
+  /// changed [QualifierState.CHANGED], otherwise [QualifierState.CACHED].
+  /// At initial, state is equal to [QualifierState.INITIALIZED].
   void update(dynamic value) {
     List storage;
 

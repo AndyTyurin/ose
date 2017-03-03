@@ -2,7 +2,7 @@ part of ose;
 
 /// Attributes are variables in [ShaderProgram].
 /// Same as uniforms are used to share data between CPU and GPU parts, but
-/// mostly have been used in vertex shader and represents state for each vertex.
+/// mostly have been used in vertex shader as a variables with values.
 class Attribute {
   /// Equalization function.
   static final Function eq = const ListEquality().equals;
@@ -136,6 +136,11 @@ class Attribute {
   int get location => _location;
 
   void set location(int location) {
+    if (location > 256) {
+      window.console
+          .error("Could not set attribute location as it limited by 256");
+      return;
+    }
     _location = location;
   }
 }
