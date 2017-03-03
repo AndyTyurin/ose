@@ -28,7 +28,7 @@ class ShaderProgramManager {
   ShaderProgramManager(this.context)
       : shaderPrograms = <String, ShaderProgram>{};
 
-  /// Bind specific shader program by [name].
+  /// Bind shader program by [name].
   /// Only registered shader programs can be bound.
   void bind(String name) {
     if (!shaderPrograms.containsKey(name)) {
@@ -37,6 +37,11 @@ class ShaderProgramManager {
     }
     _boundShaderProgram = shaderPrograms[name];
     _boundShaderProgram.bind();
+  }
+
+  /// Unbind shader program.
+  void unbind() {
+    _boundShaderProgram.unbind();
   }
 
   /// Register a new shader program.
@@ -63,6 +68,10 @@ class ShaderProgramManager {
   /// Returns [true] if has been removed, [false] if not.
   bool remove(dynamic name) {
     if (shaderPrograms.containsKey(name)) {
+      if (shaderPrograms[name] == _boundShaderProgram) {
+        window.console.warn("Can not remove bound shader program \'${name}\'");
+        return false;
+      }
       shaderPrograms.remove(name);
       return true;
     }
