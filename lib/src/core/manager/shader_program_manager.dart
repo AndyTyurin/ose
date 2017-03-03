@@ -35,7 +35,12 @@ class ShaderProgramManager {
       window.console.error('Could not bind non registered \'${name}\' program');
       return;
     }
-    _boundShaderProgram = shaderPrograms[name];
+    // Unbind currently bound shader program and set next one.
+    if (_boundShaderProgram != shaderPrograms[name]) {
+      _boundShaderProgram?.unbind();
+      _boundShaderProgram = shaderPrograms[name];
+    }
+    // Bind shader program, attributes & uniforms.
     _boundShaderProgram.bind();
   }
 
@@ -68,7 +73,7 @@ class ShaderProgramManager {
   /// Returns [true] if has been removed, [false] if not.
   bool remove(dynamic name) {
     if (shaderPrograms.containsKey(name)) {
-      if (shaderPrograms[name] == _boundShaderProgram) {
+      if (_boundShaderProgram == shaderPrograms[name]) {
         window.console.warn("Can not remove bound shader program \'${name}\'");
         return false;
       }
