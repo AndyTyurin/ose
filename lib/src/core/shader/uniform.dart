@@ -199,7 +199,6 @@ class Uniform {
       if (type == QualifierType.Int1) {
         storage = new Int8List.fromList([int.parse(value.toString())]);
       } else {
-        // Float1.
         storage = new Float32List.fromList([double.parse(value.toString())]);
       }
     } else if (value is bool) {
@@ -236,7 +235,6 @@ class Uniform {
       type == QualifierType.Bool2 ||
       type == QualifierType.Bool3 ||
       type == QualifierType.Bool4;
-
 
   bool _isIntQualifierType() =>
       type == QualifierType.Int1 ||

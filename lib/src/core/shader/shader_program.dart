@@ -51,6 +51,8 @@ class ShaderProgram extends Object with utils.UuidMixin {
   /// render.
   final Map<String, webGL.UniformLocation> _uniformLocations;
 
+  final useCommonDefinitions;
+
   /// WebGL program.
   webGL.Program glProgram;
 
@@ -64,17 +66,18 @@ class ShaderProgram extends Object with utils.UuidMixin {
 
   /// Create a new shader program by using passed [webGL.RenderingContext],
   /// and shader sources, vertex source [vSource] and fragment source [fSource].
-  ShaderProgram(this.context, String vSource, String fSource)
+  ShaderProgram(this.context, String vSource, String fSource,
+      {this.useCommonDefinitions: true})
       : attributes = <String, Attribute>{},
         uniforms = <String, Uniform>{},
         _uniformLocations = <String, webGL.UniformLocation>{} {
-    init();
+    init(vSource, fSource);
   }
 
   /// Initialize shader program.
   /// Prepare attributes & uniforms of a shader program to work before
   /// it will be used.
-  void init() {
+  void init(String vSource, String fSource) {
     _initShaderProgram(vSource, fSource);
   }
 
@@ -351,9 +354,11 @@ class ShaderProgram extends Object with utils.UuidMixin {
 
   /// Create & initialize shaders from their sources.
   bool _initShadersFromSource(String vSource, String fSource) {
-    // Apply common header definitions to shaders.
-    vSource = _applyHeaderToShaderSource(ShaderType.Vertex, vSource);
-    fSource = _applyHeaderToShaderSource(ShaderType.Fragment, fSource);
+    if (useCommonDefinitions) {
+      // Apply common header definitions to shaders.
+      vSource = _applyHeaderToShaderSource(ShaderType.Vertex, vSource);
+      fSource = _applyHeaderToShaderSource(ShaderType.Fragment, fSource);
+    }
 
     // Create vertex & fragment shaders.
     _vShader = new Shader(context, ShaderType.Vertex, vSource);

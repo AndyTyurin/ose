@@ -53,13 +53,15 @@ class ShaderProgramManager {
   /// New shader program will be created and registered by using of
   /// unique key [name] and shader sources, such as
   /// vertex source [vSource] and fragment source [fSource].
-  void register(String name, String vSource, String fSource) {
+  void register(String name, String vSource, String fSource,
+      {bool useCommonDefinitions}) {
     if (shaderPrograms.containsKey(name)) {
       window.console
           .warn("Program#${shaderPrograms[name].uuid} already registered");
       return;
     }
-    ShaderProgram program = _createShaderProgram(vSource, fSource);
+    ShaderProgram program = new ShaderProgram(context, vSource, fSource,
+        useCommonDefinitions: useCommonDefinitions);
 
     if (program == null) {
       window.console.error("Could not register program");
@@ -81,10 +83,6 @@ class ShaderProgramManager {
       return true;
     }
     return false;
-  }
-
-  ShaderProgram _createShaderProgram(String vSource, String fSource) {
-    return new ShaderProgram(context, vSource, fSource);
   }
 
   ShaderProgram get boundShaderProgram => _boundShaderProgram;
