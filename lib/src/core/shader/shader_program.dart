@@ -1,6 +1,13 @@
 part of ose;
 
 /// Common vertex header definitions.
+/// It will be applied to each propagated shader on program initialization.
+///
+/// There are several common attriubtes & uniforms available in vertex shader:
+/// * Attribute vec2 a_position – current position;
+/// * Uniform mat3 u_m – model matrix;
+/// * Uniform mat3 u_v - view matrix;
+/// * Uniform mat3 u_p - projection matrix.
 const String shaderVertexHeaderDefinitions = ""
     "#ifdef GL_VERTEX_PRECISION_HIGH\n"
     "precision highp float;\n"
@@ -11,8 +18,6 @@ const String shaderVertexHeaderDefinitions = ""
     "#endif\n"
     // Vertex position.
     "attribute vec2 a_position;"
-    // Texel position.
-    "attribute vec2 a_texCoord;"
     // Model matrix.
     "uniform mat3 u_m;"
     // View matrix.
@@ -21,6 +26,12 @@ const String shaderVertexHeaderDefinitions = ""
     "uniform mat3 u_p;";
 
 /// Common fragment header definitions.
+/// It will be applied to each propagated shader on program initialization.
+///
+/// There are several common uniforms available in fragment shader:
+/// * Uniform mat3 u_m – model matrix;
+/// * Uniform mat3 u_v - view matrix;
+/// * Uniform mat3 u_p - projection matrix.
 const String shaderFragmentHeaderDefinitions = ""
     "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
     "precision highp float;\n"
@@ -28,7 +39,13 @@ const String shaderFragmentHeaderDefinitions = ""
     "#else\n"
     "precision mediump float;\n"
     "precision mediump int;\n"
-    "#endif\n";
+    "#endif\n"
+    // Model matrix.
+    "uniform mat3 u_m;"
+    // View matrix.
+    "uniform mat3 u_v;"
+    // Projection matrix.
+    "uniform mat3 u_p;";
 
 /// Shader program is a wrapper around [webGL.Program].
 /// It keeps attributes, uniforms, initialize webgl program and shaders.

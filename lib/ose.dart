@@ -48,19 +48,11 @@ part 'src/core/shader/attribute.dart';
 part 'src/core/shader/uniform.dart';
 part 'src/core/shader/shader_program.dart';
 part 'src/core/shader/shader.dart';
-
-part 'src/core/shader/basic/basic_shader_program.dart';
-part 'src/core/shader/basic/frag_basic_shader.dart';
-part 'src/core/shader/basic/vert_basic_shader.dart';
-
-part 'src/core/shader/sprite/sprite_shader_program.dart';
-part 'src/core/shader/sprite/frag_sprite_shader.dart';
-part 'src/core/shader/sprite/vert_sprite_shader.dart';
+part 'src/core/shader/common_shader_programs.dart';
 
 part 'src/core/shader/qualifier_type.dart';
 part 'src/core/shader/qualifier_state.dart';
 
-part 'src/core/manager/uniform_manager.dart';
 part 'src/core/manager/shader_program_manager.dart';
 part 'src/core/manager/camera_manager.dart';
 part 'src/core/manager/scene_manager.dart';
