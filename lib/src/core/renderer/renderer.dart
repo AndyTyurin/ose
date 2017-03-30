@@ -72,9 +72,6 @@ class Renderer {
     // Initialize IO.
     _managers.ioManager.bind();
 
-    // Initialize filters.
-    _managers.filterManager.initDefaultFilters();
-
     await lifecycleControllers.onStartCtrl
       ..add(new StartEvent(this))
       ..done;
@@ -193,16 +190,19 @@ class Renderer {
             ? timer.delta
             : fpsThresholdPerFrame;
 
-        // Pre-render scene.
+        // Pre rendering step.
         await lifecycleControllers.onRenderCtrl
           ..add(new RenderEvent(_managers.sceneManager.activeScene,
               _managers.cameraManager.activeCamera, this))
           ..done;
 
+        // Clear buffers before usage.
+        _clear();
+
         /// Render scene.
         await _renderScene(scene, camera);
 
-        // Post-render scene.
+        // Post rendering step.
         await lifecycleControllers.onPostRenderCtrl
           ..add(new PostRenderEvent(scene, camera, this))
           ..done;
@@ -210,8 +210,9 @@ class Renderer {
     }
   }
 
-  /// Render scene.
-  Future _renderScene(Scene scene, Camera camera) async {
+  /// Clear buffers.
+  /// Mostly used before rendering of new frame
+  void _clear() {
     // Create clear mask.
     int clearMask = 0x00;
 
@@ -229,7 +230,10 @@ class Renderer {
     if (clearMask > 0x00) {
       _gl.clear(clearMask);
     }
+  }
 
+  /// Render scene.
+  Future _renderScene(Scene scene, Camera camera) async {
     if (scene == null) {
       throw 'Scene is not defined.';
     }

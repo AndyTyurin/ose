@@ -6,7 +6,9 @@ part of ose;
 abstract class Filter extends Object with utils.UuidMixin {
   final ShaderProgram shaderProgram;
 
-  Filter(this.shaderProgram) {
+  final Set<ShaderProgram> shaderPrograms;
+
+  Filter(): shaderPrograms = new Set<ShaderProgram>(shaderPrograms) {
     attributes.addAll({
       'a_position': new Attribute.FloatArray2()..location = 0,
     });
