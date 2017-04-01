@@ -79,6 +79,11 @@ class Sprite extends SceneObject {
   void update(num dt) {}
 
   @override
+  void draw() {
+    // tdb @andytyurin pass the shader program manager to use specific program.
+  }
+
+  @override
   void copyFrom(Sprite from) {
     super.copyFrom(from);
     _texture = from.texture;

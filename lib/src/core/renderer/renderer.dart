@@ -1,6 +1,7 @@
 part of ose;
 
-/// It works with your camera, scene and his objects to show them on screen.
+/// Renderer is engine core, responds for components synchronization and showing
+/// objects on a screen.
 class Renderer {
   /// Lifecycle controllers.
   final RendererLifecycleControllers lifecycleControllers;
@@ -26,6 +27,9 @@ class Renderer {
   /// Current delta time between two last frames.
   double _dt;
 
+  /// Pass the [canvas] if you would like to use already defined or
+  /// skip to generate a new one.
+  /// Additional settings can be specified in [settings] argument.
   Renderer({CanvasElement canvas, RendererSettings settings})
       : timer = new utils.Timer(),
         lifecycleControllers = new RendererLifecycleControllers(),
@@ -33,7 +37,9 @@ class Renderer {
     _init(canvas, this.settings);
   }
 
-  /// Update viewport.
+  /// Update webgl viewport, canvas size and camera transformation matrix.
+  /// Useful when you manually control canvas size and want to change it with
+  /// graphics on it.
   void updateViewport(int width, int height) {
     if (camera != null) {
       camera.transform
@@ -45,57 +51,52 @@ class Renderer {
     _gl.viewport(0, 0, width, height);
   }
 
-  /// Register filters
-  /// All filters must be registered by renderer to initialize it on startup.
-  /// Please use that method before you set filters to objects.
-  void registerFilters(List<Filter> filters) {
-    if (_rendererState == RendererState.Started) {
-      window.console.warn(
-          'Please for best perfomance to register your filters before start invokes.');
-    } else {
-      _managers.filterManager.filters = filters;
-    }
-  }
-
   /// Start renderer.
   Future start() async {
     _rendererState = RendererState.StartRequested;
 
-    // Auto-resize window.
+    // If [settings.fullscreen] is [true], automatically set full screen
+    // on resize.
     if (settings.fullscreen) {
+      _setFullscreen();
       window.addEventListener('resize', _setFullscreen, false);
+    } else {
+      // Set viewport by canvas size.
+      updateViewport(canvas.width, canvas.height);
     }
 
-    // Initialize timer.
+    // Set initial checkpoint for timer.
     timer.init();
 
-    // Initialize IO.
+    // Set up IO devices to control actors.
+    // tbd @andytyurin which to use can be specified in settings.
     _managers.ioManager.bind();
 
+    // There can be initialized something before rendering starts.
+    // For example to load critical resources or make some preparations before,
+    // also it could be easily hooked if needed.
     await lifecycleControllers.onStartCtrl
       ..add(new StartEvent(this))
       ..done;
 
     _rendererState = RendererState.Started;
 
+    // Start animation frame in rendering closure.
     window.animationFrame.then(_render);
   }
 
-  /// Stop renderer.
-  Future stop() async {
+  /// Request renderer to stop.
+  /// It will be stopped on next cycle of rendering.
+  void stop() {
     _rendererState = RendererState.StopRequested;
 
-    // Unbind auto-resize.
+    // Unbind auto-resize if settings switched on.
     if (settings.fullscreen) {
       window.removeEventListener('resize', _setFullscreen, false);
     }
 
-    // Unbind IO.
+    // Unbind IO devices.
     _managers.ioManager.unbind();
-
-    await lifecycleControllers.onStopCtrl
-      ..add(new StopEvent(this))
-      ..done;
 
     _rendererState = RendererState.Stopped;
   }
@@ -103,27 +104,29 @@ class Renderer {
   /// Initialize renderer.
   _init(CanvasElement canvas, RendererSettings settings) {
     _rendererState = RendererState.Stopped;
+
+    // Create and setup passed canvas or initialize a new one.
     _initCanvas(canvas ?? new CanvasElement(), settings);
+
+    // Initialize webgl.
     _initWebGL(this.canvas, settings);
 
     if (_gl != null) {
+      // Initialize composed managers. There are responds to simplify logic
+      // of renderer by handling specific tasks of it.
       _initManagers(_gl);
-      if (settings.fullscreen) {
-        _setFullscreen();
-      } else {
-        updateViewport(this.canvas.width, this.canvas.height);
-      }
     }
   }
 
   /// Initialize renderer managers.
+  /// There are resolve different tasks to make renderer's logic easier.
   void _initManagers(webGL.RenderingContext gl) {
     _managers = new RendererManagers(gl,
         onFilterRegister: _onFilterRegister,
         onTextureRegister: _onTextureRegister);
   }
 
-  /// Initialize canvas.
+  /// Initialize canvas element.
   void _initCanvas(CanvasElement canvas, settings) {
     this.canvas = canvas;
     this.canvas.width = settings.width;
@@ -151,12 +154,8 @@ class Renderer {
     }
   }
 
-  /// Prepare filter.
-  void _onFilterRegister(FilterRegisterEvent e) {
-    _managers.filterManager.prepareFilter(e.filter);
-  }
-
   /// Prepare texture.
+  /// tbd @andytyurin better to define inside [TextureManager]?
   void _onTextureRegister(TextureRegisterEvent e) {
     _managers.textureManager.prepareTexture(e.texture);
   }
@@ -173,31 +172,36 @@ class Renderer {
   }
 
   /// Rendering cycle.
-  /// In best perfomance will be invoked 60 times per second.
+  /// Limited by fps threshold and 60 fps as max border.
   Future _render(num msSinceRendererStart) async {
     if (_rendererState != RendererState.StopRequested) {
+      // Ask to render again after current rendering iteration.
       window.animationFrame.then(_render);
 
-      double fpsThresholdPerFrame = 1000 / settings.fpsThreshold;
+      // Frame threshold in ms.
+      double frameThresholdMs = 1000 / settings.fpsThreshold;
 
+      // Measure delta by calculating difference of last checkpoint.
+      // Also accumulates time that will be compared with threshold limit.
       timer.checkpoint(msSinceRendererStart);
 
-      // Skip frame if fps threshold has been reached.
-      if (timer.accumulator >= fpsThresholdPerFrame) {
-        timer.subtractAccumulator(fpsThresholdPerFrame);
+      // Skip frame if threshold reached.
+      if (timer.accumulator >= frameThresholdMs) {
+        // Subtract accumulator by threshold limit.
+        timer.subtractAccumulator(frameThresholdMs);
 
-        _dt = (timer.delta > fpsThresholdPerFrame)
+        // Calculate delta time in ms.
+        // It could be used by objects for smooth rendering on movement.
+        _dt = (timer.delta > frameThresholdMs)
             ? timer.delta
-            : fpsThresholdPerFrame;
+            : frameThresholdMs;
 
-        // Pre rendering step.
+        // Fire [RenderEvent].
+        // By using of event handler you can update your logic.
         await lifecycleControllers.onRenderCtrl
           ..add(new RenderEvent(_managers.sceneManager.activeScene,
               _managers.cameraManager.activeCamera, this))
           ..done;
-
-        // Clear buffers before usage.
-        _clear();
 
         /// Render scene.
         await _renderScene(scene, camera);
@@ -207,6 +211,11 @@ class Renderer {
           ..add(new PostRenderEvent(scene, camera, this))
           ..done;
       }
+    } else {
+      // Push about stopping.
+      lifecycleControllers.onStopCtrl
+        ..add(new StopEvent(this))
+        ..done;
     }
   }
 
@@ -232,54 +241,65 @@ class Renderer {
     }
   }
 
-  /// Render scene.
+  /// Render active scene.
   Future _renderScene(Scene scene, Camera camera) async {
     if (scene == null) {
-      throw 'Scene is not defined.';
+      window.console.error('Scene is not defined, rendering aborted');
+      stop();
     }
 
     if (camera == null) {
-      throw 'Camera is not defined.';
+      window.console.error('Camera is not defined, rendering aborted');
+      stop();
     }
 
+    // Clear buffers before drawing.
+    _clear();
+
     // Update scene logic.
+    // You can implement your own variant of [Scene] and define your own logic.
     scene.update(dt, _managers.cameraManager);
 
     // Update lightning.
+    // Light can be complicated, we prefer to calculate some logic on cpu part.
     _updateLights(scene.lights);
 
-    // Update camera
+    // Update camera's projection & view matrices.
     camera.transform.updateProjectionMatrix();
     camera.transform.updateViewMatrix();
 
-    // Traverse by objects.
+    // Iterate through objects to render each one.
     for (SceneObject obj in scene.children) {
-      /// Per object pre-render.
+      /// Fire object render event.
+      /// Event handler can be defined to handle each object.
       await lifecycleControllers.onObjectRenderCtrl
         ..add(new ObjectRenderEvent(obj, scene, camera, this))
         ..done;
 
-      /// Render object.
-      _renderObject(obj, scene, camera);
+      /// Draw object.
+      _drawObject(obj, scene, camera);
 
+      // Update IO devices.
       _managers.ioManager.update();
 
-      /// Per object post-render.
+      /// Fire post render event.
+      /// Event handler can be defined to handle each object after rendering.
       await lifecycleControllers.onObjectPostRenderCtrl
         ..add(new ObjectPostRenderEvent(obj, scene, camera, this))
         ..done;
     }
   }
 
-  /// Render particular object.
-  void _renderObject(SceneObject sceneObject, Scene scene, Camera camera) {
+  /// Draw object.
+  /// The passed object can be group or single.
+  void _drawObject(SceneObject sceneObject, Scene scene, Camera camera) {
     if (sceneObject is SceneObjectGroup) {
       _drawGroup(sceneObject);
     } else {
-      _drawObject(sceneObject);
+      _drawSingle(sceneObject);
     }
   }
-
+  
   void _drawShape(Shape shape) {
     shape.rebuildColors();
     _drawByFilter(_managers.filterManager.basicFilter, shape);
@@ -297,7 +317,7 @@ class Renderer {
     _managers.textureManager.unbindTexture(TextureType.Normal);
   }
 
-  void _drawObject(SceneObject sceneObject) {
+  void _drawSingle(SceneObject sceneObject) {
     _updateObject(sceneObject);
     sceneObject.transform.updateModelMatrix();
     if (sceneObject is Sprite) {
@@ -326,7 +346,7 @@ class Renderer {
   void _drawGroup(SceneObjectGroup group) {
     group.transform.updateModelMatrix();
     group.children.forEach((sceneObject) {
-      _drawObject(sceneObject);
+      _drawSingle(sceneObject);
     });
   }
 

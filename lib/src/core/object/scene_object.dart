@@ -1,6 +1,8 @@
 part of ose;
 
-abstract class SceneObject extends Object with utils.UuidMixin {
+abstract class SceneObject extends Object
+    with utils.UuidMixin
+    implements Drawable {
   final SceneObjectTransform transform;
 
   SceneObjectGroup parent;

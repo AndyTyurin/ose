@@ -21,6 +21,7 @@ part 'src/core/renderer/renderer_lifecycle_controllers.dart';
 part 'src/core/renderer/renderer_settings.dart';
 part 'src/core/renderer/renderer_state.dart';
 part 'src/core/renderer/renderer_managers.dart';
+part 'src/core/renderer/renderer_drawer.dart';
 
 // Transformations.
 part 'src/core/transform/camera_transform.dart';
@@ -38,6 +39,7 @@ part 'src/core/actor/actor.dart';
 part 'src/core/actor/control_actor.dart';
 
 // Scene objects.
+part 'src/core/object/drawable.dart';
 part 'src/core/object/scene_object.dart';
 part 'src/core/object/scene_object_group.dart';
 part 'src/core/object/shape/shape.dart';
