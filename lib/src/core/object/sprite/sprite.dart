@@ -79,11 +79,6 @@ class Sprite extends SceneObject {
   void update(num dt) {}
 
   @override
-  void draw() {
-    // tdb @andytyurin pass the shader program manager to use specific program.
-  }
-
-  @override
   void copyFrom(Sprite from) {
     super.copyFrom(from);
     _texture = from.texture;
@@ -122,4 +117,14 @@ class Sprite extends SceneObject {
   Float32List get glVertices => _glVertices;
 
   bool get hasTexture => _texture != null;
+
+  @override
+  String getFragmentShaderSource() {
+    // TODO: implement getFragmentShaderSource
+  }
+
+  @override
+  String getVertexShaderSource() {
+    // TODO: implement getVertexShaderSource
+  }
 }
