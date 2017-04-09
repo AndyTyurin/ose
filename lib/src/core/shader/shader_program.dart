@@ -23,7 +23,8 @@ const String shaderVertexHeaderDefinitions = ""
     // View matrix.
     "uniform mat3 u_v;"
     // Projection matrix.
-    "uniform mat3 u_p;";
+    "uniform mat3 u_p;"
+    "uniform int z_index;";
 
 /// Common fragment header definitions.
 /// It will be applied to each propagated shader on program initialization.
@@ -107,8 +108,8 @@ class ShaderProgram extends Object with utils.UuidMixin {
     context.deleteShader(_vShader.glShader);
     context.deleteShader(_fShader.glShader);
     context.deleteProgram(glProgram);
-    vShader = null;
-    fShader = null;
+    _vShader = null;
+    _fShader = null;
     glProgram = null;
   }
 

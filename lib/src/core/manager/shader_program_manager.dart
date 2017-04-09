@@ -13,6 +13,8 @@
 /// * Apply post-processing, which is covered by [Filter];
 /// * Particle systems (not implemented yet).
 ///
+/// You shouldn't use shared program manager directly from your code,
+/// the renderer use it automatically whenever it's needed.
 part of ose;
 
 class ShaderProgramManager {
@@ -50,9 +52,9 @@ class ShaderProgramManager {
   }
 
   /// Register a new shader program.
-  /// New shader program will be created and registered by using of
-  /// unique key [name] and shader sources, such as
-  /// vertex source [vSource] and fragment source [fSource].
+  /// New shader program will be created and registered by using of unique key
+  /// [name] and shader sources, such as vertex source [vSource] and fragment
+  /// source [fSource].
   void register(String name, String vSource, String fSource,
       {bool useCommonDefinitions}) {
     if (shaderPrograms.containsKey(name)) {

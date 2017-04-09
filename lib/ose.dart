@@ -39,7 +39,6 @@ part 'src/core/actor/actor.dart';
 part 'src/core/actor/control_actor.dart';
 
 // Scene objects.
-part 'src/core/object/drawable.dart';
 part 'src/core/object/scene_object.dart';
 part 'src/core/object/scene_object_group.dart';
 part 'src/core/object/shape/shape.dart';
@@ -47,11 +46,6 @@ part 'src/core/object/shape/rectangle.dart';
 part 'src/core/object/shape/circle.dart';
 part 'src/core/object/shape/triangle.dart';
 part 'src/core/object/sprite/sprite.dart';
-
-// Filters.
-part 'src/core/filter/filter.dart';
-part 'src/core/filter/basic/basic_filter.dart';
-part 'src/core/filter/sprite/sprite_filter.dart';
 
 // Shader parts.
 part 'src/core/shader/attribute.dart';
@@ -66,7 +60,6 @@ part 'src/core/shader/qualifier_state.dart';
 part 'src/core/manager/shader_program_manager.dart';
 part 'src/core/manager/camera_manager.dart';
 part 'src/core/manager/scene_manager.dart';
-part 'src/core/manager/filter_manager.dart';
 part 'src/core/manager/asset_manager.dart';
 part 'src/core/manager/texture_manager.dart';
 

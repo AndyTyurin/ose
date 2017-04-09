@@ -14,9 +14,6 @@ class RendererManagers {
   /// Manages input controllers such as keyboard, mouse & touch.
   final IOManager ioManager;
 
-  /// Manages filters.
-  final FilterManager filterManager;
-
   /// Manages resources.
   final AssetManager assetManager;
 
@@ -24,15 +21,12 @@ class RendererManagers {
   final TextureManager textureManager;
 
   RendererManagers(webGL.RenderingContext gl,
-      {void onFilterRegister(FilterRegisterEvent e),
-      void onTextureRegister(TextureRegisterEvent e)})
-      : shaderProgramManager = new ShaderProgramManager(),
+      {void onTextureRegister(TextureRegisterEvent e)})
+      : shaderProgramManager = new ShaderProgramManager(gl),
         sceneManager = new SceneManager(),
         cameraManager = new CameraManager(),
         ioManager = new IOManager(),
-        filterManager = new FilterManager(gl),
         assetManager = new AssetManager(
-            onFilterRegister: onFilterRegister,
             onTextureRegister: onTextureRegister),
         textureManager = new TextureManager(gl);
 }

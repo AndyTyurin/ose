@@ -9,7 +9,7 @@ class RendererDrawer {
   RendererDrawer(this._gl);
 
   /// Draw [obj].
-  draw(Drawable obj, Scene scene) {
-    obj.draw()
+  draw(SceneObject obj, Scene scene) {
+    
   }
 }

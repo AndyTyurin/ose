@@ -101,6 +101,15 @@ class Renderer {
     _rendererState = RendererState.Stopped;
   }
 
+  /// Register a new shader program by [name].
+  /// [vSource] is vertex shader program's source.
+  /// [fSource] is fragment shader program's source.
+  /// To use common header definitions in your glsl sources, switch
+  /// [useCommonDefinitions] to [true]
+  void registerShaderProgram(String name, String vSource, String fSource, { bool useCommonDefinitions }) {
+    _managers.shaderProgramManager.register(name, vSource, fSource, useCommonDefinitions: useCommonDefinitions);
+  }
+
   /// Initialize renderer.
   _init(CanvasElement canvas, RendererSettings settings) {
     _rendererState = RendererState.Stopped;
@@ -122,7 +131,6 @@ class Renderer {
   /// There are resolve different tasks to make renderer's logic easier.
   void _initManagers(webGL.RenderingContext gl) {
     _managers = new RendererManagers(gl,
-        onFilterRegister: _onFilterRegister,
         onTextureRegister: _onTextureRegister);
   }
 
@@ -299,7 +307,7 @@ class Renderer {
       _drawSingle(sceneObject);
     }
   }
-  
+
   void _drawShape(Shape shape) {
     shape.rebuildColors();
     _drawByFilter(_managers.filterManager.basicFilter, shape);

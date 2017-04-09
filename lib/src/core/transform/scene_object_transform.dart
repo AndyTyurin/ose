@@ -3,6 +3,8 @@ part of ose;
 class SceneObjectTransform extends Transform {
   static Vector2 defaultScale = new Vector2(1.0, 1.0);
 
+  int zIndex;
+
   Vector2 scale;
 
   Vector2 _oldScale;
