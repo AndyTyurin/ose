@@ -1,26 +1,29 @@
 part of ose;
 
-class SceneObjectGroup extends SceneObject {
+class SceneObjectGroup extends RenderableObject {
   final HashSet<SceneObject> children;
 
+  final SceneObjectTransform transform;
+
   SceneObjectGroup({SceneObjectTransform transform})
-      : super(transform: transform),
+      : transform = transform ?? new SceneObjectTransform(),
         children = new HashSet();
 
-  void add(SceneObject obj) {
-    children.add(obj);
+  bool add(SceneObject obj) {
+    bool added = children.add(obj);
+
+    if (!added) {
+      window.console.info(
+          "SceneObject#${obj.uuid} added twice to SceneObjectGroup${uuid}");
+      return false;
+    }
     obj.parent = this;
+    return true;
   }
 
-  void addAll(List<SceneObject> objects) {
-    objects.forEach(add);
+  bool remove(SceneObject obj) {
+    return children.remove(obj);
   }
-
-  void remove(SceneObject obj) {
-    children.remove(obj);
-  }
-
-  void update(num dt) {}
 
   void copyFrom(SceneObject from) {
     transform.copyFrom(from.transform);

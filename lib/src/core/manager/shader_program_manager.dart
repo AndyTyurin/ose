@@ -59,7 +59,7 @@ class ShaderProgramManager {
   /// changed in glsl sources while registering by their pair values.
   void register(String name, String vSource, String fSource,
       {bool useCommonDefinitions, Map<String, String> templateVariables}) {
-    if (shaderPrograms.containsKey(name)) {
+    if (isRegistered(name)) {
       window.console
           .warn("Program#${shaderPrograms[name].uuid} already registered");
       return;
@@ -88,6 +88,10 @@ class ShaderProgramManager {
       return true;
     }
     return false;
+  }
+
+  bool isRegistered(String name) {
+    return shaderPrograms.containsKey(name);
   }
 
   ShaderProgram get boundShaderProgram => _boundShaderProgram;

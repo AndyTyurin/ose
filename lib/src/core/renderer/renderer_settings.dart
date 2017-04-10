@@ -23,6 +23,9 @@ class RendererSettings {
   /// Use masking on renderer. (Still not working).
   bool useMask;
 
+  /// Use depth buffer.
+  bool useDepth;
+
   /// Use clear or not.
   bool useClear;
 
@@ -41,6 +44,7 @@ class RendererSettings {
       bool fullscreen: false,
       bool useAlpha: false,
       bool useMask: true,
+      bool useDepth: false,
       bool useClear: true,
       bool useAntialias: true}) {
     this.width = width;
@@ -51,6 +55,7 @@ class RendererSettings {
     this.maxLights = maxLights;
     this.useAlpha = useAlpha;
     this.useMask = useMask;
+    this.useDepth = useDepth;
     this.useClear = useClear;
     this.useAntialias = useAntialias;
   }

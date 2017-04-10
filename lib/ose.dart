@@ -38,7 +38,7 @@ part 'src/core/scene/scene.dart';
 part 'src/core/actor/actor.dart';
 part 'src/core/actor/control_actor.dart';
 
-// Scene objects.
+// Renderable objects.
 part 'src/core/object/scene_object.dart';
 part 'src/core/object/scene_object_group.dart';
 part 'src/core/object/shape/shape.dart';
@@ -46,6 +46,7 @@ part 'src/core/object/shape/rectangle.dart';
 part 'src/core/object/shape/circle.dart';
 part 'src/core/object/shape/triangle.dart';
 part 'src/core/object/sprite/sprite.dart';
+part 'src/core/object/renderable_object.dart';
 
 // Shader parts.
 part 'src/core/shader/attribute.dart';
@@ -55,6 +56,7 @@ part 'src/core/shader/shader.dart';
 part 'src/core/shader/common_shader_programs.dart';
 part 'src/core/shader/qualifier_type.dart';
 part 'src/core/shader/qualifier_state.dart';
+part 'src/core/shader/shader_data_provider.dart';
 
 // Managers.
 part 'src/core/manager/shader_program_manager.dart';

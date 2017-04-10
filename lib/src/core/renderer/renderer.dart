@@ -24,6 +24,9 @@ class Renderer {
   /// Current state of a renderer.
   RendererState _rendererState;
 
+  /// Used to draw graphics.
+  RendererDrawer _drawer;
+
   /// Current delta time between two last frames.
   double _dt;
 
@@ -106,8 +109,10 @@ class Renderer {
   /// [fSource] is fragment shader program's source.
   /// To use common header definitions in your glsl sources, switch
   /// [useCommonDefinitions] to [true]
-  void registerShaderProgram(String name, String vSource, String fSource, { bool useCommonDefinitions }) {
-    _managers.shaderProgramManager.register(name, vSource, fSource, useCommonDefinitions: useCommonDefinitions);
+  void registerShaderProgram(String name, String vSource, String fSource,
+      {bool useCommonDefinitions}) {
+    _managers.shaderProgramManager.register(name, vSource, fSource,
+        useCommonDefinitions: useCommonDefinitions);
   }
 
   /// Initialize renderer.
@@ -124,14 +129,14 @@ class Renderer {
       // Initialize composed managers. There are responds to simplify logic
       // of renderer by handling specific tasks of it.
       _initManagers(_gl);
+      _drawer = new RendererDrawer(_gl, _managers.shaderProgramManager);
     }
   }
 
   /// Initialize renderer managers.
   /// There are resolve different tasks to make renderer's logic easier.
   void _initManagers(webGL.RenderingContext gl) {
-    _managers = new RendererManagers(gl,
-        onTextureRegister: _onTextureRegister);
+    _managers = new RendererManagers(gl, onTextureRegister: _onTextureRegister);
   }
 
   /// Initialize canvas element.
@@ -148,8 +153,12 @@ class Renderer {
     // tbd @andytyurin emit error by using of event listener.
     if (_gl == null) throw 'WebGL is not supported';
 
-    // Disable depth.
-    _gl.disable(webGL.DEPTH_TEST);
+    // Use depth buffer.
+    if (settings.useDepth) {
+      _gl.enable(webGL.DEPTH_TEST);
+    } else {
+      _gl.disable(webGL.DEPTH_TEST);
+    }
 
     // Enable blending.
     _gl.enable(webGL.BLEND);
@@ -200,9 +209,7 @@ class Renderer {
 
         // Calculate delta time in ms.
         // It could be used by objects for smooth rendering on movement.
-        _dt = (timer.delta > frameThresholdMs)
-            ? timer.delta
-            : frameThresholdMs;
+        _dt = (timer.delta > frameThresholdMs) ? timer.delta : frameThresholdMs;
 
         // Fire [RenderEvent].
         // By using of event handler you can update your logic.
@@ -243,6 +250,10 @@ class Renderer {
       clearMask |= webGL.STENCIL_BUFFER_BIT;
     }
 
+    if (settings.useDepth) {
+      clearMask |= webGL.DEPTH_BUFFER_BIT;
+    }
+
     // Clear buffers by defined mask.
     if (clearMask > 0x00) {
       _gl.clear(clearMask);
@@ -265,37 +276,55 @@ class Renderer {
     _clear();
 
     // Update scene logic.
-    // You can implement your own variant of [Scene] and define your own logic.
     scene.update(dt, _managers.cameraManager);
 
     // Update lightning.
-    // Light can be complicated, we prefer to calculate some logic on cpu part.
+    // Light can be complicated, prefer to calculate some logic on cpu part.
     _updateLights(scene.lights);
 
     // Update camera's projection & view matrices.
     camera.transform.updateProjectionMatrix();
     camera.transform.updateViewMatrix();
 
+    // Delegate drawing to drawer.
+    await _drawer.draw(scene.children, _onObjectRender, _onObjectPostRender);
+
+    // Update IO devices.
+    _managers.ioManager.update();
+
     // Iterate through objects to render each one.
-    for (SceneObject obj in scene.children) {
-      /// Fire object render event.
-      /// Event handler can be defined to handle each object.
-      await lifecycleControllers.onObjectRenderCtrl
-        ..add(new ObjectRenderEvent(obj, scene, camera, this))
-        ..done;
+    // for (SceneObject obj in scene.children) {
+    //   /// Draw object.
+    //   _drawObject(obj, scene, camera);
+    // }
+  }
 
-      /// Draw object.
-      _drawObject(obj, scene, camera);
+  /// Object render callback is invoked by [RendererDrawer].
+  /// The method will be invoked before drawing, so specific logic can be
+  /// defined on listener along with object's updating declared here.
+  /// It will update object's actor if it present, object itself and model
+  /// matrix calculations.
+  Future _onObjectRender(SceneObject obj) async {
+    // Fire object render event.
+    // Event handler can be defined to handle each object.
+    await lifecycleControllers.onObjectRenderCtrl
+      ..add(new ObjectRenderEvent(obj, _managers.sceneManager.boundScene, _managers.cameraManager.activeCamera, this))
+      ..done;
 
-      // Update IO devices.
-      _managers.ioManager.update();
+    // Update object's logic.
+    sceneObject.update(dt);
 
-      /// Fire post render event.
-      /// Event handler can be defined to handle each object after rendering.
-      await lifecycleControllers.onObjectPostRenderCtrl
-        ..add(new ObjectPostRenderEvent(obj, scene, camera, this))
-        ..done;
-    }
+    // Update object's model matrix.
+    sceneObject.transform.updateModelMatrix();
+  }
+
+  /// Object post render callback is invoked by [RendererDrawer].
+  Future _onObjectPostRender(SceneObject obj) async {
+    // Fire post render event.
+    // Event handler can be defined to handle each object after rendering.
+    await lifecycleControllers.onObjectPostRenderCtrl
+      ..add(new ObjectPostRenderEvent(obj, _managers.sceneManager.boundScene, _managers.cameraManager.activeCamera, this))
+      ..done;
   }
 
   /// Draw object.
@@ -381,24 +410,6 @@ class Renderer {
   //   });
   //   _gl.blendFunc(webGL.SRC_ALPHA, webGL.ONE_MINUS_SRC_ALPHA);
   // }
-
-  /// Update object logic.
-  void _updateObject(SceneObject sceneObject) {
-    _updateObjectActor(sceneObject);
-    sceneObject.update(dt);
-  }
-
-  /// Update object actor.
-  void _updateObjectActor(SceneObject sceneObject) {
-    if (sceneObject.actor != null) {
-      Actor actor = sceneObject.actor;
-      if (actor is ControlActor) {
-        actor.update(scene, sceneObject, _managers.ioManager);
-      } else {
-        actor.update(scene, sceneObject);
-      }
-    }
-  }
 
   void _setFullscreen([_]) =>
       updateViewport(window.innerWidth, window.innerHeight);
