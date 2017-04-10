@@ -28,4 +28,9 @@ class SceneObjectGroup extends RenderableObject {
   void copyFrom(SceneObject from) {
     transform.copyFrom(from.transform);
   }
+
+  @override
+  void update(num dt) {
+    transform.updateModelMatrix();
+  }
 }

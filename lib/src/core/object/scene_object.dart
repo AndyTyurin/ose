@@ -11,6 +11,11 @@ abstract class SceneObject extends RenderableObject
   SceneObject({SceneObjectTransform transform})
       : transform = transform ?? new SceneObjectTransform();
 
+  @override
+  void update(num dt) {
+    transform.updateModelMatrix();
+  }
+
   void copyFrom(SceneObject from) {
     transform.copyFrom(from.transform);
   }

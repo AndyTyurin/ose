@@ -55,10 +55,10 @@ class ShaderProgramManager {
   /// New shader program will be created and registered by using of unique key
   /// [name] and shader sources, such as vertex source [vSource] and fragment
   /// source [fSource].
-  /// [templateVariables] are keys of string representation data that will be
+  /// [shaderVariables] are keys of string representation data that will be
   /// changed in glsl sources while registering by their pair values.
   void register(String name, String vSource, String fSource,
-      {bool useCommonDefinitions, Map<String, String> templateVariables}) {
+      {bool useCommonDefinitions, Map<String, String> shaderVariables}) {
     if (isRegistered(name)) {
       window.console
           .warn("Program#${shaderPrograms[name].uuid} already registered");
@@ -66,7 +66,7 @@ class ShaderProgramManager {
     }
     ShaderProgram program = new ShaderProgram(context, vSource, fSource,
         useCommonDefinitions: useCommonDefinitions,
-        templateVariables: templateVariables);
+        shaderVariables: shaderVariables);
 
     if (program == null) {
       window.console.error("Could not register program");

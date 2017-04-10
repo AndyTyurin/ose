@@ -9,29 +9,28 @@ class RendererDrawer {
   /// Shader program manager is needed to work with shader programs.
   final ShaderProgramManager _spm;
 
-  RendererDrawer(this._gl, this._spm);
+  /// Shader variables will be used when on shaders' source registration.
+  /// Each variable will be interpolated through the sources.
+  final Map<String, String> _shaderVariables;
+
+  RendererDrawer(this._gl, this._spm, this._shaderVariables);
 
   /// Draw objects.
-  Future draw(List<SceneObject> objects, Future onRender(SceneObject obj),
-      Future onPostRender(SceneObject obj)) async {
+  Future draw(
+      Iterable<RenderableObject> objects,
+      Future onRender(RenderableObject obj),
+      Future onPostRender(RenderableObject obj)) async {
     // tbd @andytyurin apply strategy, how to render objects for best perfomance.
-    objects.forEach((object) {
-      _checkIsTargetProgramPrepared(object);
+    for (RenderableObject object in objects) {
       await onRender(object);
       _drawTarget(object);
       await onPostRender(object);
-    });
-  }
-
-  /// Check is [target] object prepared.
-  /// Returns [true] if shader program already registered or [false] if not.
-  bool _checkIsTargetProgramPrepared(SceneObject target) {
-    _spm.isRegistered()
+    }
   }
 
   /// Draw [target].
   /// It can be an identity or group object.
-  void _drawTarget(SceneObject target) {
+  void _drawTarget(RenderableObject target) {
     if (target is SceneObjectGroup) {
       _drawGroupObject(target);
     } else {
@@ -39,13 +38,29 @@ class RendererDrawer {
     }
   }
 
+  /// Draw group [target].
+  void _drawGroupObject(SceneObjectGroup target) {}
+
   /// Draw identity [target].
   void _drawIdentityObject(SceneObject target) {
-
+    _prepareShaderProgram(target);
+    // tbd @andytyurin uniforms & attributes propagation, drawing will be here.
   }
 
-  /// Draw group [target].
-  void _drawGroupObject(SceneObjectGroup target) {
+  /// Prepare target's shader program.
+  /// Register if it needed and bind to use.
+  void _prepareShaderProgram(SceneObject target) {
+    String shaderProgramId = target.getShaderProgramId();
 
+    if (!_spm.isRegistered(shaderProgramId)) {
+      // Register a new shader program.
+      _spm.register(shaderProgramId, target.getVertexShaderSource(),
+          target.getFragmentShaderSource(),
+          useCommonDefinitions: target.shouldUseCommonShaderDefinitions(),
+          shaderVariables: _shaderVariables);
+    }
+
+    // Bind shader program.
+    _spm.bind(shaderProgramId);
   }
 }

@@ -104,17 +104,6 @@ class Renderer {
     _rendererState = RendererState.Stopped;
   }
 
-  /// Register a new shader program by [name].
-  /// [vSource] is vertex shader program's source.
-  /// [fSource] is fragment shader program's source.
-  /// To use common header definitions in your glsl sources, switch
-  /// [useCommonDefinitions] to [true]
-  void registerShaderProgram(String name, String vSource, String fSource,
-      {bool useCommonDefinitions}) {
-    _managers.shaderProgramManager.register(name, vSource, fSource,
-        useCommonDefinitions: useCommonDefinitions);
-  }
-
   /// Initialize renderer.
   _init(CanvasElement canvas, RendererSettings settings) {
     _rendererState = RendererState.Stopped;
@@ -129,7 +118,7 @@ class Renderer {
       // Initialize composed managers. There are responds to simplify logic
       // of renderer by handling specific tasks of it.
       _initManagers(_gl);
-      _drawer = new RendererDrawer(_gl, _managers.shaderProgramManager);
+      _drawer = new RendererDrawer(_gl, _managers.shaderProgramManager, settings.shaderVariables);
     }
   }
 
@@ -291,12 +280,6 @@ class Renderer {
 
     // Update IO devices.
     _managers.ioManager.update();
-
-    // Iterate through objects to render each one.
-    // for (SceneObject obj in scene.children) {
-    //   /// Draw object.
-    //   _drawObject(obj, scene, camera);
-    // }
   }
 
   /// Object render callback is invoked by [RendererDrawer].
@@ -312,10 +295,7 @@ class Renderer {
       ..done;
 
     // Update object's logic.
-    sceneObject.update(dt);
-
-    // Update object's model matrix.
-    sceneObject.transform.updateModelMatrix();
+    obj.update(dt);
   }
 
   /// Object post render callback is invoked by [RendererDrawer].
@@ -327,50 +307,40 @@ class Renderer {
       ..done;
   }
 
-  /// Draw object.
-  /// The passed object can be group or single.
-  void _drawObject(SceneObject sceneObject, Scene scene, Camera camera) {
-    if (sceneObject is SceneObjectGroup) {
-      _drawGroup(sceneObject);
-    } else {
-      _drawSingle(sceneObject);
-    }
-  }
+  // void _drawShape(Shape shape) {
+  //   shape.rebuildColors();
+  //   _drawByFilter(_managers.filterManager.basicFilter, shape);
+  // }
 
-  void _drawShape(Shape shape) {
-    shape.rebuildColors();
-    _drawByFilter(_managers.filterManager.basicFilter, shape);
-  }
+  // void _drawSprite(Sprite sprite) {
+  //   _managers.textureManager.bindTexture(sprite.texture, TextureType.Color);
+  //   if (sprite.normalMap != null) {
+  //     _managers.textureManager
+  //         .bindTexture(sprite.normalMap, TextureType.Normal);
+  //   }
+  //   _drawByFilter(_managers.filterManager.spriteFilter, sprite);
+  //   // _drawByLightning(sprite, scene.lights);
+  //   _managers.textureManager.unbindTexture(TextureType.Color);
+  //   _managers.textureManager.unbindTexture(TextureType.Normal);
+  // }
 
-  void _drawSprite(Sprite sprite) {
-    _managers.textureManager.bindTexture(sprite.texture, TextureType.Color);
-    if (sprite.normalMap != null) {
-      _managers.textureManager
-          .bindTexture(sprite.normalMap, TextureType.Normal);
-    }
-    _drawByFilter(_managers.filterManager.spriteFilter, sprite);
-    // _drawByLightning(sprite, scene.lights);
-    _managers.textureManager.unbindTexture(TextureType.Color);
-    _managers.textureManager.unbindTexture(TextureType.Normal);
-  }
+  // void _drawSingle(SceneObject sceneObject) {
+  //   _updateObject(sceneObject);
+  //   sceneObject.transform.updateModelMatrix();
+  //   if (sceneObject is Sprite) {
+  //     _drawSprite(sceneObject);
+  //   } else if (sceneObject is Shape) {
+  //     _drawShape(sceneObject);
+  //   }
+  //
+  //   _applyFilters(sceneObject);
+  // }
 
-  void _drawSingle(SceneObject sceneObject) {
-    _updateObject(sceneObject);
-    sceneObject.transform.updateModelMatrix();
-    if (sceneObject is Sprite) {
-      _drawSprite(sceneObject);
-    } else if (sceneObject is Shape) {
-      _drawShape(sceneObject);
-    }
-
-    _applyFilters(sceneObject);
-  }
-
-  void _applyFilters(SceneObject sceneObject) {
-    sceneObject.filters.forEach((filter) {
-      _drawByFilter(filter, sceneObject);
-    });
-  }
+  // void _applyFilters(SceneObject sceneObject) {
+  //   sceneObject.filters.forEach((filter) {
+  //     _drawByFilter(filter, sceneObject);
+  //   });
+  // }
 
   void _updateLights(Iterable<Light> lights) {
     lights.forEach(_updateLight);
@@ -380,26 +350,26 @@ class Renderer {
     light.update(dt);
   }
 
-  void _drawGroup(SceneObjectGroup group) {
-    group.transform.updateModelMatrix();
-    group.children.forEach((sceneObject) {
-      _drawSingle(sceneObject);
-    });
-  }
+  // void _drawGroup(SceneObjectGroup group) {
+  //   group.transform.updateModelMatrix();
+  //   group.children.forEach((sceneObject) {
+  //     _drawSingle(sceneObject);
+  //   });
+  // }
 
   /// Draw object by using of particular filter.
   /// Be careful, objects should have [glVertices].
-  void _drawByFilter(Filter filter, SceneObject obj) {
-    FilterManager fm = _managers.filterManager;
-
-    fm.activeFilter = filter;
-    if (fm.activeFilter != null) {
-      fm.activeFilter.apply(_managers.filterManager, obj, scene, camera);
-      _managers.filterManager.bindFilter();
-      _gl.drawArrays(
-          webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
-    }
-  }
+  // void _drawByFilter(Filter filter, SceneObject obj) {
+  //   FilterManager fm = _managers.filterManager;
+  //
+  //   fm.activeFilter = filter;
+  //   if (fm.activeFilter != null) {
+  //     fm.activeFilter.apply(_managers.filterManager, obj, scene, camera);
+  //     _managers.filterManager.bindFilter();
+  //     _gl.drawArrays(
+  //         webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
+  //   }
+  // }
 
   // void _drawByLightning(Sprite obj, Iterable<Light> lights) {
   //   SpriteFilter activeFilter = _managers.filterManager.activeFilter;

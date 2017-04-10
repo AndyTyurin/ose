@@ -1,6 +1,8 @@
 part of ose;
 
 class Sprite extends SceneObject {
+  static String _spriteClassUuid = utils.generateUuid();
+
   Texture _texture;
 
   Texture _normalMapTexture;
@@ -76,9 +78,6 @@ class Sprite extends SceneObject {
   }
 
   @override
-  void update(num dt) {}
-
-  @override
   void copyFrom(Sprite from) {
     super.copyFrom(from);
     _texture = from.texture;
@@ -124,7 +123,17 @@ class Sprite extends SceneObject {
   }
 
   @override
+  String getShaderProgramId() {
+    return _spriteClassUuid;
+  }
+
+  @override
   String getVertexShaderSource() {
     // TODO: implement getVertexShaderSource
+  }
+
+  @override
+  bool shouldUseCommonShaderDefinitions() {
+    return true;
   }
 }

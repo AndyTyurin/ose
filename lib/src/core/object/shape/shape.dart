@@ -1,9 +1,9 @@
 part of ose;
 
-/// Common abstract class is needed to describe our shapes, such as
-/// [Triangle], [Rectangle], [Circle].
 abstract class Shape extends SceneObject {
   static SolidColor defaultColor = new SolidColor.white();
+
+  static String _shapeClassUuid = utils.generateUuid();
 
   /// WebGL colors.
   Float32List _glColors;
@@ -56,12 +56,34 @@ abstract class Shape extends SceneObject {
   }
 
   @override
-  void update(num dt) {}
+  void update(num dt) {
+    rebuildColors();
+  }
 
   @override
   void copyFrom(Shape from) {
     super.copyFrom(from);
     color = from.color.clone();
+  }
+
+  @override
+  String getFragmentShaderSource() {
+    // TODO: implement getFragmentShaderSource
+  }
+
+  @override
+  String getShaderProgramId() {
+    return _shapeClassUuid;
+  }
+
+  @override
+  String getVertexShaderSource() {
+    // TODO: implement getVertexShaderSource
+  }
+
+  @override
+  bool shouldUseCommonShaderDefinitions() {
+    return true;
   }
 
   Float32List get glVertices => _glVertices;
