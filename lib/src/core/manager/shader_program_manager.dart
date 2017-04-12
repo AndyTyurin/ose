@@ -33,7 +33,7 @@ class ShaderProgramManager {
   /// Bind shader program by [name].
   /// Only registered shader programs can be bound.
   void bind(String name) {
-    if (!shaderPrograms.containsKey(name)) {
+    if (!isRegistered(name)) {
       window.console.error('Could not bind non registered \'${name}\' program');
       return;
     }
@@ -57,23 +57,23 @@ class ShaderProgramManager {
   /// source [fSource].
   /// [shaderVariables] are keys of string representation data that will be
   /// changed in glsl sources while registering by their pair values.
-  void register(String name, String vSource, String fSource,
-      {bool useCommonDefinitions, Map<String, String> shaderVariables}) {
+  bool register(String name, String vSource, String fSource,
+      {bool useCommonDefinitions}) {
     if (isRegistered(name)) {
       window.console
           .warn("Program#${shaderPrograms[name].uuid} already registered");
-      return;
+      return false;
     }
     ShaderProgram program = new ShaderProgram(context, vSource, fSource,
-        useCommonDefinitions: useCommonDefinitions,
-        shaderVariables: shaderVariables);
+        useCommonDefinitions: useCommonDefinitions);
 
     if (program == null) {
       window.console.error("Could not register program");
-      return;
+      return false;
     }
 
     shaderPrograms[name] = program;
+    return true;
   }
 
   /// Remove shader program.

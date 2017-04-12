@@ -104,6 +104,17 @@ class Renderer {
     _rendererState = RendererState.Stopped;
   }
 
+  /// Register shader program.
+  /// [name] is unique shader program's id.
+  /// [vSource] and [fSource] are vertex and fragment shaders' sources.
+  /// To use common header definitions for your sources, set
+  /// [useCommonDefinitions] to [true].
+  bool registerShaderProgram(String name, String vSource, String fSource,
+      {bool useCommonDefinitions}) {
+    return _managers.shaderProgramManager.register(name, vSource, fSource,
+        useCommonDefinitions: useCommonDefinitions);
+  }
+
   /// Initialize renderer.
   _init(CanvasElement canvas, RendererSettings settings) {
     _rendererState = RendererState.Stopped;
@@ -118,7 +129,8 @@ class Renderer {
       // Initialize composed managers. There are responds to simplify logic
       // of renderer by handling specific tasks of it.
       _initManagers(_gl);
-      _drawer = new RendererDrawer(_gl, _managers.shaderProgramManager, settings.shaderVariables);
+      _drawer = new RendererDrawer(
+          _gl, _managers.shaderProgramManager, settings.shaderVariables);
     }
   }
 
@@ -291,7 +303,8 @@ class Renderer {
     // Fire object render event.
     // Event handler can be defined to handle each object.
     await lifecycleControllers.onObjectRenderCtrl
-      ..add(new ObjectRenderEvent(obj, _managers.sceneManager.boundScene, _managers.cameraManager.activeCamera, this))
+      ..add(new ObjectRenderEvent(obj, _managers.sceneManager.boundScene,
+          _managers.cameraManager.activeCamera, this))
       ..done;
 
     // Update object's logic.
@@ -303,7 +316,8 @@ class Renderer {
     // Fire post render event.
     // Event handler can be defined to handle each object after rendering.
     await lifecycleControllers.onObjectPostRenderCtrl
-      ..add(new ObjectPostRenderEvent(obj, _managers.sceneManager.boundScene, _managers.cameraManager.activeCamera, this))
+      ..add(new ObjectPostRenderEvent(obj, _managers.sceneManager.boundScene,
+          _managers.cameraManager.activeCamera, this))
       ..done;
   }
 

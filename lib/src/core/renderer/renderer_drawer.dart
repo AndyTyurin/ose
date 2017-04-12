@@ -50,14 +50,12 @@ class RendererDrawer {
   /// Prepare target's shader program.
   /// Register if it needed and bind to use.
   void _prepareShaderProgram(SceneObject target) {
-    String shaderProgramId = target.getShaderProgramId();
+    String shaderProgramId = target.getShaderProgramName();
 
     if (!_spm.isRegistered(shaderProgramId)) {
-      // Register a new shader program.
-      _spm.register(shaderProgramId, target.getVertexShaderSource(),
-          target.getFragmentShaderSource(),
-          useCommonDefinitions: target.shouldUseCommonShaderDefinitions(),
-          shaderVariables: _shaderVariables);
+      window.console.warn(
+          'Can\'t render target by using of shader program with id \'${shaderProgramId}\'');
+      return;
     }
 
     // Bind shader program.

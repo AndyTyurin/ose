@@ -72,10 +72,6 @@ class ShaderProgram extends Object with utils.UuidMixin {
   /// Should common defintions applied to shaders' sources.
   final useCommonDefinitions;
 
-  /// Shaders' sources options will be passed and interpolated from variables
-  /// to string representation data.
-  final Map<String, String> shaderVariables;
-
   /// WebGL program.
   webGL.Program glProgram;
 
@@ -90,18 +86,18 @@ class ShaderProgram extends Object with utils.UuidMixin {
   /// Create a new shader program by using passed [webGL.RenderingContext],
   /// and shader sources, vertex source [vSource] and fragment source [fSource].
   ShaderProgram(this.context, String vSource, String fSource,
-      {this.useCommonDefinitions: true, this.shaderVariables})
+      {this.useCommonDefinitions: true})
       : attributes = <String, Attribute>{},
         uniforms = <String, Uniform>{},
         _uniformLocations = <String, webGL.UniformLocation>{} {
-    init(vSource, fSource, shaderVariables);
+    init(vSource, fSource);
   }
 
   /// Initialize shader program.
   /// Prepare attributes & uniforms of a shader program to work before
   /// it will be used.
-  void init(String vSource, String fSource, Map<String, String> shaderVariables) {
-    _initShaderProgram(vSource, fSource, shaderVariables);
+  void init(String vSource, String fSource) {
+    _initShaderProgram(vSource, fSource);
   }
 
   /// Release allocated resources.
@@ -344,10 +340,8 @@ class ShaderProgram extends Object with utils.UuidMixin {
     }
   }
 
-  void _initShaderProgram(
-      String vSource, String fSource, Map<String, String> shaderVariables) {
-    bool isShadersCompiled =
-        _initShadersFromSource(vSource, fSource, shaderVariables);
+  void _initShaderProgram(String vSource, String fSource) {
+    bool isShadersCompiled = _initShadersFromSource(vSource, fSource);
 
     if (isShadersCompiled) {
       // Create webgl program.
@@ -378,13 +372,11 @@ class ShaderProgram extends Object with utils.UuidMixin {
   }
 
   /// Create & initialize shaders from their sources.
-  bool _initShadersFromSource(
-      String vSource, String fSource, Map<String, String> shaderVariables) {
+  bool _initShadersFromSource(String vSource, String fSource) {
     if (useCommonDefinitions) {
       // Prepare shader sources.
-      vSource = _prepareShaderSource(ShaderType.Vertex, vSource, shaderVariables);
-      fSource =
-          _prepareShaderSource(ShaderType.Fragment, fSource, shaderVariables);
+      vSource = _prepareShaderSource(ShaderType.Vertex, vSource);
+      fSource = _prepareShaderSource(ShaderType.Fragment, fSource);
     }
 
     // Create vertex & fragment shaders.
@@ -396,22 +388,8 @@ class ShaderProgram extends Object with utils.UuidMixin {
     return true;
   }
 
-  /// Prepare shader' source by interpolate data with [shaderVariables] and
-  /// applying common definitions to header if it needed.
-  String _prepareShaderSource(
-      ShaderType type, String source, Map<String, String> shaderVariables) {
-    return _applyHeaderToShaderSource(
-        type, _interpolateShaderSource(source, shaderVariables));
-  }
-
-  /// Interpolate shader options' variables to source content.
-  String _interpolateShaderSource(
-      String source, Map<String, String> shaderVariables) {
-    shaderVariables.keys.forEach((option) {
-      String v = shaderVariables[option];
-      source = source.replaceAll(option, v);
-    });
-    return source;
+  String _prepareShaderSource(ShaderType type, String source) {
+    return _applyHeaderToShaderSource(type, source);
   }
 
   /// Apply common header definitions for specific [type] of [source].

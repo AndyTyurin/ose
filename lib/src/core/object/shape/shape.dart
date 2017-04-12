@@ -3,7 +3,7 @@ part of ose;
 abstract class Shape extends SceneObject {
   static SolidColor defaultColor = new SolidColor.white();
 
-  static String _shapeClassUuid = utils.generateUuid();
+  static String shaderProgramName = utils.generateUuid();
 
   /// WebGL colors.
   Float32List _glColors;
@@ -67,23 +67,8 @@ abstract class Shape extends SceneObject {
   }
 
   @override
-  String getFragmentShaderSource() {
-    // TODO: implement getFragmentShaderSource
-  }
-
-  @override
-  String getShaderProgramId() {
-    return _shapeClassUuid;
-  }
-
-  @override
-  String getVertexShaderSource() {
-    // TODO: implement getVertexShaderSource
-  }
-
-  @override
-  bool shouldUseCommonShaderDefinitions() {
-    return true;
+  String getShaderProgramName() {
+    return shaderProgramName;
   }
 
   Float32List get glVertices => _glVertices;

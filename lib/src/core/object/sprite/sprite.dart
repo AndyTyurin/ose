@@ -1,7 +1,7 @@
 part of ose;
 
 class Sprite extends SceneObject {
-  static String _spriteClassUuid = utils.generateUuid();
+  static String shaderProgramName = utils.generateUuid();
 
   Texture _texture;
 
@@ -118,22 +118,7 @@ class Sprite extends SceneObject {
   bool get hasTexture => _texture != null;
 
   @override
-  String getFragmentShaderSource() {
-    // TODO: implement getFragmentShaderSource
-  }
-
-  @override
-  String getShaderProgramId() {
-    return _spriteClassUuid;
-  }
-
-  @override
-  String getVertexShaderSource() {
-    // TODO: implement getVertexShaderSource
-  }
-
-  @override
-  bool shouldUseCommonShaderDefinitions() {
-    return true;
+  String getShaderProgramName() {
+    return shaderProgramName;
   }
 }
