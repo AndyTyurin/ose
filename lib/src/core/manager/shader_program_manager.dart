@@ -52,19 +52,18 @@ class ShaderProgramManager {
   }
 
   /// Register a new shader program.
-  /// New shader program will be created and registered by using of unique key
-  /// [name] and shader sources, such as vertex source [vSource] and fragment
-  /// source [fSource].
-  /// [shaderVariables] are keys of string representation data that will be
-  /// changed in glsl sources while registering by their pair values.
   bool register(String name, String vSource, String fSource,
-      {bool useCommonDefinitions}) {
+      {Map<String, Attribute> attributes,
+      Map<String, Uniform> uniforms,
+      bool useCommonDefinitions}) {
     if (isRegistered(name)) {
       window.console
           .warn("Program#${shaderPrograms[name].uuid} already registered");
       return false;
     }
     ShaderProgram program = new ShaderProgram(context, vSource, fSource,
+        attributes: attributes,
+        uniforms: uniforms,
         useCommonDefinitions: useCommonDefinitions);
 
     if (program == null) {

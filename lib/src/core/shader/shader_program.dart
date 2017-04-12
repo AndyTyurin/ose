@@ -85,12 +85,38 @@ class ShaderProgram extends Object with utils.UuidMixin {
 
   /// Create a new shader program by using passed [webGL.RenderingContext],
   /// and shader sources, vertex source [vSource] and fragment source [fSource].
+  /// Each program should have defined [attributes] and [uniforms] to pass
+  /// data from cpu to gpu.
   ShaderProgram(this.context, String vSource, String fSource,
-      {this.useCommonDefinitions: true})
-      : attributes = <String, Attribute>{},
-        uniforms = <String, Uniform>{},
+      {Map<String, Attribute> attributes,
+      Map<String, Uniform> uniforms,
+      this.useCommonDefinitions: true})
+      : attributes = attributes ??
+            (useCommonDefinitions
+                ? _createCommonAttributes()
+                : <String, Attribute>{}),
+        uniforms = uniforms ??
+            (useCommonDefinitions
+                ? _createCommonUniforms()
+                : <String, Uniform>{}),
         _uniformLocations = <String, webGL.UniformLocation>{} {
     init(vSource, fSource);
+  }
+
+  /// Create common attributes.
+  static Map<String, Attribute> _createCommonAttributes() {
+    return <String, Attribute>{
+      'a_position': new Attribute.FloatArray2()..location = 0
+    };
+  }
+
+  /// Create common uniforms.
+  static Map<String, Uniform> _createCommonUniforms() {
+    return <String, Uniform>{
+      'u_p': new Uniform.Mat3(),
+      'u_m': new Uniform.Mat3(),
+      'u_v': new Uniform.Mat3()
+    };
   }
 
   /// Initialize shader program.

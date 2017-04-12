@@ -107,14 +107,17 @@ class Renderer {
     _rendererState = RendererState.Stopped;
   }
 
-  /// Register shader program.
-  /// [name] is unique shader program's id.
-  /// [vSource] and [fSource] are vertex and fragment shaders' sources.
-  /// To use common header definitions for your sources, set
-  /// [useCommonDefinitions] to [true].
+  /// Register a new shader program.
+  /// New shader program will be created and registered by using of unique key
+  /// [name] and shader sources:
+  /// - vertex source [vSource];
+  /// - fragment source [fSource].
+  /// Each program should have defined [attributes] and [uniforms] to pass
+  /// data from cpu to gpu. Some of them already defined if [useCommonDefinitions] is set to [true].
   bool registerShaderProgram(String name, String vSource, String fSource,
-      {bool useCommonDefinitions}) {
-    return _managers.shaderProgramManager.register(name, vSource, fSource,
+      {Map<String, Attribute> attributes, Map<String, Uniform> uniforms,bool useCommonDefinitions}) {
+    return _managers.shaderProgramManager.register(
+        name, vSource, fSource, attributes: attributes, uniforms: uniforms,
         useCommonDefinitions: useCommonDefinitions);
   }
 
@@ -195,7 +198,11 @@ class Renderer {
   void _registerCommonShaderPrograms() {
     // Register shape's shader program.
     registerShaderProgram(Shape.shaderProgramName,
-        Shape.getVertexShaderSource(), Shape.getFragmentShaderSource());
+        Shape.getVertexShaderSource(), Shape.getFragmentShaderSource(),
+        <String, Attribute>{
+          'a_color': new Attribute.FloatArray4
+        }
+        useCommonDefinitions: true);
     // Register sprite's shader program.
     registerShaderProgram(
         Sprite.shaderProgramName,
@@ -313,15 +320,15 @@ class Renderer {
   /// It will update object's actor if it present, object itself and model
   /// matrix calculations.
   Future _onObjectRender(SceneObject obj) async {
+    // Update object's logic.
+    obj.update(dt);
+
     // Fire object render event.
     // Event handler can be defined to handle each object.
     await lifecycleControllers.onObjectRenderCtrl
       ..add(new ObjectRenderEvent(obj, _managers.sceneManager.boundScene,
           _managers.cameraManager.activeCamera, this))
       ..done;
-
-    // Update object's logic.
-    obj.update(dt);
   }
 
   /// Object post render callback is invoked by [RendererDrawer].
