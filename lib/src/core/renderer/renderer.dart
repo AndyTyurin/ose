@@ -82,6 +82,9 @@ class Renderer {
       ..add(new StartEvent(this))
       ..done;
 
+    // Register common shader programs.
+    _registerCommonShaderPrograms();
+
     _rendererState = RendererState.Started;
 
     // Start animation frame in rendering closure.
@@ -189,6 +192,18 @@ class Renderer {
         preserveDrawingBuffer: settings.useClear);
   }
 
+  void _registerCommonShaderPrograms() {
+    // Register shape's shader program.
+    registerShaderProgram(Shape.shaderProgramName,
+        Shape.getVertexShaderSource(), Shape.getFragmentShaderSource());
+    // Register sprite's shader program.
+    registerShaderProgram(
+        Sprite.shaderProgramName,
+        Sprite.getVertexShaderSource(settings.maxLights),
+        Sprite.getFragmentShaderSource(settings.maxLights),
+        useCommonDefinitions: true);
+  }
+
   /// Rendering cycle.
   /// Limited by fps threshold and 60 fps as max border.
   Future _render(num msSinceRendererStart) async {
@@ -236,7 +251,6 @@ class Renderer {
   }
 
   /// Clear buffers.
-  /// Mostly used before rendering of new frame
   void _clear() {
     // Create clear mask.
     int clearMask = 0x00;
@@ -283,9 +297,8 @@ class Renderer {
     // Light can be complicated, prefer to calculate some logic on cpu part.
     _updateLights(scene.lights);
 
-    // Update camera's projection & view matrices.
-    camera.transform.updateProjectionMatrix();
-    camera.transform.updateViewMatrix();
+    // Update camera.
+    camera.update(dt);
 
     // Delegate drawing to drawer.
     await _drawer.draw(scene.children, _onObjectRender, _onObjectPostRender);
@@ -321,41 +334,6 @@ class Renderer {
       ..done;
   }
 
-  // void _drawShape(Shape shape) {
-  //   shape.rebuildColors();
-  //   _drawByFilter(_managers.filterManager.basicFilter, shape);
-  // }
-
-  // void _drawSprite(Sprite sprite) {
-  //   _managers.textureManager.bindTexture(sprite.texture, TextureType.Color);
-  //   if (sprite.normalMap != null) {
-  //     _managers.textureManager
-  //         .bindTexture(sprite.normalMap, TextureType.Normal);
-  //   }
-  //   _drawByFilter(_managers.filterManager.spriteFilter, sprite);
-  //   // _drawByLightning(sprite, scene.lights);
-  //   _managers.textureManager.unbindTexture(TextureType.Color);
-  //   _managers.textureManager.unbindTexture(TextureType.Normal);
-  // }
-
-  // void _drawSingle(SceneObject sceneObject) {
-  //   _updateObject(sceneObject);
-  //   sceneObject.transform.updateModelMatrix();
-  //   if (sceneObject is Sprite) {
-  //     _drawSprite(sceneObject);
-  //   } else if (sceneObject is Shape) {
-  //     _drawShape(sceneObject);
-  //   }
-  //
-  //   _applyFilters(sceneObject);
-  // }
-
-  // void _applyFilters(SceneObject sceneObject) {
-  //   sceneObject.filters.forEach((filter) {
-  //     _drawByFilter(filter, sceneObject);
-  //   });
-  // }
-
   void _updateLights(Iterable<Light> lights) {
     lights.forEach(_updateLight);
   }
@@ -363,27 +341,6 @@ class Renderer {
   void _updateLight(Light light) {
     light.update(dt);
   }
-
-  // void _drawGroup(SceneObjectGroup group) {
-  //   group.transform.updateModelMatrix();
-  //   group.children.forEach((sceneObject) {
-  //     _drawSingle(sceneObject);
-  //   });
-  // }
-
-  /// Draw object by using of particular filter.
-  /// Be careful, objects should have [glVertices].
-  // void _drawByFilter(Filter filter, SceneObject obj) {
-  //   FilterManager fm = _managers.filterManager;
-  //
-  //   fm.activeFilter = filter;
-  //   if (fm.activeFilter != null) {
-  //     fm.activeFilter.apply(_managers.filterManager, obj, scene, camera);
-  //     _managers.filterManager.bindFilter();
-  //     _gl.drawArrays(
-  //         webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
-  //   }
-  // }
 
   // void _drawByLightning(Sprite obj, Iterable<Light> lights) {
   //   SpriteFilter activeFilter = _managers.filterManager.activeFilter;

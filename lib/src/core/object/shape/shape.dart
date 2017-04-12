@@ -2,19 +2,18 @@ part of ose;
 
 abstract class Shape extends SceneObject {
   static SolidColor defaultColor = new SolidColor.white();
-
   static String shaderProgramName = utils.generateUuid();
 
   /// WebGL colors.
   Float32List _glColors;
 
+  /// WebGL vertices
   Float32List _glVertices;
 
   /// Shape color.
   Color color;
 
-  /// Previous shape color.
-  /// It's needed to track changes.
+  /// Previous shape color, to track changes.
   Color _prevColor;
 
   Shape({@required Float32List vertices, Color color}) {
@@ -22,6 +21,25 @@ abstract class Shape extends SceneObject {
     this.color = color ?? defaultColor;
     _prevColor = defaultColor;
     rebuildColors(true);
+  }
+
+  static String getVertexShaderSource() {
+    return ""
+        "attribute vec4 a_color;"
+        "varying vec4 v_color;"
+        "void main() {"
+            "vec2 pos = vec2(a_position.x, a_position.y) * 2.0 - 1.0;"
+            "gl_Position = vec4((u_p * u_v * u_m * vec3(pos, 1.0)).xy, 1.0, 1.0);"
+            "v_color = a_color;"
+        "}";
+  }
+
+  static String getFragmentShaderSource() {
+    return ""
+        "varying vec4 v_color;"
+        "void main() {"
+            "gl_FragColor = v_color;"
+        "}";
   }
 
   /// Rebuild colors.

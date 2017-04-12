@@ -1,7 +1,7 @@
 part of ose;
 
 /// Renderer drawer responds for drawing object on a screen.
-/// [Renderer] delegates responsability to draw graphics to this.
+/// [Renderer] delegates responsability to draw objects to this.
 class RendererDrawer {
   /// WebGL rendering context.
   final webGL.RenderingContext _gl;
@@ -23,34 +23,37 @@ class RendererDrawer {
     // tbd @andytyurin apply strategy, how to render objects for best perfomance.
     for (RenderableObject object in objects) {
       await onRender(object);
-      _drawTarget(object);
+      _drawObject(object);
       await onPostRender(object);
     }
   }
 
-  /// Draw [target].
+  /// Draw [obj].
   /// It can be an identity or group object.
-  void _drawTarget(RenderableObject target) {
-    if (target is SceneObjectGroup) {
-      _drawGroupObject(target);
+  void _drawObject(RenderableObject obj) {
+    if (obj is SceneObjectGroup) {
+      _drawGroupObject(obj);
     } else {
-      _drawIdentityObject(target);
+      _drawIdentityObject(obj);
     }
   }
 
-  /// Draw group [target].
-  void _drawGroupObject(SceneObjectGroup target) {}
+  /// Draw group [obj].
+  void _drawGroupObject(SceneObjectGroup obj) {
+    obj.children.forEach(_drawIdentityObject);
+  }
 
-  /// Draw identity [target].
-  void _drawIdentityObject(SceneObject target) {
-    _prepareShaderProgram(target);
-    // tbd @andytyurin uniforms & attributes propagation, drawing will be here.
+  /// Draw identity [obj].
+  void _drawIdentityObject(SceneObject obj) {
+    _prepareShaderProgram(obj);
+    _gl.drawArrays(
+        webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
   }
 
   /// Prepare target's shader program.
   /// Register if it needed and bind to use.
-  void _prepareShaderProgram(SceneObject target) {
-    String shaderProgramId = target.getShaderProgramName();
+  void _prepareShaderProgram(SceneObject obj) {
+    String shaderProgramId = obj.getShaderProgramName();
 
     if (!_spm.isRegistered(shaderProgramId)) {
       window.console.warn(
