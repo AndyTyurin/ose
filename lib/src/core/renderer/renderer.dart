@@ -115,9 +115,12 @@ class Renderer {
   /// Each program should have defined [attributes] and [uniforms] to pass
   /// data from cpu to gpu. Some of them already defined if [useCommonDefinitions] is set to [true].
   bool registerShaderProgram(String name, String vSource, String fSource,
-      {Map<String, Attribute> attributes, Map<String, Uniform> uniforms,bool useCommonDefinitions}) {
-    return _managers.shaderProgramManager.register(
-        name, vSource, fSource, attributes: attributes, uniforms: uniforms,
+      {Map<String, Attribute> attributes,
+      Map<String, Uniform> uniforms,
+      bool useCommonDefinitions}) {
+    return _managers.shaderProgramManager.register(name, vSource, fSource,
+        attributes: attributes,
+        uniforms: uniforms,
         useCommonDefinitions: useCommonDefinitions);
   }
 
@@ -199,15 +202,27 @@ class Renderer {
     // Register shape's shader program.
     registerShaderProgram(Shape.shaderProgramName,
         Shape.getVertexShaderSource(), Shape.getFragmentShaderSource(),
-        <String, Attribute>{
-          'a_color': new Attribute.FloatArray4
-        }
+        attributes: <String, Attribute>{'a_color': new Attribute.FloatArray4()},
         useCommonDefinitions: true);
     // Register sprite's shader program.
     registerShaderProgram(
         Sprite.shaderProgramName,
         Sprite.getVertexShaderSource(settings.maxLights),
         Sprite.getFragmentShaderSource(settings.maxLights),
+        attributes: <String, Attribute>{
+          'a_texCoord': new Attribute.FloatArray2()
+        },
+        uniforms: <String, Uniform>{
+          'u_colorMap': new Uniform.Int1(0),
+          'u_normalMap': new Uniform.Int1(1),
+          'u_ambientLightColor': new Uniform.Float4(),
+          'u_lightDirection': new Uniform.FloatArray2(),
+          'u_lightPosition': new Uniform.FloatArray2(),
+          'u_lightColor': new Uniform.FloatArray4(),
+          'u_lightFalloff': new Uniform.FloatArray3(),
+          'u_lightType': new Uniform.IntArray1(),
+          'u_useNormalMap': new Uniform.Bool1(false)
+        },
         useCommonDefinitions: true);
   }
 
