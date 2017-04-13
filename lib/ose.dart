@@ -53,7 +53,6 @@ part 'src/core/shader/attribute.dart';
 part 'src/core/shader/uniform.dart';
 part 'src/core/shader/shader_program.dart';
 part 'src/core/shader/shader.dart';
-part 'src/core/shader/common_shader_programs.dart';
 part 'src/core/shader/qualifier_type.dart';
 part 'src/core/shader/qualifier_state.dart';
 part 'src/core/shader/shader_data_provider.dart';
