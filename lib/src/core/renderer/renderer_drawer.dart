@@ -9,11 +9,8 @@ class RendererDrawer {
   /// Shader program manager is needed to work with shader programs.
   final ShaderProgramManager _spm;
 
-  /// Shader variables will be used when on shaders' source registration.
-  /// Each variable will be interpolated through the sources.
-  final Map<String, String> _shaderVariables;
 
-  RendererDrawer(this._gl, this._spm, this._shaderVariables);
+  RendererDrawer(this._gl, this._spm);
 
   /// Draw objects.
   Future draw(

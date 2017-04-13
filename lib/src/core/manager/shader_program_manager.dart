@@ -89,6 +89,20 @@ class ShaderProgramManager {
     return false;
   }
 
+  /// Update each defined attribute of bound shader program by the [values].
+  void updateAttributes(Map<String, dynamic> values) {
+    if (_boundShaderProgram != null) {
+      _boundShaderProgram.updateAttributes(values);
+    }
+  }
+
+  /// Update each defined uniform of bound shader program by the [values].
+  void updateUniforms(Map<String, dynamic> values) {
+    if (_boundShaderProgram != null) {
+      _boundShaderProgram.updateUniforms(values);
+    }
+  }
+
   bool isRegistered(String name) {
     return shaderPrograms.containsKey(name);
   }

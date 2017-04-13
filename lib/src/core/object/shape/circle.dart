@@ -8,7 +8,7 @@ class Circle extends Shape {
   /// Create a new circle, where
   /// [points] - number of vertices point of a circle.
   Circle({ Color color, int points: 3 })
-      : super(vertices: _getCircleVerticesByPoints(points), color: color) {
+      : super(_getCircleVerticesByPoints(points), color: color) {
     _points = points;
   }
 

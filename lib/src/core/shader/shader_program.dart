@@ -154,6 +154,26 @@ class ShaderProgram extends Object with utils.UuidMixin {
     _isBound = false;
   }
 
+  /// Update each defined attribute by the [values].
+  void updateAttributes(Map<String, dynamic> values) {
+    values.forEach((value, attributeName) {
+      Attribute attribute = attributes[attributeName];
+      if (attribute != null) {
+        attribute.update(value);
+      }
+    });
+  }
+
+  /// Update each defined uniform by the [values].
+  void updateUniforms(Map<String, dynamic> values) {
+    values.forEach((value, uniformName) {
+      Uniform uniform = uniforms[uniformName];
+      if (uniform != null) {
+        uniform.update(value);
+      }
+    });
+  }
+
   /// Bind program if it's necessary.
   void _bindProgram() {
     if (!_isBound) {

@@ -16,8 +16,7 @@ abstract class Shape extends SceneObject {
   /// Previous shape color, to track changes.
   Color _prevColor;
 
-  Shape({@required Float32List vertices, Color color}) {
-    _glVertices = vertices;
+  Shape(Float32List glVertices, {Color color}): super(glVertices) {
     this.color = color ?? defaultColor;
     _prevColor = defaultColor;
     rebuildColors(true);

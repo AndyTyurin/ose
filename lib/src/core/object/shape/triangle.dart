@@ -3,7 +3,7 @@ part of ose;
 /// Triangle shape.
 class Triangle extends Shape {
   Triangle({Color color})
-      : super(vertices: getTriangleVerticesAroundCenter(), color: color);
+      : super(getTriangleVerticesAroundCenter(), color: color);
 
   /// Gets vertices positions.
   static Float32List getTriangleVerticesAroundCenter() {

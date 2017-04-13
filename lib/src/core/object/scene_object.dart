@@ -8,7 +8,10 @@ abstract class SceneObject extends RenderableObject
 
   Actor actor;
 
-  SceneObject({SceneObjectTransform transform})
+  /// WebGL vertices.
+  Float32List _glVertices;
+
+  SceneObject(this._glVertices, {SceneObjectTransform transform})
       : transform = transform ?? new SceneObjectTransform();
 
   @override
@@ -19,4 +22,6 @@ abstract class SceneObject extends RenderableObject
   void copyFrom(SceneObject from) {
     transform.copyFrom(from.transform);
   }
+
+  Float32List get glVertices => _glVertices;
 }

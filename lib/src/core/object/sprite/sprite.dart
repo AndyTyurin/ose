@@ -12,15 +12,10 @@ class Sprite extends SceneObject {
   /// WebGL texture bounds.
   Vector4 _glTextureBounds;
 
-  /// WebGL vertices.
-  Float32List _glVertices;
-
   /// WebGL texture coordinates.
   Float32List _glTextureCoords;
 
-  Sprite() {
-    _glVertices =
-        new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
+  Sprite() : super(new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0])) {
     _glTextureCoords =
         new Float32List.fromList([0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0]);
   }
@@ -221,8 +216,6 @@ class Sprite extends SceneObject {
   Vector4 get glTextureBounds => _glTextureBounds;
 
   Float32List get glTextureCoords => _glTextureCoords;
-
-  Float32List get glVertices => _glVertices;
 
   bool get hasTexture => _texture != null;
 

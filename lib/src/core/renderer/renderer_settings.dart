@@ -35,10 +35,6 @@ class RendererSettings {
   /// Canvas will be on full screen or not.
   bool fullscreen;
 
-  /// Shader variables will be used when on shaders' source registration.
-  /// Each variable will be interpolated through the sources.
-  Map<String, String> shaderVariables;
-
   RendererSettings(
       {int width: 800,
       int height: 600,
@@ -50,8 +46,7 @@ class RendererSettings {
       bool useMask: true,
       bool useDepth: false,
       bool useClear: true,
-      bool useAntialias: true,
-      Map<String, String> shaderVariables}) {
+      bool useAntialias: true}) {
     this.width = width;
     this.height = height;
     this.fullscreen = fullscreen;
@@ -63,6 +58,5 @@ class RendererSettings {
     this.useDepth = useDepth;
     this.useClear = useClear;
     this.useAntialias = useAntialias;
-    this.shaderVariables = shaderVariables ?? {};
   }
 }

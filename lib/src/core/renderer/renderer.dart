@@ -124,6 +124,18 @@ class Renderer {
         useCommonDefinitions: useCommonDefinitions);
   }
 
+  /// Update attributes' values for bound shader program.
+  /// [values] is map with attributes' names and appropriate values.
+  void updateAttributes(Map<String, dynamic> values) {
+    _managers.shaderProgramManager.updateAttributes(values);
+  }
+
+  /// Update uniforms' values for bound shader program.
+  /// [values] is map with uniforms' names and appropriate values.
+  void updateUniforms(Map<String, dynamic> values) {
+    _managers.shaderProgramManager.updateUniforms(values);
+  }
+
   /// Initialize renderer.
   _init(CanvasElement canvas, RendererSettings settings) {
     _rendererState = RendererState.Stopped;
@@ -138,8 +150,7 @@ class Renderer {
       // Initialize composed managers. There are responds to simplify logic
       // of renderer by handling specific tasks of it.
       _initManagers(_gl);
-      _drawer = new RendererDrawer(
-          _gl, _managers.shaderProgramManager, settings.shaderVariables);
+      _drawer = new RendererDrawer(_gl, _managers.shaderProgramManager);
     }
   }
 
@@ -198,6 +209,7 @@ class Renderer {
         preserveDrawingBuffer: settings.useClear);
   }
 
+  /// Register common shader programs (sprite, shape).
   void _registerCommonShaderPrograms() {
     // Register shape's shader program.
     registerShaderProgram(Shape.shaderProgramName,
@@ -330,13 +342,39 @@ class Renderer {
   }
 
   /// Object render callback is invoked by [RendererDrawer].
+  ///
   /// The method will be invoked before drawing, so specific logic can be
   /// defined on listener along with object's updating declared here.
-  /// It will update object's actor if it present, object itself and model
+  ///
+  /// It will update object's actor if it present, object itself and do model
   /// matrix calculations.
+  ///
+  /// If the passed [obj] is one of the commons, such as [Shape] or [Sprite],
+  /// appropriate attributes and uniforms will be automatically updated here.
+  ///
+  /// By using of [onObjectRender] stream, you can easilly add specific logic
+  /// to deal with your own attributes and uniforms.
   Future _onObjectRender(SceneObject obj) async {
     // Update object's logic.
     obj.update(dt);
+
+    Scene boundScene = _managers.sceneManager.boundScene;
+    Camera boundCamera = _managers.cameraManager.boundCamera;
+
+    // Update common attributes & uniforms specified for all kinds of objects.
+    _updateCommonAttributes(obj);
+    _updateCommonUniforms(obj, boundCamera);
+
+    // Update sprite specific attributes & uniforms.
+    if (obj is Sprite) {
+      _updateSpriteAttributes(obj);
+      _updateSpriteUniforms(obj, boundScene, boundCamera);
+    }
+
+    // Update shape's specific attributes.
+    if (obj is Shape) {
+      _updateShapeAttributes(obj);
+    }
 
     // Fire object render event.
     // Event handler can be defined to handle each object.
@@ -355,6 +393,89 @@ class Renderer {
           _managers.cameraManager.activeCamera, this))
       ..done;
   }
+
+  /// Update attributes for sprite's shader program.
+  void _updateSpriteAttributes(Sprite sprite) {
+    updateAttributes({'a_texCoords': sprite.glTextureCoords});
+  }
+
+  /// Update uniforms for sprite's shader program.
+  void _updateSpriteUniforms(Sprite obj, Scene scene, Camera camera) {
+    // Check is lightning available.
+    if (obj.normalMap != null && scene.lights.length > 0) {
+      // Aggregated lightning uniforms' values.
+      List<int> lightsTypes = <int>[];
+      List<double> lightsPositions = <double>[];
+      List<double> lightsColors = <double>[];
+      List<double> lightsFalloffs = <double>[];
+      List<double> lightsDirections = <double>[];
+      List<double> ambientColor = scene.ambientLight?.color?.toIdentity();
+
+      // Process values.
+      for (int i = 0; i < settings.maxLights; i++) {
+        Light light =
+            (scene.lights.length > i) ? scene.lights.elementAt(i) : null;
+        int lightType = 0;
+        Vector2 lightPosition = new Vector2.zero();
+        SolidColor lightColor = new SolidColor.white();
+        Vector3 lightFalloff = new Vector3.zero();
+        Vector2 lightDirection = new Vector2.zero();
+
+        if (light == null) break;
+
+        lightColor = light.color;
+
+        if (light is DirectionalLight) {
+          lightType = 1;
+          lightDirection = light.direction;
+        } else if (light is PointLight) {
+          lightPosition = light.position;
+          lightFalloff = light.falloff;
+          lightType = 2;
+        }
+
+        // Add in each uniform's value list.
+        lightsTypes.add(lightType);
+        lightsColors.addAll(lightColor.toIdentity());
+        lightsDirections.addAll(lightDirection.storage);
+        lightsFalloffs.addAll(lightFalloff.storage);
+        lightsPositions.addAll(lightPosition.storage);
+      }
+
+      updateUniforms({
+        'u_lightPosition': new Float32List.fromList(lightsPositions),
+        'u_lightColor': new Float32List.fromList(lightsColors),
+        'u_lightFalloff': new Float32List.fromList(lightsFalloffs),
+        'u_lightType': new Int8List.fromList(lightsTypes),
+        'u_lightDirection': new Float32List.fromList(lightsDirections),
+        'u_ambientLightColor':
+            ambientColor ?? new SolidColor([0, 0, 0, 0]).toIdentity(),
+        'u_useNormalMap': true
+      });
+    }
+  }
+
+  /// Update attributes for shape's shader program.
+  void _updateShapeAttributes(Shape obj) {
+    updateAttributes({'a_color': obj.glColors});
+  }
+
+  /// Update attributes which are common for all shader programs.
+  void _updateCommonAttributes(SceneObject obj) {
+    updateAttributes({
+      'a_position': obj.glVertices
+    });
+  }
+
+  /// Update uniforms which are common for all shader programs.
+  void _updateCommonUniforms(SceneObject obj, Camera camera) {
+    updateUniforms({
+      'u_p': camera.transform.projectionMatrix,
+      'u_m': obj.transform.modelMatrix,
+      'u_v': camera.transform.viewMatrix
+    });
+  }
+
 
   void _updateLights(Iterable<Light> lights) {
     lights.forEach(_updateLight);
