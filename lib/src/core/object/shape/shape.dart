@@ -16,7 +16,7 @@ abstract class Shape extends SceneObject {
   /// Previous shape color, to track changes.
   Color _prevColor;
 
-  Shape(Float32List glVertices, {Color color}): super(glVertices) {
+  Shape(Float32List glVertices, {Color color}) : super(glVertices) {
     this.color = color ?? defaultColor;
     _prevColor = defaultColor;
     rebuildColors(true);
@@ -27,9 +27,9 @@ abstract class Shape extends SceneObject {
         "attribute vec4 a_color;"
         "varying vec4 v_color;"
         "void main() {"
-            "vec2 pos = vec2(a_position.x, a_position.y) * 2.0 - 1.0;"
-            "gl_Position = vec4((u_p * u_v * u_m * vec3(pos, 1.0)).xy, 1.0, 1.0);"
-            "v_color = a_color;"
+        "vec2 pos = vec2(a_position.x, a_position.y) * 2.0 - 1.0;"
+        "gl_Position = vec4((u_p * u_v * u_m * vec3(pos, 1.0)).xy, 1.0, 1.0);"
+        "v_color = a_color;"
         "}";
   }
 
@@ -37,7 +37,7 @@ abstract class Shape extends SceneObject {
     return ""
         "varying vec4 v_color;"
         "void main() {"
-            "gl_FragColor = v_color;"
+        "gl_FragColor = v_color;"
         "}";
   }
 
