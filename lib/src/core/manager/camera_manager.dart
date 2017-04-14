@@ -27,7 +27,7 @@ class CameraManager {
       _boundCamera = _stagedCamera;
       _stagedCamera = null;
     }
-    if (_boundScene != null) {
+    if (_boundCamera != null) {
       _boundCamera.update(dt);
     }
   }

@@ -26,14 +26,14 @@ class SceneManager {
       _stagedScene = null;
     }
     if (_boundScene != null) {
-      scene.update(dt);
+      _boundScene.update(dt);
     }
   }
 
   /// Set scene with identifier [name] to be an active in next cycle.
   bool bind(String name) {
     if (!isRegistered(name)) return false;
-    _stagedScene = _scene[name];
+    _stagedScene = _scenes[name];
     return true;
   }
 
@@ -58,7 +58,7 @@ class SceneManager {
   }
 
   /// Get scene with [name] identifier from registration list.
-  Camera get(String name) {
+  Scene get(String name) {
     return _scenes[name];
   }
 
