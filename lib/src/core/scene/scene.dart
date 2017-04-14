@@ -1,11 +1,8 @@
 part of ose;
 
-/// Scene is a storage for objects.
-/// Each tick, renderer gets list of those objectskept in scene and render them.
+/// Scene is a playground for your objects.
 ///
-/// Additional logic can be put to scene, for example public methods to handle
-/// scene state or objects are placed on it.
-/// Use [Scene.update] method to reach that goals.
+/// There can be defined specific logic for your scene by overriding [update].
 ///
 /// Note: [Actor] has access to the [Scene] and can invoke different public
 /// methods of it in different cases.
@@ -17,47 +14,52 @@ part of ose;
 /// that will set your camera to follow to your player object.
 /// It's not hard to make, you can set follow state to the camera and then
 /// handle it inside [Scene.update] method.
-class Scene {
-  /// Unique id.
-  String _uuid;
-
+class Scene extends Object with utils.UuidMixin {
   /// List with scene objects.
-  Set<SceneObject> _children;
+  Set<RenderableObject> _children;
 
   /// List with lights.
   Set<Light> _lights;
 
-  /// Ambient light.
+  /// Camera manager to manage cameras.
+  CameraManager _cameraManager;
+
+  /// Global ambient light.
   AmbientLight _ambientLight;
 
   Scene()
-      : _uuid = utils.generateUuid(),
-        _children = new Set(),
+      : _children = new Set(),
         _lights = new Set();
 
   /// Add a new object to scene.
+  /// [obj] can be instance of [Light] or [RenderableObject].
   void add(dynamic obj) {
     if (obj is Light) {
       _addLight(obj);
+    } else if (obj is RenderableObject) {
+      _addRenderableObject(obj);
     } else {
-      _addObject(obj);
+      throw new ArgumentError("Trying to add wrong type object to scene");
     }
   }
 
   /// Remove object from a scene.
+  /// [obj] can be instance of [Light] or [RenderableObject].
   void remove(dynamic obj) {
     if (obj is Light) {
       _removeLight(obj);
+    } else if (RenderableObject) {
+      _removeRenderableObject(obj);
     } else {
-      _removeObject(obj);
+      throw new ArgumentError("Trying to remove wrong type object from scene");
     }
   }
 
-  void _addObject(SceneObject obj) {
+  void _addRenderableObject(RenderableObject obj) {
     _children.add(obj);
   }
 
-  void _removeObject(SceneObject obj) {
+  void _removeRenderableObject(RenderableObject obj) {
     _children.remove(obj);
   }
 
@@ -77,15 +79,25 @@ class Scene {
     }
   }
 
-  /// Scene logic handler.
-  /// Renderer invokes [update] each tick.
-  void update(double dt, CameraManager cameraManager) {}
+  /// Update scene's logic.
+  /// It is invoked each rendering cycle and invoke [perObjectUpdate] for
+  /// each added child.
+  void update(double dt) {
+    children.forEach((obj) => perObjectUpdate(dt, obj));
+  }
 
-  String get uuid => _uuid;
+  /// Per object update handler.
+  /// Each rendering cycle is invoked for each object added to the scene.
+  /// By default it will automatically updates each [obj].
+  void perObjectUpdate(double dt, RenderableObject obj) {
+    obj.update(dt);
+  }
 
   Set<SceneObject> get children => _children;
 
   Set<Light> get lights => _lights;
 
   AmbientLight get ambientLight => _ambientLight;
+
+  CameraManager get cameraManager => _cameraManager;
 }
