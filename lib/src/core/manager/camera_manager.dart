@@ -27,12 +27,14 @@ class CameraManager {
       _boundCamera = _stagedCamera;
       _stagedCamera = null;
     }
-    _boundCamera.update(dt);
+    if (_boundScene != null) {
+      _boundCamera.update(dt);
+    }
   }
 
   /// Set camera with identifier [name] to be an active in next cycle.
   bool bind(String name) {
-    if (!_cameras.containsKey(name)) return false;
+    if (!isRegistered(name)) return false;
     _stagedCamera = _cameras[name];
     return true;
   }
