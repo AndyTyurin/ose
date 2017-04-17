@@ -36,7 +36,9 @@ part 'src/core/scene/scene.dart';
 
 // Actors.
 part 'src/core/actor/actor.dart';
-part 'src/core/actor/control_actor.dart';
+part 'src/core/actor/scene_actor.dart';
+part 'src/core/actor/scene_object_actor.dart';
+part 'src/core/actor/actor_owner.dart';
 
 // Renderable objects.
 part 'src/core/object/scene_object.dart';

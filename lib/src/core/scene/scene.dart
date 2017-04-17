@@ -14,7 +14,7 @@ part of ose;
 /// that will set your camera to follow to your player object.
 /// It's not hard to make, you can set follow state to the camera and then
 /// handle it inside [Scene.update] method.
-class Scene extends Object with utils.UuidMixin {
+class Scene extends Object with utils.UuidMixin implements ActorOwner {
   /// List with scene objects.
   Set<RenderableObject> _children;
 
@@ -26,6 +26,9 @@ class Scene extends Object with utils.UuidMixin {
 
   /// Global ambient light.
   AmbientLight _ambientLight;
+
+  /// Scene actor.
+  SceneActor _actor;
 
   Scene()
       : _children = new Set(),
@@ -100,4 +103,6 @@ class Scene extends Object with utils.UuidMixin {
   AmbientLight get ambientLight => _ambientLight;
 
   CameraManager get cameraManager => _cameraManager;
+
+  SceneActor get actor => _actor;
 }

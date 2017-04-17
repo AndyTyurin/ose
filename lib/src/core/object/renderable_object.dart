@@ -1,8 +1,9 @@
 part of ose;
 
-abstract class RenderableObject extends Object with utils.UuidMixin {
-  /// Actor can manipulate object.
-  Actor actor;
+abstract class RenderableObject extends Object
+    with utils.UuidMixin implements ActorOwner {
+
+  Actor _actor;
 
   /// Update object's logic.
   /// Implement to define specific.
@@ -24,5 +25,11 @@ abstract class RenderableObject extends Object with utils.UuidMixin {
   void copyFrom(RenderableObject obj) {
     // tbd @andytyurin make Clonable interface and implementation.
     // actor = obj.actor.clone();
+  }
+
+  Actor get actor => _actor;
+
+  void set actor(Actor actor) {
+    _actor = actor;
   }
 }

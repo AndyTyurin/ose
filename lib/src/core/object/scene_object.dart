@@ -6,8 +6,6 @@ abstract class SceneObject extends RenderableObject
 
   SceneObjectGroup parent;
 
-  Actor actor;
-
   /// WebGL vertices.
   Float32List _glVertices;
 
@@ -24,4 +22,6 @@ abstract class SceneObject extends RenderableObject
   }
 
   Float32List get glVertices => _glVertices;
+
+  SceneActor get actor => _actor;
 }

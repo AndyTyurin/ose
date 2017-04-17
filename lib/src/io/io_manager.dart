@@ -1,15 +1,21 @@
 part of ose_io;
 
-/// It keeps references to [KeyboardController], [MouseController],
-/// [TouchController].
+/// IO manager.
+/// It controls all available input controllers, updates their states when new
+/// rendering cycle occurs.
+///
+/// Has been used internally by game engine. To use in game implementation,
+/// [IOTools] can be used instead. Input tools are available in actor's while
+/// updating.
+/// Look at [Actor] interface to get more about it.
 class IOManager {
-  /// Used to check keyboard events.
+  /// Keyboard controller to listen and handle keyboard events.
   final KeyboardController keyboard;
 
-  /// Used to check mouse events.
+  /// Mouse controlller to listen and handle mouse events.
   final MouseController mouse;
 
-  /// Used to check touch events.
+  /// Touch controller to listen and handle touch events.
   final TouchController touch;
 
   IOManager()

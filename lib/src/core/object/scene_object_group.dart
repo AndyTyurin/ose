@@ -33,4 +33,6 @@ class SceneObjectGroup extends RenderableObject {
   void update(num dt) {
     transform.updateModelMatrix();
   }
+
+  SceneActor get actor => _actor;
 }
