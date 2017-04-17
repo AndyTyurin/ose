@@ -28,7 +28,9 @@ class CameraManager {
       _stagedCamera = null;
     }
     if (_boundCamera != null) {
-      _boundCamera.update(dt);
+      // Update camera's projection & view matrices.
+      _boundCamera.transform.updateProjectionMatrix();
+      _boundCamera.transform.updateViewMatrix();
     }
   }
 

@@ -2,20 +2,12 @@ part of ose;
 
 abstract class SceneObject extends RenderableObject
     implements ShaderDataProvider {
-  final SceneObjectTransform transform;
-
   SceneObjectGroup parent;
 
   /// WebGL vertices.
   Float32List _glVertices;
 
-  SceneObject(this._glVertices, {SceneObjectTransform transform})
-      : transform = transform ?? new SceneObjectTransform();
-
-  @override
-  void update(num dt) {
-    transform.updateModelMatrix();
-  }
+  SceneObject(this._glVertices);
 
   void copyFrom(SceneObject from) {
     transform.copyFrom(from.transform);
@@ -23,5 +15,9 @@ abstract class SceneObject extends RenderableObject
 
   Float32List get glVertices => _glVertices;
 
-  SceneActor get actor => _actor;
+  void set actor(SceneObjectActor actor) {
+    _actor = actor;
+  }
+
+  SceneObjectActor get actor => _actor;
 }

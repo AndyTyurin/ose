@@ -1,10 +1,10 @@
-part of ose;
+part of ose_io;
 
 /// IO Tools.
 /// Used to expose common input controllers to end-developer to handle
 /// generative events.
 /// Commonly used in [Actor] split logic between objects and scene.
-class IOTools {
+class InputControllers {
   /// Keyboard controller to listen and handle keyboard events.
   final KeyboardController keyboard;
 
@@ -14,7 +14,7 @@ class IOTools {
   /// Touch controller to listen and handle touch events.
   final TouchController touch;
 
-  IOTools()
+  InputControllers()
       : keyboard = new KeyboardController(),
         mouse = new MouseController(),
         touch = new TouchController();

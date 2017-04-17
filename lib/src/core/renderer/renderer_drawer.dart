@@ -15,13 +15,13 @@ class RendererDrawer {
   /// Draw objects.
   Future draw(
       Iterable<RenderableObject> objects,
-      Future onRender(RenderableObject obj),
-      Future onPostRender(RenderableObject obj)) async {
+      Future onDraw(RenderableObject obj),
+      Future onPostDraw(RenderableObject obj)) async {
     // tbd @andytyurin apply strategy, how to render objects for best perfomance.
     for (RenderableObject object in objects) {
-      await onRender(object);
+      await onDraw(object);
       _drawObject(object);
-      await onPostRender(object);
+      await onPostDraw(object);
     }
   }
 

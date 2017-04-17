@@ -2,18 +2,11 @@ part of ose;
 
 /// Scene is a playground for your objects.
 ///
-/// There can be defined specific logic for your scene by overriding [update].
+/// There can be defined specific logic for your scene by overriding [update]
+/// and [perObjectUpdate] methods.
 ///
 /// Note: [Actor] has access to the [Scene] and can invoke different public
-/// methods of it in different cases.
-///
-/// For example:
-/// You have your own [Scene] and wants to handle inputs.
-/// As a first you will write implementation of [ControlActor], then you can
-/// write implementation of your [Scene] objects and describe public methods
-/// that will set your camera to follow to your player object.
-/// It's not hard to make, you can set follow state to the camera and then
-/// handle it inside [Scene.update] method.
+/// methods of it while updating.
 class Scene extends Object with utils.UuidMixin implements ActorOwner {
   /// List with scene objects.
   Set<RenderableObject> _children;
@@ -51,7 +44,7 @@ class Scene extends Object with utils.UuidMixin implements ActorOwner {
   void remove(dynamic obj) {
     if (obj is Light) {
       _removeLight(obj);
-    } else if (RenderableObject) {
+    } else if (obj is RenderableObject) {
       _removeRenderableObject(obj);
     } else {
       throw new ArgumentError("Trying to remove wrong type object from scene");
@@ -83,17 +76,10 @@ class Scene extends Object with utils.UuidMixin implements ActorOwner {
   }
 
   /// Update scene's logic.
-  /// It is invoked each rendering cycle and invoke [perObjectUpdate] for
-  /// each added child.
-  void update(double dt) {
-    children.forEach((obj) => perObjectUpdate(dt, obj));
-  }
+  void update(double dt) {}
 
-  /// Per object update handler.
-  /// Each rendering cycle is invoked for each object added to the scene.
-  /// By default it will automatically updates each [obj].
+  /// Per children object update handler.
   void perObjectUpdate(double dt, RenderableObject obj) {
-    obj.update(dt);
   }
 
   Set<SceneObject> get children => _children;
@@ -105,4 +91,8 @@ class Scene extends Object with utils.UuidMixin implements ActorOwner {
   CameraManager get cameraManager => _cameraManager;
 
   SceneActor get actor => _actor;
+
+  void set actor(SceneActor actor) {
+    _actor = actor;
+  }
 }

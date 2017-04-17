@@ -264,8 +264,7 @@ class Renderer {
         // Fire [RenderEvent].
         // By using of event handler you can update your logic.
         await lifecycleControllers.onRenderCtrl
-          ..add(new RenderEvent(_managers.sceneManager.activeScene,
-              _managers.cameraManager.activeCamera, this))
+          ..add(new RenderEvent(scene, camera, this))
           ..done;
 
         /// Render scene.
@@ -331,11 +330,11 @@ class Renderer {
     // Update camera's logic
     _managers.cameraManager.update(dt);
 
-    // Update the scene manager.
-    _managers.sceneManager.update(dt);
+    // Update scene, nested children and actors through the scene manager.
+    _managers.sceneManager.update(dt, _managers.ioManager.inputControllers);
 
-    // Delegate drawing to drawer.
-    await _drawer.draw(scene.children, _onObjectRender, _onObjectPostRender);
+    // Delegate drawing of scene's children to drawer.
+    await _drawer.draw(scene.children, _onObjectDraw, _onObjectPostDraw);
 
     // Update IO devices.
     _managers.ioManager.update();
@@ -346,51 +345,42 @@ class Renderer {
   /// The method will be invoked before drawing, so specific logic can be
   /// defined on listener along with object's updating declared here.
   ///
-  /// It will update object's actor if it present, object itself and do model
-  /// matrix calculations.
-  ///
   /// If the passed [obj] is one of the commons, such as [Shape] or [Sprite],
   /// appropriate attributes and uniforms will be automatically updated here.
   ///
   /// By using of [onObjectRender] stream, you can easilly add specific logic
   /// to deal with your own attributes and uniforms.
-  Future _onObjectRender(SceneObject obj) async {
-    // Update object's logic.
-    obj.update(dt);
-
-    Scene boundScene = _managers.sceneManager.boundScene;
-    Camera boundCamera = _managers.cameraManager.boundCamera;
-
+  Future _onObjectDraw(SceneObject obj) async {
     // Update common attributes & uniforms specified for all kinds of objects.
     _updateCommonAttributes(obj);
-    _updateCommonUniforms(obj, boundCamera);
+    _updateCommonUniforms(obj, camera);
 
     // Update sprite specific attributes & uniforms.
     if (obj is Sprite) {
+      obj.transform.updateModelMatrix();
       _updateSpriteAttributes(obj);
-      _updateSpriteUniforms(obj, boundScene, boundCamera);
+      _updateSpriteUniforms(obj, scene, camera);
     }
 
     // Update shape's specific attributes.
     if (obj is Shape) {
+      obj.rebuildColors();
       _updateShapeAttributes(obj);
     }
 
     // Fire object render event.
     // Event handler can be defined to handle each object.
     await lifecycleControllers.onObjectRenderCtrl
-      ..add(new ObjectRenderEvent(obj, _managers.sceneManager.boundScene,
-          _managers.cameraManager.activeCamera, this))
+      ..add(new ObjectRenderEvent(obj, scene, camera, this))
       ..done;
   }
 
   /// Object post render callback is invoked by [RendererDrawer].
-  Future _onObjectPostRender(SceneObject obj) async {
+  Future _onObjectPostDraw(SceneObject obj) async {
     // Fire post render event.
     // Event handler can be defined to handle each object after rendering.
     await lifecycleControllers.onObjectPostRenderCtrl
-      ..add(new ObjectPostRenderEvent(obj, _managers.sceneManager.boundScene,
-          _managers.cameraManager.activeCamera, this))
+      ..add(new ObjectPostRenderEvent(obj, scene, camera, this))
       ..done;
   }
 
@@ -498,6 +488,10 @@ class Renderer {
   double get dt => _dt;
 
   int get fps => 1000 ~/ dt;
+
+  Camera get camera => _managers.cameraManager.boundCamera;
+
+  Scene get scene => _managers.sceneManager.boundScene;
 
   SceneManager get sceneManager => _managers.sceneManager;
 

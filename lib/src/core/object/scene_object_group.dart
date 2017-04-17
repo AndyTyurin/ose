@@ -3,11 +3,8 @@ part of ose;
 class SceneObjectGroup extends RenderableObject {
   final HashSet<SceneObject> children;
 
-  final SceneObjectTransform transform;
-
-  SceneObjectGroup({SceneObjectTransform transform})
-      : transform = transform ?? new SceneObjectTransform(),
-        children = new HashSet();
+  SceneObjectGroup()
+      : children = new HashSet();
 
   bool add(SceneObject obj) {
     bool added = children.add(obj);
@@ -29,10 +26,9 @@ class SceneObjectGroup extends RenderableObject {
     transform.copyFrom(from.transform);
   }
 
-  @override
-  void update(num dt) {
-    transform.updateModelMatrix();
+  void set actor(SceneObjectActor actor) {
+    _actor = actor;
   }
 
-  SceneActor get actor => _actor;
+  SceneObjectActor get actor => _actor;
 }

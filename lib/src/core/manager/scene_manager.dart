@@ -20,13 +20,28 @@ class SceneManager {
 
   /// Update bound scene.
   /// If there is a staged scene set before, it will be set as bound.
-  void update(dt) {
+  void update(dt, inputControllers) {
     if (_stagedScene != null) {
       _boundScene = _stagedScene;
       _stagedScene = null;
     }
     if (_boundScene != null) {
+      // Update scene's logic and actor.
+      if (_boundScene.actor != null) {
+        _boundScene.actor.update(_boundScene, inputControllers);
+      }
       _boundScene.update(dt);
+
+      // Update scene's children objects with their actors.
+      _boundScene.children.forEach((obj) {
+          if (obj.actor != null) {
+            obj.actor.update(obj, inputControllers);
+          }
+          // Scene's child object also can be changed from scene.
+          _boundScene.perObjectUpdate(dt, obj);
+          // Update object's model matrix.
+          obj.transform.updateModelMatrix();
+      });
     }
   }
 

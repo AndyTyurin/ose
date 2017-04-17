@@ -73,11 +73,6 @@ abstract class Shape extends SceneObject {
   }
 
   @override
-  void update(num dt) {
-    rebuildColors();
-  }
-
-  @override
   void copyFrom(Shape from) {
     super.copyFrom(from);
     color = from.color.clone();
