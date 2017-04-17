@@ -324,15 +324,15 @@ class Renderer {
     // Clear buffers before drawing.
     _clear();
 
-    // Update scene logic.
-    scene.update(dt, _managers.cameraManager);
-
     // Update lightning.
     // Light can be complicated, prefer to calculate some logic on cpu part.
     _updateLights(scene.lights);
 
-    // Update camera.
-    camera.update(dt);
+    // Update camera's logic
+    _managers.cameraManager.update(dt);
+
+    // Update the scene manager.
+    _managers.sceneManager.update(dt);
 
     // Delegate drawing to drawer.
     await _drawer.draw(scene.children, _onObjectRender, _onObjectPostRender);
@@ -462,9 +462,7 @@ class Renderer {
 
   /// Update attributes which are common for all shader programs.
   void _updateCommonAttributes(SceneObject obj) {
-    updateAttributes({
-      'a_position': obj.glVertices
-    });
+    updateAttributes({'a_position': obj.glVertices});
   }
 
   /// Update uniforms which are common for all shader programs.
@@ -475,7 +473,6 @@ class Renderer {
       'u_v': camera.transform.viewMatrix
     });
   }
-
 
   void _updateLights(Iterable<Light> lights) {
     lights.forEach(_updateLight);
@@ -498,17 +495,11 @@ class Renderer {
   void _setFullscreen([_]) =>
       updateViewport(window.innerWidth, window.innerHeight);
 
-  Scene get scene => _managers.sceneManager.activeScene;
+  double get dt => _dt;
 
-  void set scene(Scene scene) {
-    _managers.sceneManager.activeScene = scene;
-  }
+  int get fps => 1000 ~/ dt;
 
-  Camera get camera => _managers.cameraManager.activeCamera;
-
-  void set camera(Camera camera) {
-    _managers.cameraManager.activeCamera = camera;
-  }
+  SceneManager get sceneManager => _managers.sceneManager;
 
   AssetManager get assetManager => _managers.assetManager;
 
@@ -528,8 +519,4 @@ class Renderer {
 
   Stream<ObjectPostRenderEvent> get onObjectPostRender =>
       lifecycleControllers.onObjectPostRenderCtrl.stream;
-
-  double get dt => _dt;
-
-  int get fps => 1000 ~/ dt;
 }
