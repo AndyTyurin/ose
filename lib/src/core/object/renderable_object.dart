@@ -1,21 +1,15 @@
 part of ose;
 
-abstract class RenderableObject extends Object
-    with utils.UuidMixin implements ActorOwner {
-  final SceneObjectTransform transform;
+abstract class RenderableObject extends SceneObject
+    implements ShaderDataProvider {
+  RenderableObjectGroup parent;
 
-  Actor _actor;
+  /// WebGL vertices.
+  Float32List _glVertices;
 
-  RenderableObject(): transform = new SceneObjectTransform();
+  RenderableObject(this._glVertices);
 
-  void copyFrom(RenderableObject obj) {
-    // tbd @andytyurin make Clonable interface and implementation.
-    // actor = obj.actor.clone();
-  }
+  Float32List get glVertices => _glVertices;
 
-  Actor get actor => _actor;
-
-  void set actor(Actor actor) {
-    _actor = actor;
-  }
+  SceneObjectActor get actor => actor;
 }

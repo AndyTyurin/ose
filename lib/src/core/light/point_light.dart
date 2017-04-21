@@ -13,9 +13,6 @@ class PointLight extends Light {
     this._color = color ?? new SolidColor.white();
   }
 
-  @override
-  void update(double dt) {}
-
   Vector2 get position => _position;
 
   void set position(Vector2 position) {

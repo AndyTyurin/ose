@@ -75,11 +75,15 @@ class Scene extends Object with utils.UuidMixin implements ActorOwner {
     }
   }
 
-  /// Update scene's logic.
-  void update(double dt) {}
+  /// Update scene's logic and nested children.
+  void update(double dt, InputControllers inputControllers) {
+    children.forEach((obj) => perObjectUpdate(dt, inputControllers, obj));
+  }
 
   /// Per children object update handler.
-  void perObjectUpdate(double dt, RenderableObject obj) {
+  void perObjectUpdate(
+      double dt, InputControllers inputControllers, RenderableObject obj) {
+    obj.update(dt, inputControllers);
   }
 
   Set<SceneObject> get children => _children;

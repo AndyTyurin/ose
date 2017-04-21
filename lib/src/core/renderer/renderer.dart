@@ -357,7 +357,7 @@ class Renderer {
 
     // Update sprite specific attributes & uniforms.
     if (obj is Sprite) {
-      obj.transform.updateModelMatrix();
+
       _updateSpriteAttributes(obj);
       _updateSpriteUniforms(obj, scene, camera);
     }
@@ -462,14 +462,6 @@ class Renderer {
       'u_m': obj.transform.modelMatrix,
       'u_v': camera.transform.viewMatrix
     });
-  }
-
-  void _updateLights(Iterable<Light> lights) {
-    lights.forEach(_updateLight);
-  }
-
-  void _updateLight(Light light) {
-    light.update(dt);
   }
 
   // void _drawByLightning(Sprite obj, Iterable<Light> lights) {

@@ -1,12 +1,12 @@
 part of ose;
 
-class SceneObjectGroup extends RenderableObject {
-  final HashSet<SceneObject> children;
+class RenderableObjectGroup extends SceneObject {
+  final HashSet<RenderableObject> children;
 
-  SceneObjectGroup()
+  RenderableObjectGroup()
       : children = new HashSet();
 
-  bool add(SceneObject obj) {
+  bool add(RenderableObject obj) {
     bool added = children.add(obj);
 
     if (!added) {
@@ -18,11 +18,11 @@ class SceneObjectGroup extends RenderableObject {
     return true;
   }
 
-  bool remove(SceneObject obj) {
+  bool remove(RenderableObject obj) {
     return children.remove(obj);
   }
 
-  void copyFrom(SceneObject from) {
+  void copyFrom(RenderableObject from) {
     transform.copyFrom(from.transform);
   }
 

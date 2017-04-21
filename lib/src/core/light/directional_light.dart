@@ -10,9 +10,6 @@ class DirectionalLight extends Light {
     this._color = color ?? new SolidColor.white();
   }
 
-  @override
-  void update(double dt) {}
-
   Vector2 get direction => _direction;
 
   void set direction(Vector2 direction) {
