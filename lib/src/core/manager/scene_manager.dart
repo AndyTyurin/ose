@@ -8,6 +8,10 @@ part of ose;
 /// Scene can be bound only once per rendering cycle, to modify already
 /// registered scenes, use [get] method, to retrive already bound use
 /// [boundScene] getter instead.
+///
+/// [Renderer] will use [update] method to make changes on each nested object
+/// of the currently bound scene. Also scene's and object's actors are updated
+/// while rendering.
 class SceneManager {
   /// Registration "list" with available scenes with unique identifiers.
   Map<String, Scene> _scenes;
