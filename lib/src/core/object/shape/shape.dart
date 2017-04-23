@@ -1,6 +1,6 @@
 part of ose;
 
-abstract class Shape extends SceneObject {
+abstract class Shape extends RenderableObject {
   static SolidColor defaultColor = new SolidColor.white();
   static String shaderProgramName = utils.generateUuid();
 

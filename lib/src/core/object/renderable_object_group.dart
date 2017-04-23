@@ -26,9 +26,5 @@ class RenderableObjectGroup extends SceneObject {
     transform.copyFrom(from.transform);
   }
 
-  void set actor(SceneObjectActor actor) {
-    _actor = actor;
-  }
-
-  SceneObjectActor get actor => _actor;
+  SceneObjectActor get actor => actor;
 }

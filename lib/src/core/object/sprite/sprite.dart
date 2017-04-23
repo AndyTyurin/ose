@@ -1,6 +1,6 @@
 part of ose;
 
-class Sprite extends SceneObject {
+class Sprite extends RenderableObject {
   static String shaderProgramName = utils.generateUuid();
 
   /// Color map texture to use.

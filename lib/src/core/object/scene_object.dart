@@ -1,10 +1,14 @@
 part of ose;
 
-abstract class RenderableObject extends Object
+abstract class SceneObject extends Object
     with utils.UuidMixin
     implements ActorOwner {
+  final SceneObjectTransform transform;
+
   /// Actor can manipulate object.
   Actor actor;
+
+  SceneObject() : transform = new SceneObjectTransform();
 
   /// Update object's logic.
   void update(num dt, InputControllers inputControllers) {
