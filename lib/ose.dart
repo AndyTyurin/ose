@@ -23,16 +23,18 @@ part 'src/core/renderer/renderer_state.dart';
 part 'src/core/renderer/renderer_managers.dart';
 part 'src/core/renderer/renderer_drawer.dart';
 
-// tbd @andytyurin place with specific objects.
+// Transformations.
 part 'src/core/transform/camera_transform.dart';
 part 'src/core/transform/transform.dart';
 part 'src/core/transform/scene_object_transform.dart';
 
 // Cameras.
 part 'src/core/camera/camera.dart';
+part 'src/core/camera/camera_manager.dart';
 
 // Scenes.
 part 'src/core/scene/scene.dart';
+part 'src/core/scene/scene_manager.dart';
 
 // Actors.
 part 'src/core/actor/actor.dart';
@@ -40,7 +42,7 @@ part 'src/core/actor/scene_actor.dart';
 part 'src/core/actor/scene_object_actor.dart';
 part 'src/core/actor/actor_owner.dart';
 
-/// Scene's objects and renderable targets.
+// Scene's objects and renderable targets.
 part 'src/core/object/renderable_object.dart';
 part 'src/core/object/renderable_object_group.dart';
 part 'src/core/object/scene_object.dart';
@@ -50,7 +52,7 @@ part 'src/core/object/shape/circle.dart';
 part 'src/core/object/shape/triangle.dart';
 part 'src/core/object/sprite/sprite.dart';
 
-/// Shader interfaces, attrbutes, uniforms, qualifiers.
+// Shader interfaces, attrbutes, uniforms, qualifiers.
 part 'src/core/shader/attribute.dart';
 part 'src/core/shader/uniform.dart';
 part 'src/core/shader/shader_program.dart';
@@ -58,20 +60,17 @@ part 'src/core/shader/shader.dart';
 part 'src/core/shader/qualifier_type.dart';
 part 'src/core/shader/qualifier_state.dart';
 part 'src/core/shader/shader_data_provider.dart';
+part 'src/core/shader/shader_program_manager.dart';
 
-// tbd @andytyurin do not group by manager's directory, use proper directory
-// in applience with goal.
-part 'src/core/manager/shader_program_manager.dart';
-part 'src/core/manager/camera_manager.dart';
-part 'src/core/manager/scene_manager.dart';
-part 'src/core/manager/asset_manager.dart';
-part 'src/core/manager/texture_manager.dart';
+// Assets management.
+part 'src/core/asset/asset_manager.dart';
 
 // Texture and sub textures.
 part 'src/core/texture/texture.dart';
 part 'src/core/texture/original_texture.dart';
 part 'src/core/texture/sub_texture.dart';
 part 'src/core/texture/texture_type.dart';
+part 'src/core/texture/texture_manager.dart';
 
 // Colors, solids and gradients.
 part 'src/core/color/color.dart';

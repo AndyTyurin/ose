@@ -9,7 +9,7 @@ part of ose;
 /// methods of it while updating.
 class Scene extends Object with utils.UuidMixin implements ActorOwner {
   /// List with scene objects.
-  Set<RenderableObject> _children;
+  Set<SceneObject> _children;
 
   /// List with lights.
   Set<Light> _lights;
@@ -28,34 +28,34 @@ class Scene extends Object with utils.UuidMixin implements ActorOwner {
         _lights = new Set();
 
   /// Add a new object to scene.
-  /// [obj] can be instance of [Light] or [RenderableObject].
+  /// [obj] can be instance of [Light] or [SceneObject].
   void add(dynamic obj) {
     if (obj is Light) {
       _addLight(obj);
-    } else if (obj is RenderableObject) {
-      _addRenderableObject(obj);
+    } else if (obj is SceneObject) {
+      _addSceneObject(obj);
     } else {
       throw new ArgumentError("Trying to add wrong type object to scene");
     }
   }
 
   /// Remove object from a scene.
-  /// [obj] can be instance of [Light] or [RenderableObject].
+  /// [obj] can be instance of [Light] or [SceneObject].
   void remove(dynamic obj) {
     if (obj is Light) {
       _removeLight(obj);
-    } else if (obj is RenderableObject) {
-      _removeRenderableObject(obj);
+    } else if (obj is SceneObject) {
+      _removeSceneObject(obj);
     } else {
       throw new ArgumentError("Trying to remove wrong type object from scene");
     }
   }
 
-  void _addRenderableObject(RenderableObject obj) {
+  void _addSceneObject(SceneObject obj) {
     _children.add(obj);
   }
 
-  void _removeRenderableObject(RenderableObject obj) {
+  void _removeSceneObject(SceneObject obj) {
     _children.remove(obj);
   }
 
@@ -82,7 +82,7 @@ class Scene extends Object with utils.UuidMixin implements ActorOwner {
 
   /// Per children object update handler.
   void perObjectUpdate(
-      double dt, InputControllers inputControllers, RenderableObject obj) {
+      double dt, InputControllers inputControllers, SceneObject obj) {
     obj.update(dt, inputControllers);
   }
 

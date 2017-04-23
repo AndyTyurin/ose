@@ -9,16 +9,15 @@ class RendererDrawer {
   /// Shader program manager is needed to work with shader programs.
   final ShaderProgramManager _spm;
 
-
   RendererDrawer(this._gl, this._spm);
 
   /// Draw objects.
   Future draw(
-      Iterable<RenderableObject> objects,
-      Future onDraw(RenderableObject obj),
-      Future onPostDraw(RenderableObject obj)) async {
+      Iterable<SceneObject> objects,
+      Future onDraw(SceneObject obj),
+      Future onPostDraw(SceneObject obj)) async {
     // tbd @andytyurin apply strategy, how to render objects for best perfomance.
-    for (RenderableObject object in objects) {
+    for (SceneObject object in objects) {
       await onDraw(object);
       _drawObject(object);
       await onPostDraw(object);
@@ -27,8 +26,8 @@ class RendererDrawer {
 
   /// Draw [obj].
   /// It can be an identity or group object.
-  void _drawObject(RenderableObject obj) {
-    if (obj is SceneObjectGroup) {
+  void _drawObject(SceneObject obj) {
+    if (obj is RenderableObjectGroup) {
       _drawGroupObject(obj);
     } else {
       _drawIdentityObject(obj);
@@ -36,12 +35,12 @@ class RendererDrawer {
   }
 
   /// Draw group [obj].
-  void _drawGroupObject(SceneObjectGroup obj) {
+  void _drawGroupObject(RenderableObjectGroup obj) {
     obj.children.forEach(_drawIdentityObject);
   }
 
   /// Draw identity [obj].
-  void _drawIdentityObject(SceneObject obj) {
+  void _drawIdentityObject(RenderableObject obj) {
     _prepareShaderProgram(obj);
     _gl.drawArrays(
         webGL.TRIANGLE_STRIP, 0, (obj as dynamic).glVertices.length ~/ 2);
@@ -49,12 +48,12 @@ class RendererDrawer {
 
   /// Prepare target's shader program.
   /// Register if it needed and bind to use.
-  void _prepareShaderProgram(SceneObject obj) {
+  void _prepareShaderProgram(RenderableObject obj) {
     String shaderProgramId = obj.getShaderProgramName();
 
     if (!_spm.isRegistered(shaderProgramId)) {
       window.console.warn(
-          'Can\'t render target by using of shader program with id \'${shaderProgramId}\'');
+          'Can\'t render target by using of sha der program with id \'${shaderProgramId}\'');
       return;
     }
 

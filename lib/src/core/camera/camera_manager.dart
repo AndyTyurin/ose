@@ -22,15 +22,14 @@ class CameraManager {
 
   /// Update bound camera.
   /// If there is a staged camera set before, it will be set as bound.
-  void update(dt) {
+  void update() {
     if (_stagedCamera != null) {
       _boundCamera = _stagedCamera;
       _stagedCamera = null;
     }
     if (_boundCamera != null) {
       // Update camera's projection & view matrices.
-      _boundCamera.transform.updateProjectionMatrix();
-      _boundCamera.transform.updateViewMatrix();
+      _boundCamera.update();
     }
   }
 

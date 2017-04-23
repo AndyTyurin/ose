@@ -5,4 +5,7 @@ abstract class ShaderDataProvider {
   /// Implement by returning specific name of the shader program to use.
   /// Note: shader program must be initialized before rendering.
   String getShaderProgramName();
+
+  /// Provides webGL vertices.
+  Float32List get glVertices;
 }

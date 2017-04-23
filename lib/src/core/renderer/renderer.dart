@@ -323,12 +323,8 @@ class Renderer {
     // Clear buffers before drawing.
     _clear();
 
-    // Update lightning.
-    // Light can be complicated, prefer to calculate some logic on cpu part.
-    _updateLights(scene.lights);
-
     // Update camera's logic
-    _managers.cameraManager.update(dt);
+    _managers.cameraManager.update();
 
     // Update scene, nested children and actors through the scene manager.
     _managers.sceneManager.update(dt, _managers.ioManager.inputControllers);
@@ -351,13 +347,14 @@ class Renderer {
   /// By using of [onObjectRender] stream, you can easilly add specific logic
   /// to deal with your own attributes and uniforms.
   Future _onObjectDraw(SceneObject obj) async {
-    // Update common attributes & uniforms specified for all kinds of objects.
-    _updateCommonAttributes(obj);
-    _updateCommonUniforms(obj, camera);
+    if (obj is RenderableObject) {
+      // Update common attributes & uniforms.
+      _updateCommonAttributes(obj);
+      _updateCommonUniforms(obj, camera);
+    }
 
-    // Update sprite specific attributes & uniforms.
+    // Update sprite's specific attributes & uniforms.
     if (obj is Sprite) {
-
       _updateSpriteAttributes(obj);
       _updateSpriteUniforms(obj, scene, camera);
     }
@@ -451,7 +448,7 @@ class Renderer {
   }
 
   /// Update attributes which are common for all shader programs.
-  void _updateCommonAttributes(SceneObject obj) {
+  void _updateCommonAttributes(RenderableObject obj) {
     updateAttributes({'a_position': obj.glVertices});
   }
 

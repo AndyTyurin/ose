@@ -1,30 +1,28 @@
 part of ose;
 
 class RenderableObjectGroup extends SceneObject {
-  final HashSet<RenderableObject> children;
+  final HashSet<SceneObject> children;
 
   RenderableObjectGroup()
-      : children = new HashSet();
+      : children = new HashSet<SceneObject>();
 
-  bool add(RenderableObject obj) {
+  bool add(SceneObject obj) {
     bool added = children.add(obj);
 
     if (!added) {
       window.console.info(
-          "SceneObject#${obj.uuid} added twice to SceneObjectGroup${uuid}");
+          "SceneObject#${obj.uuid} added twice to RenderableObjectGroup${uuid}");
       return false;
     }
     obj.parent = this;
     return true;
   }
 
-  bool remove(RenderableObject obj) {
+  bool remove(SceneObject obj) {
     return children.remove(obj);
   }
 
-  void copyFrom(RenderableObject from) {
+  void copyFrom(SceneObject from) {
     transform.copyFrom(from.transform);
   }
-
-  SceneObjectActor get actor => actor;
 }

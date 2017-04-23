@@ -5,8 +5,11 @@ abstract class SceneObject extends Object
     implements ActorOwner {
   final SceneObjectTransform transform;
 
+  /// Parent scene object.
+  SceneObject parent;
+
   /// Actor can manipulate object.
-  Actor actor;
+  SceneObjectActor actor;
 
   SceneObject() : transform = new SceneObjectTransform();
 
@@ -15,6 +18,7 @@ abstract class SceneObject extends Object
     if (actor != null) {
       actor.update(this, inputControllers);
     }
+    transform.updateModelMatrix();
   }
 
   void copyFrom(RenderableObject obj) {
